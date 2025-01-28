@@ -4,7 +4,7 @@
 The members of the team are:
 - Hayeong Lee (k21189777)
 - Isabella Landgrebe (k)
-- Chen Wang (k)
+- Chen Wang (k23008656)
 - Saruta Kittipattananon (k)
 - Nehir Bektas (k)
 - Aishah Alharthi (k)

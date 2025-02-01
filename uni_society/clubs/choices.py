@@ -1,14 +1,14 @@
 VISIBILITY_CHOICES = (
-    (0, "Private"),
-    (1, "Public"),
+    ("Private", "Private"),
+    ("Public", "Public"),
 )
 
 SOCIETY_TYPE_CHOICES = (
-    (, "Art"),
-    (, "Sports"),
-    (, "Culture"),
-    (, "Academic"),
-    (, "IT"),
-    (, "Language"),
-    (, "Other")
+    ("Art", "Art"),
+    ("Sports", "Sports"),
+    ("Culture", "Culture"),
+    ("Academic", "Academic"),
+    ("IT", "IT"),
+    ("Language", "Language"),
+    ("Others", "Others")
 )

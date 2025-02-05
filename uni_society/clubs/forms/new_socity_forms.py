@@ -12,7 +12,7 @@ class NewSocietyForm(forms.Form):
 
     description = forms.CharField(
         max_length=100,
-        widget=forms.Textarea
+        widget=forms.Textarea,
         label="Write about your society."
     )
 

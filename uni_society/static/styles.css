@@ -8,32 +8,87 @@
   .bg-light{
     background-color: #D6EEFF;
   }
+
   /*-----header-----*/
   .header{
-    min-height: 100vh;
-    width: 100%;
-    background-color: #6A7062;
+    min-height: auto;
+    background-color: #89b9da;
   }
   
   .header-short{
     min-height: 4vh;
   }
   
+  /*-----search bar-----*/
+  .web-search-container {
+    display: flex;
+    align-items: center; 
+    gap: 20px;  
+    position: relative;
+    padding: 10px 20px;
+  }
+
+  .web-container h1 {
+    font-size: 50px;
+    white-space: nowrap; 
+  }
+
+  .search-container {
+    width: 250px;
+    position: relative;
+  }
+
+  .search-form {
+    display: flex;
+    align-items: center;
+    background: #FFFFFF;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    height: 40px;
+    overflow: hidden;
+    padding: 0 10px;
+  }
+
+  .search-input {
+    flex-grow: 1;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    outline: none;
+    padding: 10px;
+  }
+
+  .search-button {
+    background: transparent;
+    border: none;
+    cursor: pointer; /* Ensures it's clickable */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 10px;
+  }
+
+  .search-button i {
+      font-size: 18px;
+      color: #252E6B;
+  }
+
   /*-----navigation bar-----*/
   nav{
     padding: 10px;
-    background-color: #8D909B;
+    background-color: #133C55;
     color: white;
   }
   
   .nav-links ul{
+    list-style: none;
     display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+    justify-content: center;
+    gap: 200px;
+    padding: 10px 0;
   }
   
   .nav-links ul li{
-    list-style: none;
     padding: 8px 12x;
     position: relative;
   }
@@ -58,19 +113,37 @@
     width: 100%;
   }
   
-  .text-box{
-    width: 90%;
-    color: #fff;
+  .nav-links ul li {
+    position: relative;
+  }
+
+  .nav-links ul .dropdown-menu {
+    display: none;
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;  
+    background-color: #8D909B;
+    min-width: 150px;
+    top: 100%;
+    left: 0;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+    z-index: 1000;
   }
-  
-  .text-box p{
-    margin: 12px 0 40px;
-    font-size: 14px;
-    color: #fff;
+
+  .nav-links ul li:hover > .dropdown-menu {
+    display: block;
   }
-  
+
+  .nav-links ul .dropdown-menu li {
+    display: block;
+    padding: 10px;
+  }
+
+  .nav-links ul .dropdown-menu li:hover {
+    background-color: #6a7e7e;
+  }
+
+  .nav-links ul .dropdown-menu li a {
+    color: white;
+    text-decoration: none;
+    display: block;
+    padding: 8px;
+  }

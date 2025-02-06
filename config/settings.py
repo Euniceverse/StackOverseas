@@ -49,7 +49,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'uni_society.urls'
+ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
     {
@@ -67,8 +67,16 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'uni_society.wsgi.application'
+WSGI_APPLICATION = 'config.wsgi.application'
 
+# URL to serve static files
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    BASE_DIR / "config" / "static",
+]
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases

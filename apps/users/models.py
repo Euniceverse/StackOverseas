@@ -1,4 +1,4 @@
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, Group, Permission
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
@@ -27,7 +27,7 @@ class CustomUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
     
-    def create_superuser(self, email, first_name, preferred_name, password):
+    def create_superuser(self, email, first_name, last_name, preferred_name, password):
         user = self.create_user(email, first_name, last_name, preferred_name, password)
         user.is_staff = True
         user.is_superuser = True
@@ -48,9 +48,13 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     objects = CustomUserManager()
 
+    # fixing conflicts with Django's default auth system
+    groups = models.ManyToManyField(Group, related_name="customuser_groups", blank=True)
+    user_permissions = models.ManyToManyField(Permission, related_name="customuser_permissions", blank=True)
+    
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'preferred_name']
-
+    
     def can_change_preferred_name(self):
         """Check if the user can change their preferred name."""
         if self.last_verified_date:
@@ -81,4 +85,4 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         return True
 
     def __str__(self):
-        return self.first_name+self.last_name
+        return f"{self.first_name} {self.last_name}"

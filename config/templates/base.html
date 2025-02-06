@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-sale=1.0">
+        <link rel="stylesheet" href="{% static 'styles.css' %}">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <!-- FontAwesome for icons -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+        <title>Student Societies by Stack Overseas</title>
+    </head>
+    <body>
+        <section class="header">
+            <div class="top-bar">
+                <!-- Website Name -->
+                <div class="web-container">
+                    <h1 class="web-name">Stack Overseas Universal Societies</h1>
+                </div>
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <form action="/search" method="GET" class="search-form">
+                        <input type="text" name="q" placeholder="Search for societies..." class="search-input">
+                        <button type="submit" class="search-button">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <!-- Navbar -->
+            <nav>
+                <div class="nav-links">
+                    <ul>
+                        <li><a href="/">HOME</a></li>
+                        <li class="dropdown">
+                            <a href="/events/">EVENTS</a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">All Events</a></li>
+                                <li><a href="#">My Events</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="/news/">NEWS</a></li>
+                        <li class="dropdown">
+                            <a href="/societies/">SOCIETIES</a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">All Societies</a></li>
+                                <li><a href="#">My Societies</a></li>
+                            </ul>
+                        </li>
+                        <li class="dropdown">
+                            <a href="/account/">MY ACCOUNT</a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">My Profile</a></li>
+                                <li><a href="#">My Societies</a></li>
+                                <li><a href="#">Logout</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </section>
+        <!-- Main Content Block -->
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+    </body>
+</html>

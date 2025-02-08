@@ -59,7 +59,7 @@ class CustomUserModelTest(TestCase):
         """Test that emails not ending in .ac.uk raise a ValidationError."""
         with self.assertRaises(ValidationError):
             invalid_user = CustomUser(
-                email="testuser@gmail.com", 
+                email="testuser@gmail.com",
                 first_name="John",
                 last_name="Doe",
                 preferred_name="Johnny"
@@ -81,7 +81,7 @@ class CustomUserModelTest(TestCase):
         """Test that users must verify their email before changing their preferred name."""
         self.user.last_verified_date = timezone.now() - timedelta(days=365)  # Make user eligible
         self.user.save()
-        
+
         self.assertTrue(self.user.can_change_preferred_name())
 
         # Attempt to update preferred name (should require verification)

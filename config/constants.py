@@ -5,6 +5,7 @@ MAX_LOCATION = 255
 VISIBILITY_CHOICES = [
     ("Private", "Private"),
     ("Public", "Public"),
+]
 
 SOCIETY_TYPE_CHOICES = [
     ("sports", "Sports"),
@@ -25,7 +26,7 @@ EVENT_TYPE_CHOICES = [
 ]
 
 REGISTRATION_STATUS_CHOICES = [
-        ('accepted', 'Accepted'),
-        ('waitlisted', 'Waitlisted'),
-        ('rejected', 'Rejected'),
-    ]
+    ('accepted', 'Accepted'),
+    ('waitlisted', 'Waitlisted'),
+    ('rejected', 'Rejected'),
+]

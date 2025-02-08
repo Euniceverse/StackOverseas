@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from societies.models import Society
+from apps.societies.models import Society
 
 class Event(models.Model):
     """Model representing an event (e.g. a student society meetup)."""

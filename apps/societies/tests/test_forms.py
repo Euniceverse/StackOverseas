@@ -1,5 +1,5 @@
-from django.tests import TestCase
-from clubs.forms import NewSocietyForm
+from django.test import TestCase
+from apps.societies.forms import NewSocietyForm
 
 class NewSocietyFormTest(TestCase):
     def test_valid_form(self):
@@ -26,5 +26,4 @@ class NewSocietyFormTest(TestCase):
     def test_dynamic_choices(self):
         available_types = [('tech', 'Technology'), ('art', 'Art')]
         form = SocietyForm(available_types=available_types)
-        self.assertEqual(form.fields['type'].choices, available_types) 
-
+        self.assertEqual(form.fields['type'].choices, available_types)

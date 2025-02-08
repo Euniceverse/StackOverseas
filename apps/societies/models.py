@@ -1,8 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 
 class Society(models.Model):
-    
+
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('approved', 'Approved'),
@@ -11,15 +11,15 @@ class Society(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField()
-    society_type = models.CharField(max_length=100)  
+    society_type = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
 
     membership_request_required = models.BooleanField(default=False)
-    
-    
-    manager = models.ForeignKey(User, on_delete=models.CASCADE, related_name="managed_societies")
+
+
+    manager = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="managed_societies")
 
     # Check whether this society is approved and can be customise
     def is_customisable(self):

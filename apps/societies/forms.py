@@ -1,5 +1,5 @@
 from django import forms
-from clubs.choices import VISIBILITY_CHOICES, SOCIETY_TYPE_CHOICES
+from config.constants import VISIBILITY_CHOICES, SOCIETY_TYPE_CHOICES
 
 class NewSocietyForm(forms.Form):
     """Form to submit new society requests."""
@@ -17,9 +17,9 @@ class NewSocietyForm(forms.Form):
     )
 
     society_type = forms.ChoiceField(
-        choices=choices.SOCIETY_TYPE_CHOICES
+        choices=SOCIETY_TYPE_CHOICES
     )
     
     visibility = forms.ChoiceField(
-        choices=choices.VISIBILITY_CHOICES
+        choices=VISIBILITY_CHOICES
     )

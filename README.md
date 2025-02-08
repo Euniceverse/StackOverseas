@@ -6,7 +6,7 @@ The members of the team are:
 - Isabella Landgrebe (k)
 - Chen Wang (k)
 - Saruta Kittipattananon (k)
-- Nehir Bektas (k)
+- Nehir Bektas (k21153319)
 - Aishah Alharthi (k)
 
 ## Project structure

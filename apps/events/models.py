@@ -32,7 +32,9 @@ class Event(models.Model):
         choices=EVENT_TYPE_CHOICES
     )
 
-    keyword = models.CharField(max_length=50, help_text="Tag or keyword for searching (e.g. 'chess').")
+    keyword = models.CharField(
+      max_length=50,
+    )
 
     location = models.CharField(
         max_length=MAX_LOCATION
@@ -45,7 +47,7 @@ class Event(models.Model):
     )
 
     member_only = models.BooleanField(
-        default=True,
+        default=False,
     )
 
     fee = models.DecimalField(
@@ -53,7 +55,12 @@ class Event(models.Model):
         decimal_places=2,
         default=Decimal("0.00"),
         validators=[MinValueValidator(Decimal("0.00"))]
-    )
+    )    
+
+    is_free = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.event_type}"
 
 class EventRegistration(models.Model):
     """Model representing a user's sign‐up to an event, along with their acceptance/waitlist/rejection status."""

@@ -5,7 +5,6 @@ MAX_LOCATION = 255
 VISIBILITY_CHOICES = [
     ("Private", "Private"),
     ("Public", "Public"),
-]
 
 SOCIETY_TYPE_CHOICES = [
     ("sports", "Sports"),

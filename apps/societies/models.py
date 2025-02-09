@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.conf import settings
 
 class Society(models.Model):
     
@@ -19,7 +20,7 @@ class Society(models.Model):
     membership_request_required = models.BooleanField(default=False)
     
     
-    manager = models.ForeignKey(User, on_delete=models.CASCADE, related_name="managed_societies")
+    manager = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="managed_societies")
 
     # Check whether this society is approved and can be customise
     def is_customisable(self):
@@ -27,3 +28,12 @@ class Society(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.get_status_display()})"
+    
+class Host(models.Model):
+    """Model for Host of Event as many-to-many relationship between Event and Society."""
+
+    event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
+    society = models.ForeignKey("societies.Society", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.society.name} hosts {self.event.name}"

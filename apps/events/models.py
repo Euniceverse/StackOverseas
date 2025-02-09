@@ -1,6 +1,4 @@
 from django.db import models
-from apps.users.models import CustomUser
-from apps.societies.models import Society
 from config.constants import MAX_NAME, MAX_DESCRIPTION, MAX_LOCATION, EVENT_TYPE_CHOICES, REGISTRATION_STATUS_CHOICES
 from django.core.validators import MinValueValidator
 from decimal import Decimal
@@ -10,9 +8,9 @@ class Event(models.Model):
     """Model representing an event (e.g. a student society meetup)."""
 
     societies = models.ManyToManyField(
-        Society,
-        through="Host",
-        through_fields=("society", "event"),
+        "societies.Society",
+        through="societies.Host",
+        through_fields=("event", "society"),
     )
 
     name = models.CharField(

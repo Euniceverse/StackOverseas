@@ -7,12 +7,6 @@ from django.conf import settings
 class Event(models.Model):
     """Model representing an event (e.g. a student society meetup)."""
 
-    societies = models.ManyToManyField(
-        "societies.Society",
-        through="societies.Host",
-        through_fields=("event", "society"),
-    )
-
     name = models.CharField(
         max_length=MAX_NAME,
     )
@@ -59,6 +53,15 @@ class Event(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.event_type}"
+
+class Host(models.Model):
+    """Model for Host of Event as many-to-many relationship between Event and Society."""
+
+    event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
+    society = models.ForeignKey("societies.Society", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.society.name} hosts {self.event.name}"
 
 class EventRegistration(models.Model):
     """Model representing a user's sign‐up to an event, along with their acceptance/waitlist/rejection status."""

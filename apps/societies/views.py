@@ -1,5 +1,9 @@
 from django.shortcuts import render
+from .models import Society
+# from django.template.loader import get_template
 
 def societiespage(request):
-    """Societies page view"""
-    return render(request, "societies.html")
+    # template = get_template('societies.html')
+    societies = Society.objects.all()  # Fetch all societies
+    return render(request, "societies.html", {'societies': societies})
+

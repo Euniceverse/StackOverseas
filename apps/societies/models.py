@@ -15,6 +15,7 @@ class Society(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    members_count = models.IntegerField(default=0)
 
     membership_request_required = models.BooleanField(default=False)
     

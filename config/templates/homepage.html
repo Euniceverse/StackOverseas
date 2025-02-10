@@ -6,4 +6,26 @@ Home
 
 {% block content %}
 <h1>Home Page...</h1>
+
+<!-- Overall Top 5 Societies -->
+<h2>Overall Top 5 Societies</h2>
+<ul>
+    {% for society in top_overall_societies %}
+        <li>{{ society.name }} ({{ society.members_count }} members_count)</li>
+    {% endfor %}
+</ul>
+
+<!-- Top 5 Societies Per Type -->
+{% for society_type, societies in top_societies_per_type.items %}
+    <h3>Top 5 {{ society_type }} Societies</h3>
+    <ul>
+        {% for society in societies %}
+            <li>{{ society.name }} ({{ society.members_count }} members_count)</li>
+        {% endfor %}
+    </ul>
+{% endfor %}
+
+<!-- Button to View All Societies -->
+<a href="{% url 'top_societies' %}" class="btn btn-primary">View All Societies</a>
+
 {% endblock %}

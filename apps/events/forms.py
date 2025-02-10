@@ -1,5 +1,5 @@
 from config.constants import (
-    MAX_NAME, MAX_DESCRIPTION, MAX_LOCATION, 
+    MAX_NAME, MAX_DESCRIPTION, MAX_LOCATION,
     EVENT_TYPE_CHOICES
 )
 from apps.societies.models import Society
@@ -37,7 +37,7 @@ class NewEventForm(forms.Form):
 
     keyword = forms.CharField(
         max_length=50,
-        required=False, 
+        required=False,
     )
 
     location = forms.CharField(
@@ -52,7 +52,7 @@ class NewEventForm(forms.Form):
     )
 
     member_only = forms.BooleanField(
-        initial=False, 
+        initial=False,
         required=False,
     )
 
@@ -91,5 +91,3 @@ class NewEventForm(forms.Form):
             cleaned_data["is_free"] = False
 
         return cleaned_data
-    
-

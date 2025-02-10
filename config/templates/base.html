@@ -8,7 +8,72 @@
         <title>{% block title %}Student Societies{% endblock %}</title>
     </head>
     <body>
-        {% block body %}{% endblock %}
+        <!-- Header Section -->
+        <section class="header">
+            <div class="top-bar">
+                <!-- Website Name -->
+                <div class="web-container">
+                    <h1 class="web-name">Stack Overseas Universal Societies</h1>
+                </div>
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <form action="/search" method="GET" class="search-form">
+                        <input type="text" name="q" placeholder="Search for societies..." class="search-input">
+                        <button type="submit" class="search-button">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <!-- Navbar -->
+            <nav>
+                <div class="nav-links">
+                    <ul>
+                        <li><a href="/">HOME</a></li>
+                        <li class="dropdown">
+                            <a href="/events/">EVENTS</a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">All Events</a></li>
+                                {% if user.is_authenticated %}
+                                    <li><a href="#">My Events</a></li>
+                                {% endif %}
+                            </ul>
+                        </li>
+                        <li><a href="/news/">NEWS</a></li>
+                        <li class="dropdown">
+                            <a href="/societies/">SOCIETIES</a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">All Societies</a></li>
+                                {% if user.is_authenticated %}
+                                    <li><a href="#">My Societies</a></li>
+                                {% endif %}
+                            </ul>
+                        </li>
+                        {% if user.is_authenticated %}
+                        <li class="dropdown">
+                            <a href="{% url 'profile' %}">MY ACCOUNT</a>
+                            <ul class="dropdown-menu">
+                                <li><a href="{% url 'profile' %}">Update Profile</a></li>
+                                <li><a href="#">My Societies</a></li>
+                                <li><a href="{% url 'password' %}">Change Password</a></li>
+                                <li><a href="{% url 'log_out' %}">Logout</a></li>
+                            </ul>
+                        </li>
+                        {% else %}
+                        <li>
+                            <a href="{% url 'log_in' %}">LOG IN</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </nav>
+        </section>
+
+        <!-- Main Content Block -->
+        <div class="container">
+            {% block body %}{% endblock %}
+        </div>
+
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>

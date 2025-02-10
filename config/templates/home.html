@@ -1,76 +1,10 @@
-{% load static %}
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="{% static 'styles.css' %}">
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <!-- FontAwesome for icons -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-        <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-        <title>Student Societies by Stack Overseas</title>
-    </head>
-    <body>
-        <section class="header">
-            <div class="top-bar">
-                <!-- Website Name -->
-                <div class="web-container">
-                    <h1 class="web-name">Stack Overseas Universal Societies</h1>
-                </div>
-                <!-- Search Bar -->
-                <div class="search-container">
-                    <form action="/search" method="GET" class="search-form">
-                        <input type="text" name="q" placeholder="Search for societies..." class="search-input">
-                        <button type="submit" class="search-button">
-                            <i class="fa fa-search"></i>
-                        </button>
-                    </form>
-                </div>
-            </div>
-            <!-- Navbar -->
-            <nav>
-                <div class="nav-links">
-                    <ul>
-                        <li><a href="/">HOME</a></li>
-                        <li class="dropdown">
-                            <a href="/events/">EVENTS</a>
-                            <ul class="dropdown-menu">
-                                <li><a href="#">All Events</a></li>
-                                {% if user.is_authenticated %}
-                                    <li><a href="#">My Events</a></li>
-                                {% endif %}
-                            </ul>
-                        </li>
-                        <li><a href="/news/">NEWS</a></li>
-                        <li class="dropdown">
-                            <a href="/societies/">SOCIETIES</a>
-                            <ul class="dropdown-menu">
-                                <li><a href="#">All Societies</a></li>
-                                {% if user.is_authenticated %}
-                                    <li><a href="#">My Societies</a></li>
-                                {% endif %}
-                            </ul>
-                        </li>
-                        {% if user.is_authenticated %}
-                        <li class="dropdown">
-                            <a href="{% url 'profile' %}">MY ACCOUNT</a>
-                            <ul class="dropdown-menu">
-                                <li><a href="{% url 'profile' %}">Update Profile</a></li>
-                                <li><a href="#">My Societies</a></li>
-                                <li><a href="{% url 'password' %}">Change Password</a></li>
-                                <li><a href="{% url 'log_out' %}">Logout</a></li>
-                            </ul>
-                        </li>
-                        {% else %}
-                        <li>
-                            <a href="{% url 'log_in' %}">LOG IN</a>
-                        </li>
-                        {% endif %}
-                    </ul>
-                </div>
-            </nav>
-        </section>
+{% extends 'base.html' %}
 
-    </body>
-</html>
+{% block title %}Home - Student Societies{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1>Welcome to Student Societies</h1>
+        <p>Discover and join societies that match your interests.</p>
+    </div>
+{% endblock %}

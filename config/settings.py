@@ -29,6 +29,16 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Email configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'overseasstack@gmail.com'
+EMAIL_HOST_PASSWORD = 'btlmfvczvkrffiiy'
+EMAIL_USE_TLS = True
+PASSWORD_RESET_TIMEOUT = 14400 # 4 hours
+
+
 
 # Application definition
 
@@ -39,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'widget_tweaks',
     'apps.events',
     'apps.news',
@@ -150,4 +161,37 @@ REDIRECT_URL_WHEN_LOGGED_IN = 'home'
 # Convert Django ERROR messages to Bootstrap DANGER messages
 MESSAGE_TAGS = {
     messages.ERROR: 'danger',
+}
+
+# Add this after INSTALLED_APPS
+SITE_ID = 1
+
+
+# Session configuration
+# How long should a session cookie be valid (in seconds)
+# 86400 seconds = 24 hours. After this period, stored session data
+# (including pending user registrations) will be deleted
+SESSION_COOKIE_AGE = 86400  # 24 hours in seconds
+
+# Whether to expire the session when the browser closes
+# True: Session data is deleted when browser closes (more secure)
+# False: Session persists for SESSION_COOKIE_AGE even after browser closes
+# This affects all session data, including pending user registrations
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# Note: These settings mean users must verify their email either:
+# 1. Within 24 hours of signing up, OR
+# 2. Before closing their browser
+# whichever comes first. After either condition is met, they'll need to sign up again.
+
+# Summary of session expiry effects:
+# - Session expiry = automatic logout
+# - User data in database = permanent (until explicitly deleted)
+# - Only pending/unverified registration data is lost when session expires
+
+# Cache configuration
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
 }

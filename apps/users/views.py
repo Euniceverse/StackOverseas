@@ -9,6 +9,14 @@ from django.views.generic.edit import FormView, UpdateView
 from django.urls import reverse
 from apps.users.forms import SignUpForm, LogInForm, PasswordForm, UserForm
 from apps.users.models import CustomUser
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth.tokens import default_token_generator
+from django.template.loader import render_to_string
+from django.core.mail import EmailMessage
+from django.http import HttpResponse
+from django.core.cache import cache
 
 def home(request):
     """Display the main page.
@@ -16,7 +24,6 @@ def home(request):
     and user-specific content for authenticated users."""
 
     return render(request, 'home.html', {'user': request.user})
-
 
 class LoginProhibitedMixin:
     """Mixin that redirects when a user is logged in."""
@@ -125,9 +132,80 @@ class SignUpView(LoginProhibitedMixin, FormView):
     redirect_when_logged_in_url = settings.REDIRECT_URL_WHEN_LOGGED_IN
 
     def form_valid(self, form):
-        self.object = form.save()
-        login(self.request, self.object)
-        return super().form_valid(form)
+        """Store user data in session and send activation email."""
+        email = form.cleaned_data['email']
 
-    def get_success_url(self):
-        return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
+        # Check if email is in timeout
+        cache_key = f"email_timeout_{email}"
+        if cache.get(cache_key):
+            return HttpResponse("Please wait 5 minutes before requesting another verification email.")
+
+        # Store form data in session
+        user_data = {
+            'email': email,
+            'first_name': form.cleaned_data['first_name'],
+            'last_name': form.cleaned_data['last_name'],
+            'preferred_name': form.cleaned_data['preferred_name'],
+            'password': form.cleaned_data['new_password']
+        }
+        self.request.session['pending_user_data'] = user_data
+
+        # Create temporary user object (not saved to database)
+        temp_user = CustomUser(**user_data)
+        self.send_activation_email(temp_user)
+
+        # Set timeout for this email
+        cache.set(cache_key, True, 300)  # 300 seconds = 5 minutes
+
+        return HttpResponse("Please check your email to confirm your account.")
+
+    def send_activation_email(self, user):
+        """Send activation email with secure token."""
+        current_site = get_current_site(self.request)
+        mail_subject = "Activate your account"
+        message = render_to_string("acc_active_email.html", {
+            "user": user,
+            "domain": current_site.domain,
+            "uid": urlsafe_base64_encode(force_bytes(user.email)),  # Use email instead of pk
+            "token": default_token_generator.make_token(user),
+        })
+        email = EmailMessage(mail_subject, message, to=[user.email])
+        email.send()
+
+def activate(request, uidb64, token):
+    """Activate user account if token is valid."""
+    try:
+        # Get the pending user data from session
+        user_data = request.session.get('pending_user_data')
+        if not user_data:
+            return HttpResponse("Activation link is invalid or has expired!")
+
+        # Verify the email from the activation link matches the session data
+        email = force_str(urlsafe_base64_decode(uidb64))
+        if email != user_data['email']:
+            return HttpResponse("Activation link is invalid!")
+
+        # Check if user already exists
+        if CustomUser.objects.filter(email=email).exists():
+            return HttpResponse("This email is already registered!")
+
+        # Create and save the user
+        user = CustomUser.objects.create_user(
+            email=user_data['email'],
+            first_name=user_data['first_name'],
+            last_name=user_data['last_name'],
+            preferred_name=user_data['preferred_name'],
+            password=user_data['password']
+        )
+        user.is_active = True
+        user.save()
+
+        # Clear the session data
+        del request.session['pending_user_data']
+
+        # Log the user in
+        login(request, user)
+        messages.success(request, "Your account has been successfully activated!")
+        return redirect("home")
+    except Exception as e:
+        return HttpResponse("Activation link is invalid!")

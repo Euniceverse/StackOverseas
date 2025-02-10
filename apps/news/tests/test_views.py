@@ -45,3 +45,4 @@ class NewsViewTests(TestCase):
         self.assertContains(response, "Published News 1") 
         self.assertContains(response, "Published News 2") 
         self.assertNotContains(response, "Unpublished News") 
+        

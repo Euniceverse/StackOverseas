@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'apps.news',
     'apps.societies',
     'apps.users',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [

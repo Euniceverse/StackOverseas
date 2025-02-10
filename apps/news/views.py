@@ -6,5 +6,5 @@ def newspage(request):
     return render(request, "news.html")
 
 def news_list(request):
-    news = News.objects.filter(is_published=True).order_by("-date_created")
-    return render(request, "news_list.html", {"news": news})
+    news = News.objects.filter(is_published=True).order_by("-date_posted")
+    return render(request, "news.html", {"news_list": news_list})

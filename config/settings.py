@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'widget_tweaks',
+
     'apps.events',
     'apps.news',
     'apps.societies',
@@ -138,7 +139,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # User model for authentication and login purposes
-AUTH_USER_MODEL = 'apps.users.CustomUser'
+AUTH_USER_MODEL = 'users.CustomUser'
 
 # Login URL for redirecting users from login protected views
 LOGIN_URL = 'log_in'
@@ -150,3 +151,25 @@ REDIRECT_URL_WHEN_LOGGED_IN = 'home'
 MESSAGE_TAGS = {
     messages.ERROR: 'danger',
 }
+
+
+# Allowed types of societies
+ALLOWED_SOCIETY_TYPES = [
+    "Sports",
+    "Culture",
+    "Langauge",
+    "Academia",
+    "Games",
+    "Arts",
+    "Other"
+]
+
+# Choices for event type
+EVENT_TYPE_CHOICES = [
+    ('sports', 'Sports'),
+    ('academic', 'Academic'),
+    ('arts', 'Arts'),
+    ('cultural', 'Cultural'),
+    ('social', 'Social'),
+    ('other', 'Other'),
+    ]

@@ -1,19 +1,12 @@
 from django.db import models
 from django.conf import settings
-from societies.models import Society
+from apps.societies.models import Society
+from django.conf import settings
 
 class Event(models.Model):
     """Model representing an event (e.g. a student society meetup)."""
 
-    # Choices for event type
-    EVENT_TYPE_CHOICES = [
-        ('sports', 'Sports'),
-        ('academic', 'Academic'),
-        ('arts', 'Arts'),
-        ('cultural', 'Cultural'),
-        ('social', 'Social'),
-        ('other', 'Other'),
-    ]
+    event_type = models.CharField(max_length=20, choices=settings.EVENT_TYPE_CHOICES, default='other')
 
     society = models.ForeignKey(
         Society,
@@ -27,7 +20,7 @@ class Event(models.Model):
         help_text="Specify a city (e.g. 'Manchester') or 'Online'."
     )
     date = models.DateTimeField()
-    event_type = models.CharField(max_length=50, choices=EVENT_TYPE_CHOICES)
+    event_type = models.CharField(max_length=50, choices=settings.EVENT_TYPE_CHOICES)
     keyword = models.CharField(max_length=50, help_text="Tag or keyword for searching (e.g. 'chess').")
 
     # True if free, False if paid

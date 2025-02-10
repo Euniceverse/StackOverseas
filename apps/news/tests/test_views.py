@@ -39,9 +39,9 @@ class NewsViewTests(TestCase):
     def test_news_list_view(self):
         """Test that the news list view only shows published news"""
         response = self.client.get(reverse("news_list"))
-
+        
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "news.html")  
+        self.assertTemplateUsed(response, "news-panel.html")  
         self.assertContains(response, "Published News 1") 
         self.assertContains(response, "Published News 2") 
         self.assertNotContains(response, "Unpublished News") 

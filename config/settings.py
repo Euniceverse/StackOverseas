@@ -75,15 +75,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# URL to serve static files
-STATIC_URL = '/static/'
-
-STATICFILES_DIRS = [
-    BASE_DIR / "config" / "static",
-]
-
-STATIC_ROOT = BASE_DIR / "staticfiles"
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
@@ -131,6 +122,12 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATICFILES_DIRS = [
+    BASE_DIR / "config" / "static",
+]
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -138,7 +135,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # User model for authentication and login purposes
-AUTH_USER_MODEL = 'apps.users.CustomUser'
+AUTH_USER_MODEL = 'users.CustomUser'
 
 # Login URL for redirecting users from login protected views
 LOGIN_URL = 'log_in'

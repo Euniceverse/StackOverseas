@@ -64,3 +64,21 @@ class NewEventForm(forms.Form):
         required=False,
     )
 
+    def clean_fee(self):
+        fee = self.cleaned_data.get("fee", Decimal("0.00"))
+
+        if fee > Decimal("0.00"):
+            self.cleaned_data["is_free"] = False
+        return fee
+
+    def clean(self):
+        cleaned_data = super().clean()
+        fee = cleaned_data.get("fee", Decimal("0.00"))
+        is_free = cleaned_data.get("is_free", True)
+
+        if fee > Decimal("0.00"):
+            cleaned_data["is_free"] = False
+
+        return cleaned_data
+    
+

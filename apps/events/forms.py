@@ -29,6 +29,9 @@ class NewEventForm(forms.Form):
 
     date = forms.DateTimeField(
         required=True,
+        widget=forms.DateTimeInput(
+            attrs={"type": "datetime-local"}
+        )
     )
 
     keyword = forms.CharField(

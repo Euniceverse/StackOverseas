@@ -2,6 +2,7 @@ from config.constants import (
     MAX_NAME, MAX_DESCRIPTION, MAX_LOCATION, 
     EVENT_TYPE_CHOICES
 )
+from apps.societies.models import Society
 from django.core.validators import MinValueValidator
 from decimal import Decimal
 from django import forms
@@ -65,6 +66,13 @@ class NewEventForm(forms.Form):
     is_free = forms.BooleanField(
         initial=True,
         required=False,
+    )
+
+    society = forms.ModelMultipleChoiceField(
+        queryset=Society.objects.all(),
+        required=True,
+        widget=forms.CheckboxSelectMultiple,
+        help_text="Select one or more societies hosting the event."
     )
 
     def clean_fee(self):

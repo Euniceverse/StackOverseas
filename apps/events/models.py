@@ -1,4 +1,6 @@
 from django.db import models
+from apps.users.models import CustomUser
+from apps.societies.models import Society
 from config.constants import MAX_NAME, MAX_DESCRIPTION, MAX_LOCATION, EVENT_TYPE_CHOICES, REGISTRATION_STATUS_CHOICES
 from django.core.validators import MinValueValidator
 from decimal import Decimal
@@ -6,6 +8,10 @@ from django.conf import settings
 
 class Event(models.Model):
     """Model representing an event (e.g. a student society meetup)."""
+
+    societies = models.ManyToManyField(
+        Society,
+    )
 
     name = models.CharField(
         max_length=MAX_NAME,
@@ -15,8 +21,17 @@ class Event(models.Model):
         max_length=MAX_DESCRIPTION,
     )
 
-    date = models.DateTimeField(
+    date = models.DateField(
         null=False,
+    )
+
+    start_time = models.TimeField(
+        null=False,
+    )
+
+    end_time = models.TimeField(
+        null=True,
+        blank=True,
     )
 
     event_type = models.CharField(
@@ -47,21 +62,12 @@ class Event(models.Model):
         decimal_places=2,
         default=Decimal("0.00"),
         validators=[MinValueValidator(Decimal("0.00"))]
-    )    
+    )
 
     is_free = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.name} - {self.event_type}"
-
-class Host(models.Model):
-    """Model for Host of Event as many-to-many relationship between Event and Society."""
-
-    event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
-    society = models.ForeignKey("societies.Society", on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"{self.society.name} hosts {self.event.name}"
 
 class EventRegistration(models.Model):
     """Model representing a user's sign‐up to an event, along with their acceptance/waitlist/rejection status."""

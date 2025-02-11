@@ -43,9 +43,9 @@
                             {% endif %}
                         </li>
                         <li class="dropdown">
-                            <a href="/societies/">SOCIETIES</a>
+                            <a href="{% url 'societiespage'%}">SOCIETIES</a>
                             <ul class="dropdown-menu">
-                                <li><a href="/societies/">All Societies</a></li>
+                                <li><a href="{% url 'societiespage'%}">All Societies</a></li>
                                 {% if user.is_authenticated %}
                                     <li><a href="#">My Societies</a></li>
                                 {% endif %}

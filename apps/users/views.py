@@ -17,6 +17,10 @@ def home(request):
 
     return render(request, 'home.html', {'user': request.user})
 
+def accountpage(request):
+    return render(request, "users/account.html")
+
+
 
 def accountpage(request):
     return render(request, "users/accountpage.html")

@@ -3,6 +3,8 @@ from config.constants import MAX_NAME, MAX_DESCRIPTION, MAX_LOCATION, EVENT_TYPE
 from django.core.validators import MinValueValidator
 from decimal import Decimal
 from django.conf import settings
+from apps.societies.models import Society
+from django.conf import settings
 
 class Event(models.Model):
     """Model representing an event (e.g. a student society meetup)."""

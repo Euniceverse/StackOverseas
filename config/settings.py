@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'widget_tweaks',
+
     'apps.events',
     'apps.news',
     'apps.societies',
@@ -153,3 +154,25 @@ REDIRECT_URL_WHEN_LOGGED_IN = 'home'
 MESSAGE_TAGS = {
     messages.ERROR: 'danger',
 }
+
+
+# Allowed types of societies
+ALLOWED_SOCIETY_TYPES = [
+    "Sports",
+    "Culture",
+    "Langauge",
+    "Academia",
+    "Games",
+    "Arts",
+    "Other"
+]
+
+# Choices for event type
+EVENT_TYPE_CHOICES = [
+    ('sports', 'Sports'),
+    ('academic', 'Academic'),
+    ('arts', 'Arts'),
+    ('cultural', 'Cultural'),
+    ('social', 'Social'),
+    ('other', 'Other'),
+    ]

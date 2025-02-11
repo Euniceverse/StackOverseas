@@ -124,23 +124,22 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
         return reverse("home")
 
 
-class SignUpView(LoginProhibitedMixin, FormView):
-    """Display the sign up screen and handle sign ups."""
+from django.utils.crypto import get_random_string
 
+class SignUpView(LoginProhibitedMixin, FormView):
+    # ... existing code ...
     form_class = SignUpForm
     template_name = "sign_up.html"
     redirect_when_logged_in_url = settings.REDIRECT_URL_WHEN_LOGGED_IN
 
     def form_valid(self, form):
-        """Store user data in session and send activation email."""
         email = form.cleaned_data['email']
-
-        # Check if email is in timeout
         cache_key = f"email_timeout_{email}"
         if cache.get(cache_key):
             return HttpResponse("Please wait 5 minutes before requesting another verification email.")
 
-        # Store form data in session
+        # Generate unique token
+        activation_token = get_random_string(50)
         user_data = {
             'email': email,
             'first_name': form.cleaned_data['first_name'],
@@ -148,48 +147,46 @@ class SignUpView(LoginProhibitedMixin, FormView):
             'preferred_name': form.cleaned_data['preferred_name'],
             'password': form.cleaned_data['new_password']
         }
-        self.request.session['pending_user_data'] = user_data
 
-        # Create temporary user object (not saved to database)
-        temp_user = CustomUser(**user_data)
-        self.send_activation_email(temp_user)
+        # Store data in cache with activation token
+        cache.set(activation_token, user_data, 3600)  # Store for 1 hour
 
-        # Set timeout for this email
-        cache.set(cache_key, True, 300)  # 300 seconds = 5 minutes
-
+        # Send activation email with token
+        self.send_activation_email(activation_token, user_data)
+        cache.set(cache_key, True, 300)
         return HttpResponse("Please check your email to confirm your account.")
 
-    def send_activation_email(self, user):
-        """Send activation email with secure token."""
-        current_site = get_current_site(self.request)
+    def send_activation_email(self, activation_token, user_data):
+        activation_link = f"http://{settings.DOMAIN_NAME}{reverse('activate', kwargs={'uidb64': urlsafe_base64_encode(force_bytes(user_data['email'])), 'token': activation_token})}"
+
+        print(f"Generated activation link: {activation_link}")  # Debugging output
+
         mail_subject = "Activate your account"
         message = render_to_string("acc_active_email.html", {
-            "user": user,
-            "domain": current_site.domain,
-            "uid": urlsafe_base64_encode(force_bytes(user.email)),  # Use email instead of pk
-            "token": default_token_generator.make_token(user),
+            "user": user_data,
+            "domain": settings.DOMAIN_NAME,
+            "uid": urlsafe_base64_encode(force_bytes(user_data['email'])),
+            "token": activation_token,
         })
-        email = EmailMessage(mail_subject, message, to=[user.email])
+        email = EmailMessage(mail_subject, message, to=[user_data['email']])
         email.send()
 
 def activate(request, uidb64, token):
-    """Activate user account if token is valid."""
     try:
-        # Get the pending user data from session
-        user_data = request.session.get('pending_user_data')
+        # Retrieve user data from cache using token
+        user_data = cache.get(token)
         if not user_data:
             return HttpResponse("Activation link is invalid or has expired!")
 
-        # Verify the email from the activation link matches the session data
+        # Verify email from activation link matches cached data
         email = force_str(urlsafe_base64_decode(uidb64))
         if email != user_data['email']:
             return HttpResponse("Activation link is invalid!")
 
-        # Check if user already exists
         if CustomUser.objects.filter(email=email).exists():
             return HttpResponse("This email is already registered!")
 
-        # Create and save the user
+        # Create user
         user = CustomUser.objects.create_user(
             email=user_data['email'],
             first_name=user_data['first_name'],
@@ -200,12 +197,10 @@ def activate(request, uidb64, token):
         user.is_active = True
         user.save()
 
-        # Clear the session data
-        del request.session['pending_user_data']
-
-        # Log the user in
+        # Clear cached data
+        cache.delete(token)
         login(request, user)
-        messages.success(request, "Your account has been successfully activated!")
+        messages.success(request, "Account activated successfully!")
         return redirect("home")
     except Exception as e:
         return HttpResponse("Activation link is invalid!")

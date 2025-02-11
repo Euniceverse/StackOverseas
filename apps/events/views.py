@@ -14,7 +14,7 @@ def eventspage(request):
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
     return render(request, "events.html", {"news_list": news_list})
 
- class StandardResultsSetPagination(PageNumberPagination):
+class StandardResultsSetPagination(PageNumberPagination):
     """Pagination for API"""
     page_size = 10
     page_size_query_param = "page_size"

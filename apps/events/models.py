@@ -11,8 +11,6 @@ class Event(models.Model):
 
     societies = models.ManyToManyField(
         Society,
-        through="Host",
-        through_fields=("society", "event"),
     )
 
     name = models.CharField(
@@ -23,8 +21,17 @@ class Event(models.Model):
         max_length=MAX_DESCRIPTION,
     )
 
-    date = models.DateTimeField(
+    date = models.DateField(
         null=False,
+    )
+
+    start_time = models.TimeField(
+        null=False,
+    )
+
+    end_time = models.TimeField(
+        null=True,
+        blank=True,
     )
 
     event_type = models.CharField(

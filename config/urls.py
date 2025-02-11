@@ -18,11 +18,14 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+from .views import homepage
 from apps.users.views import home
 from apps.users import views
-
+from apps.societies.views import top_societies
+ 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', top_societies, name='homepage'),
     path('', home, name='home'),
     path('log_in/', views.LogInView.as_view(), name='log_in'),
     path('log_out/', views.log_out, name='log_out'),
@@ -33,6 +36,7 @@ urlpatterns = [
     path('news/', include('apps.news.urls')),
     path('societies/', include('apps.societies.urls')),
     path('users/', include('apps.users.urls')),
+
 ]
 
 # Serve media files during development

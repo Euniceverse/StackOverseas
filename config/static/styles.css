@@ -4,7 +4,7 @@
     padding: 0;
     font-family: 'Kanit', sans-serif;
   }
-  
+
   .bg-light{
     background-color: #D6EEFF;
   }
@@ -14,23 +14,23 @@
     min-height: auto;
     background-color: #89b9da;
   }
-  
+
   .header-short{
     min-height: 4vh;
   }
-  
+
   /*-----search bar-----*/
   .web-search-container {
     display: flex;
-    align-items: center; 
-    gap: 20px;  
+    align-items: center;
+    gap: 20px;
     position: relative;
     padding: 10px 20px;
   }
 
   .web-container h1 {
     font-size: 50px;
-    white-space: nowrap; 
+    white-space: nowrap;
   }
 
   .search-container {
@@ -79,7 +79,7 @@
     background-color: #133C55;
     color: white;
   }
-  
+
   .nav-links ul{
     list-style: none;
     display: flex;
@@ -87,18 +87,18 @@
     gap: 200px;
     padding: 10px 0;
   }
-  
+
   .nav-links ul li{
     padding: 8px 12x;
     position: relative;
   }
-  
+
   .nav-links ul li a{
     color: #fff;
     text-decoration: none;
     font-size: 13px;
   }
-  
+
   .nav-links ul li::after{
     content: '';
     width: 0%;
@@ -108,11 +108,11 @@
     margin: auto;
     transition: 0.5s;
   }
-  
+
   .nav-links ul li:hover:after{
     width: 100%;
   }
-  
+
   .nav-links ul li {
     position: relative;
   }

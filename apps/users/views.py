@@ -17,6 +17,10 @@ def home(request):
 
     return render(request, 'home.html', {'user': request.user})
 
+def accountpage(request):
+    """User account page view."""
+    return render(request, "users/account.html")  # Make sure "account.html" exists
+
 
 class LoginProhibitedMixin:
     """Mixin that redirects when a user is logged in."""
@@ -131,3 +135,4 @@ class SignUpView(LoginProhibitedMixin, FormView):
 
     def get_success_url(self):
         return reverse(settings.REDIRECT_URL_WHEN_LOGGED_IN)
+

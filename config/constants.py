@@ -13,7 +13,7 @@ SOCIETY_TYPE_CHOICES = [
     ("arts", "Arts"),
     ("cultural", "Cultural"),
     ("social", "Social"),
-    ("Other", "Other")
+    ("other", "Other")
 ]
 
 EVENT_TYPE_CHOICES = [
@@ -30,3 +30,4 @@ REGISTRATION_STATUS_CHOICES = [
     ('waitlisted', 'Waitlisted'),
     ('rejected', 'Rejected'),
 ]
+

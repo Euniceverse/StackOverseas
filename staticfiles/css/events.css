@@ -1,0 +1,22 @@
+#event-slide-panel {
+    width: 350px;
+    position: fixed;
+    right: -350px; /* ✅ Start hidden */
+    top: 0;
+    height: 100%;
+    background: white;
+    border-left: 2px solid #ccc;
+    padding: 20px;
+    box-shadow: -3px 0 5px rgba(0, 0, 0, 0.2);
+    transition: right 0.3s ease-in-out; /* ✅ Smooth sliding animation */
+    display: block; /* ✅ Sidebar is technically there but hidden */
+}
+
+#calendar-container {
+    width: 100%; /* ✅ Full width until sidebar appears */
+    transition: margin-right 0.3s ease-in-out;
+}
+
+.show-sidebar {
+    right: 0 !important; /* ✅ Slide in */
+}

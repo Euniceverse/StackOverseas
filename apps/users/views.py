@@ -10,21 +10,8 @@ from django.urls import reverse
 from apps.users.forms import SignUpForm, LogInForm, PasswordForm, UserForm
 from apps.users.models import CustomUser
 
-def home(request):
-    """Display the main page.
-    Shows login/signup buttons for anonymous users,
-    and user-specific content for authenticated users."""
-
-    return render(request, 'home.html', {'user': request.user})
-
 def accountpage(request):
-    return render(request, "users/account.html")
-
-
-
-def accountpage(request):
-    return render(request, "users/accountpage.html")
-
+    return render(request, "account.html")
 
 class LoginProhibitedMixin:
     """Mixin that redirects when a user is logged in."""

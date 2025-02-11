@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-import os
+from django.contrib.messages import constants as messages
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'widget_tweaks',
+
     'apps.events',
     'apps.news',
     'apps.societies',
@@ -74,14 +76,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# URL to serve static files
-STATIC_URL = '/static/'
+# Media Files
+MEDIA_URL = 'media/'
 
-STATICFILES_DIRS = [
-    BASE_DIR / "config" / "static",
-]
+MEDIA_ROOT = BASE_DIR / 'config' / 'media'
 
-STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -116,9 +115,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en-gb'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/London'
 
 USE_I18N = True
 
@@ -130,7 +129,50 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATICFILES_DIRS = [
+    BASE_DIR / "config" / "static",
+]
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# User model for authentication and login purposes
+AUTH_USER_MODEL = 'users.CustomUser'
+
+# Login URL for redirecting users from login protected views
+LOGIN_URL = 'log_in'
+
+# URL where @login_prohibited redirects to
+REDIRECT_URL_WHEN_LOGGED_IN = 'home'
+
+# Convert Django ERROR messages to Bootstrap DANGER messages
+MESSAGE_TAGS = {
+    messages.ERROR: 'danger',
+}
+
+
+# Allowed types of societies
+ALLOWED_SOCIETY_TYPES = [
+    "Sports",
+    "Culture",
+    "Langauge",
+    "Academia",
+    "Games",
+    "Arts",
+    "Other"
+]
+
+# Choices for event type
+EVENT_TYPE_CHOICES = [
+    ('sports', 'Sports'),
+    ('academic', 'Academic'),
+    ('arts', 'Arts'),
+    ('cultural', 'Cultural'),
+    ('social', 'Social'),
+    ('other', 'Other'),
+    ]

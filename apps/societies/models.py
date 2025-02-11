@@ -1,5 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
+from django.apps import apps
 
 class Society(models.Model):
     
@@ -20,11 +21,21 @@ class Society(models.Model):
     membership_request_required = models.BooleanField(default=False)
     
     
-    manager = models.ForeignKey(User, on_delete=models.CASCADE, related_name="managed_societies", null=True, blank=True) # add null true and black true for testing purposes
+    manager = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE,
+        related_name="managed_societies"
+    )
+
 
     # Check whether this society is approved and can be customise
     def is_customisable(self):
         return self.status == 'approved'
+    
+    def get_events(self):
+        """Lazy reference to events to avoid circular dependency."""
+        Event = apps.get_model("events", "Event")
+        return Event.objects.filter(host__society=self)
 
     def __str__(self):
         return f"{self.name} ({self.get_status_display()})"

@@ -1,4 +1,7 @@
 from django.db import models
+from config.constants import MAX_NAME, MAX_DESCRIPTION, MAX_LOCATION, EVENT_TYPE_CHOICES, REGISTRATION_STATUS_CHOICES
+from django.core.validators import MinValueValidator
+from decimal import Decimal
 from django.conf import settings
 from apps.societies.models import Society
 from django.conf import settings
@@ -6,43 +9,64 @@ from django.conf import settings
 class Event(models.Model):
     """Model representing an event (e.g. a student society meetup)."""
 
-    event_type = models.CharField(max_length=20, choices=settings.EVENT_TYPE_CHOICES, default='other')
-
-    society = models.ForeignKey(
-        Society,
-        on_delete=models.CASCADE,
-        related_name='events'
+    name = models.CharField(
+        max_length=MAX_NAME,
     )
 
-    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(
+        max_length=MAX_DESCRIPTION,
+    )
+
+    date = models.DateTimeField(
+        null=False,
+    )
+
+    event_type = models.CharField(
+        max_length=50,
+        choices=EVENT_TYPE_CHOICES
+    )
+
+    keyword = models.CharField(
+      max_length=50,
+    )
+
     location = models.CharField(
-        max_length=255,
-        help_text="Specify a city (e.g. 'Manchester') or 'Online'."
+        max_length=MAX_LOCATION
     )
-    date = models.DateTimeField()
-    event_type = models.CharField(max_length=50, choices=settings.EVENT_TYPE_CHOICES)
-    keyword = models.CharField(max_length=50, help_text="Tag or keyword for searching (e.g. 'chess').")
 
-    # True if free, False if paid
+    capacity = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1)]
+    )
+
+    member_only = models.BooleanField(
+        default=False,
+    )
+
+    fee = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        validators=[MinValueValidator(Decimal("0.00"))]
+    )    
+
     is_free = models.BooleanField(default=True)
-
-    # True if only society members can attend, False if open to everyone
-    members_only = models.BooleanField(default=False)
-
-    # Maximum number of attendees
-    capacity = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"{self.name} - {self.event_type}"
 
+class Host(models.Model):
+    """Model for Host of Event as many-to-many relationship between Event and Society."""
+
+    event = models.ForeignKey("events.Event", on_delete=models.CASCADE)
+    society = models.ForeignKey("societies.Society", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.society.name} hosts {self.event.name}"
+
 class EventRegistration(models.Model):
     """Model representing a user's sign‐up to an event, along with their acceptance/waitlist/rejection status."""
-
-    REGISTRATION_STATUS_CHOICES = [
-        ('accepted', 'Accepted'),
-        ('waitlisted', 'Waitlisted'),
-        ('rejected', 'Rejected'),
-    ]
 
     event = models.ForeignKey(
         Event,

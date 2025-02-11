@@ -22,6 +22,10 @@ def accountpage(request):
 
 
 
+def accountpage(request):
+    return render(request, "users/accountpage.html")
+
+
 class LoginProhibitedMixin:
     """Mixin that redirects when a user is logged in."""
 

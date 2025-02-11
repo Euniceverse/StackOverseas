@@ -8,6 +8,35 @@
 {% block content %}
     <h1>Welcome to Stack Overseas Societies!</h1>
     <p>Find and join societies that interest you.</p>
+    <!-- Overall Top 5 Societies -->
+    <h2>Overall Top 5 Societies</h2>
+    <div class="society-container">
+        {% for society in top_overall_societies %}
+            <div class="society-box">
+                <h3>{{ society.name }}</h3>
+                <p>Members: {{ society.members_count }}</p>
+            </div>
+        {% empty %}
+            <p>No societies found.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Top 5 Societies Per Type -->
+    {% for society_type, societies in top_societies_per_type.items %}
+        <h3>Top 5 {{ society_type }} Societies</h3>
+        <div class="society-container">
+            {% for society in societies %}
+                <div class="society-box">
+                    <h3>{{ society.name }}</h3>
+                    <p>Members: {{ society.members_count }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+
+    <!-- Button to View All Societies -->
+    <a href="{% url 'societiespage' %}" class="btn btn-primary">View All Societies</a>
+
 {% endblock %}
 
 {% block news_panel %}

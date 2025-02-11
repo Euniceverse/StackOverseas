@@ -25,7 +25,7 @@ from apps.societies.views import top_societies
  
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', top_societies, name='homepage'),
+    path('', top_societies, name='home'),
     path('', home, name='home'),
     path('log_in/', views.LogInView.as_view(), name='log_in'),
     path('log_out/', views.log_out, name='log_out'),

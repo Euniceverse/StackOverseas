@@ -10,6 +10,9 @@ from django.conf import settings
 class Event(models.Model):
     """Model representing an event (e.g. a student society meetup)."""
 
+    societies = models.ManyToManyField(
+        Society,
+    )
     name = models.CharField(
         max_length=MAX_NAME,
     )
@@ -18,8 +21,17 @@ class Event(models.Model):
         max_length=MAX_DESCRIPTION,
     )
 
-    date = models.DateTimeField(
+    date = models.DateField(
         null=False,
+    )
+
+    start_time = models.TimeField(
+        null=False,
+    )
+
+    end_time = models.TimeField(
+        null=True,
+        blank=True,
     )
 
     event_type = models.CharField(

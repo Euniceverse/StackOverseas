@@ -34,6 +34,9 @@ def accountpage(request):
 def accountpage(request):
     return render(request, "users/accountpage.html")
 '''
+def accountpage(request):
+    """User account page view."""
+    return render(request, "users/account.html")  # Make sure "account.html" exists
 
 
 class LoginProhibitedMixin:
@@ -215,3 +218,4 @@ def activate(request, uidb64, token):
         return redirect("home")
     except Exception as e:
         return HttpResponse("Activation link is invalid!")
+

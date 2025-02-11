@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.apps import apps
-
+from django.contrib.auth.models import User
 
 class Society(models.Model):
 
@@ -28,9 +28,7 @@ class Society(models.Model):
         on_delete=models.CASCADE,
         related_name="managed_societies"
     )
-
-
-
+  
     # Check whether this society is approved and can be customise
     def is_customisable(self):
         return self.status == 'approved'

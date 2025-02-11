@@ -1,7 +1,51 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
 
-{% block title %}
-Events
+{% block content %}
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/events.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js" defer></script>
+    <script src="{% static 'js/events.js' %}" defer></script>
+
+    <div class="header">
+        <div class="title">
+            <h>🗓️ Event Calendar</h>
+        </div>
+        <div class="search">
+            <p>search</p>
+        </div>
+    </div>
+    <hr>
+
+    <div class="event-calendar"> 
+        <div class="container-calendar">
+            <div id="calendar"></div> 
+        </div>
+        <div class="container-event-detail">
+            <div id="event-detail">
+                <span class="container-close">
+                    <div id="event-detail-close">
+                        <strong>></strong>
+                    </div>
+                </span>
+                <span class="empty">
+                </span>
+                <span class="event-detail-title">
+                    <strong>Event Details</strong>
+                </span>
+    
+                <div class="event-detail-attributes">
+                    <p><strong>Name:</strong> <span id="event-name">-</span></p>
+                    <p><strong>Date:</strong> <span id="event-date">-</span></p>
+                    <p><strong>Time:</strong> <span id="event-time">-</span></p>
+                    <p><strong>Location:</strong> <span id="event-location">-</span></p>
+                    <p><strong>Fee:</strong> <span id="event-fee">-</span></p>
+                    <p><strong>Description:</strong> <span id="event-description">-</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}
 
 {% block content %}

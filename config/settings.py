@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'widget_tweaks',
+
     'apps.events',
     'apps.news',
     'apps.societies',
@@ -87,14 +88,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# URL to serve static files
-STATIC_URL = '/static/'
+# Media Files
+MEDIA_URL = 'media/'
 
-STATICFILES_DIRS = [
-    BASE_DIR / "config" / "static",
-]
+MEDIA_ROOT = BASE_DIR / 'config' / 'media'
 
-STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -143,6 +141,12 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATICFILES_DIRS = [
+    BASE_DIR / "config" / "static",
+]
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -163,6 +167,29 @@ MESSAGE_TAGS = {
     messages.ERROR: 'danger',
 }
 
+
+
+# Allowed types of societies
+ALLOWED_SOCIETY_TYPES = [
+    "Sports",
+    "Culture",
+    "Langauge",
+    "Academia",
+    "Games",
+    "Arts",
+    "Other"
+]
+
+# Choices for event type
+EVENT_TYPE_CHOICES = [
+    ('sports', 'Sports'),
+    ('academic', 'Academic'),
+    ('arts', 'Arts'),
+    ('cultural', 'Cultural'),
+    ('social', 'Social'),
+    ('other', 'Other'),
+    ]
+
 # Add this after INSTALLED_APPS
 SITE_ID = 1
 
@@ -179,3 +206,4 @@ CACHES = {
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 DOMAIN_NAME = "127.0.0.1:8000"  # Change this if running on another port
+

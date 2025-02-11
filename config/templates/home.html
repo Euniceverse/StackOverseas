@@ -1,10 +1,14 @@
 {% extends 'base.html' %}
 
-{% block title %}Home - Student Societies{% endblock %}
+{% block title %}
+    Home - Student Societies
+{% endblock %}
 
-{% block body %}
-    <div class="container">
-        <h1>Welcome to Student Societies</h1>
-        <p>Discover and join societies that match your interests.</p>
-    </div>
+{% block content %}
+    <h1>Welcome to Stack Overseas Societies!</h1>
+    <p>Find and join societies that interest you.</p>
+{% endblock %}
+
+{% block news_panel %}
+    {% include 'news-panel.html' %}
 {% endblock %}

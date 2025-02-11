@@ -25,6 +25,17 @@ def home(request):
 
     return render(request, 'home.html', {'user': request.user})
 
+'''
+def accountpage(request):
+    return render(request, "users/account.html")
+
+
+
+def accountpage(request):
+    return render(request, "users/accountpage.html")
+'''
+
+
 class LoginProhibitedMixin:
     """Mixin that redirects when a user is logged in."""
 

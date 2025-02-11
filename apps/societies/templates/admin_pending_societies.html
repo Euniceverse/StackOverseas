@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin - Pending Societies{% endblock %}
+
+{% block content %}
+  <h2>Pending Societies</h2>
+
+  <!-- Display success/error messages if any -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  {% if pending_socs %}
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Created By</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for soc in pending_socs %}
+        <tr>
+          <td>{{ soc.name }}</td>
+          <td>{{ soc.society_type }}</td>
+          <td>{{ soc.manager }}</td>
+          <td>
+            <!-- Approve button -->
+            <a href="{% url 'admin_confirm_society_decision' soc.id 'approve' %}" 
+               class="btn btn-success btn-sm">
+               Approve
+            </a>
+            
+            <!-- Reject button -->
+            <a href="{% url 'admin_confirm_society_decision' soc.id 'reject' %}" 
+               class="btn btn-danger btn-sm">
+               Reject
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No pending societies at this time.</p>
+  {% endif %}
+{% endblock %}

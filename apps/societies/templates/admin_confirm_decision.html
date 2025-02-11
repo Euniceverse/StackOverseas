@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Confirm {{ action|title }} - {{ society.name }}
+{% endblock %}
+
+{% block content %}
+  <h2>Confirm {{ action|title }}</h2>
+
+  <p>You are about to <strong>{{ action }}</strong> the society: <strong>{{ society.name }}</strong>.</p>
+  <p>Are you sure you want to proceed?</p>
+
+  <form method="POST">
+    {% csrf_token %}
+    <button type="submit" name="confirm" class="btn btn-primary">Confirm</button>
+    <button type="submit" name="cancel" class="btn btn-secondary">Cancel</button>
+  </form>
+{% endblock %}

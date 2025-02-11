@@ -17,7 +17,18 @@ class Society(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     membership_request_required = models.BooleanField(default=False)
-    manager = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="managed_societies")
+
+    visibility = models.CharField(
+        max_length=7,  # private or public
+        choices=VISIBILITY_CHOICES,
+        default='Private'
+    )
+
+    manager = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="managed_societies"
+    )
 
     # Check whether this society is approved and can be customise
     def is_customisable(self):

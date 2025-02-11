@@ -25,6 +25,10 @@ def top_societies(request):
 
     top_overall_societies = Society.objects.order_by('-members_count')[:5]
 
+    print("Top Overall Societies:", list(top_overall_societies))
+    print("Top Societies Per Type:", top_societies_per_type)
+
+
     return render(request, "homepage.html", {
         "top_societies_per_type": top_societies_per_type,
         "top_overall_societies": top_overall_societies,

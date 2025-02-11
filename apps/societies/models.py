@@ -20,7 +20,7 @@ class Society(models.Model):
     membership_request_required = models.BooleanField(default=False)
     
     
-    manager = models.ForeignKey(User, on_delete=models.CASCADE, related_name="managed_societies")
+    manager = models.ForeignKey(User, on_delete=models.CASCADE, related_name="managed_societies", null=True, blank=True) # add null true and black true for testing purposes
 
     # Check whether this society is approved and can be customise
     def is_customisable(self):

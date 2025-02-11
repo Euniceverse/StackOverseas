@@ -17,10 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from .views import homepage
+from apps.societies.views import top_societies
  
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', homepage, name='homepage'),
+    path('', top_societies, name='homepage'),
     path('events/', include('apps.events.urls')),
     path('news/', include('apps.news.urls')),
     path('societies/', include('apps.societies.urls')),

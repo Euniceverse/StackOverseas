@@ -29,8 +29,13 @@ def create_news(request):
         if form.is_valid():
             news = form.save(commit=False)
             
-            # ensure user is actually manager of a society
-            if news.society not in managed_societies:
+            try:
+                selected_society = Society.objects.get(id=int(request.POST["society"]))
+            except (Society.DoesNotExist, ValueError):
+                messages.error(request, "Invalid society selection.")
+                return redirect("create_news")
+
+            if not managed_societies.filter(id=selected_society.id).exists():
                 messages.error(request, "You are not authorized to post news for this society.")
                 return redirect("create_news")
 
@@ -47,4 +52,4 @@ def create_news(request):
     else:
         form = NewsForm(user=request.user)
 
-    return render(request, "news/create_news.html", {"form": form})
+    return render(request, "create_news.html", {"form": form})

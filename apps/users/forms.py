@@ -83,33 +83,48 @@ class PasswordForm(NewPasswordMixin):
             self.user.save()
         return self.user
 
-
-class SignUpForm(NewPasswordMixin, forms.ModelForm):
+class SignUpForm(forms.ModelForm):
     """Form enabling unregistered users to sign up."""
-    class Meta:
-        """Form options."""
 
+    class Meta:
         model = CustomUser
         fields = ['email', 'first_name', 'last_name', 'preferred_name']
 
+    new_password = forms.CharField(
+        label='Password',
+        widget=forms.PasswordInput(),
+        validators=[
+            RegexValidator(
+                regex=r'^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).*$',
+                message='Password must contain an uppercase character, a lowercase character and a number'
+            )
+        ]
+    )
+    password_confirmation = forms.CharField(label='Password confirmation', widget=forms.PasswordInput())
+
     def clean_email(self):
-        """Validate that the email is a .ac.uk address."""
+        """Validate that the email is a .ac.uk address and not already registered."""
         email = self.cleaned_data.get('email')
         if not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.ac\.uk$", email):
             raise forms.ValidationError("Only .ac.uk email addresses are allowed.")
+
+        # Check if email exists in database
+        if CustomUser.objects.filter(email=email).exists():
+            raise forms.ValidationError("This email is already registered.")
+
         return email
 
+    def clean(self):
+        """Clean the data and generate messages for any errors."""
+        super().clean()
+        new_password = self.cleaned_data.get('new_password')
+        password_confirmation = self.cleaned_data.get('password_confirmation')
+        if new_password != password_confirmation:
+            self.add_error('password_confirmation', 'Confirmation does not match password.')
 
-    def save(self):
-        """Create a new user."""
-
-        super().save(commit=False)
-        user = CustomUser.objects.create_user(
-            email=self.cleaned_data.get('email'),
-            first_name=self.cleaned_data.get('first_name'),
-            last_name=self.cleaned_data.get('last_name'),
-            preferred_name=self.cleaned_data.get('preferred_name'),
-            password=self.cleaned_data.get('new_password'),
-        )
-
+    def save(self, commit=False):
+        """Don't save the user - just return the unsaved user object."""
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data["new_password"])
+        user.is_active = False
         return user

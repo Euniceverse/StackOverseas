@@ -10,7 +10,7 @@ from django.test import TestCase
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from datetime import timedelta
-from users.models import CustomUser
+from apps.users.models import CustomUser
 
 class CustomUserModelTest(TestCase):
 

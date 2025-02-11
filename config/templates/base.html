@@ -27,6 +27,7 @@
                     </form>
                 </div>
             </div>
+            <!-- Navbar -->
             <nav>
                 <div class="nav-links">
                     <ul>
@@ -53,7 +54,7 @@
                         </li>
                         {% if user.is_authenticated %}
                         <li class="dropdown">
-                            <a href="/account/">MY ACCOUNT</a>
+                            <a href="{% url 'profile' %}">MY ACCOUNT</a>
                             <ul class="dropdown-menu">
                                 <li><a href="{% url 'profile' %}">Update Profile</a></li>
                                 <li><a href="#">My Societies</a></li>

@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.messages import get_messages
-from .models import CustomUser
+from apps.users.models import CustomUser
 
 class HomeViewTest(TestCase):
     def test_home_anonymous(self):

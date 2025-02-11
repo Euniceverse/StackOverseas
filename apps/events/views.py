@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from apps.news.models import News
 from rest_framework import generics, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from apps.events.models import Event
@@ -10,7 +11,10 @@ def eventspage(request):
     """Events page view"""
     return render(request, "events.html")
 
-class StandardResultsSetPagination(PageNumberPagination):
+    news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
+    return render(request, "events.html", {"news_list": news_list})
+
+ class StandardResultsSetPagination(PageNumberPagination):
     """Pagination for API"""
     page_size = 10
     page_size_query_param = "page_size"

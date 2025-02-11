@@ -1,5 +1,10 @@
 from django.shortcuts import render
+from apps.news.models import News
+
+def homepage(request):
+    """Homepage view"""
+    news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]  
+    return render(request, "homepage.html", {"news_list": news_list})
 
 def eventspage(request):
-    """이벤트 페이지를 렌더링"""
-    return render(request, "events/events.html")  # ✅ 올바른 경로인지 확인
+    return render(request, "events/events.html")  

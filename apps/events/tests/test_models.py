@@ -1,8 +1,8 @@
 from django.test import TestCase
 from django.utils import timezone
-from events.models import Event, EventRegistration
+from apps.events.models import Event, EventRegistration
 from django.contrib.auth import get_user_model
-from societies.models import Society
+from apps.societies.models import Society
 
 class EventModelTest(TestCase):
     def setUp(self):
@@ -12,7 +12,7 @@ class EventModelTest(TestCase):
             society_type="sports",
             status="approved"
         )
-        
+
         self.event = Event.objects.create(
             name="Chess Tournament",
             location="Manchester",

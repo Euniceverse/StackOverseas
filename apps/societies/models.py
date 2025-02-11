@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import User
 
 class Society(models.Model):
@@ -19,7 +20,7 @@ class Society(models.Model):
     membership_request_required = models.BooleanField(default=False)
     
     
-    manager = models.ForeignKey(User, on_delete=models.CASCADE, related_name="managed_societies")
+    manager = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     # Check whether this society is approved and can be customise
     def is_customisable(self):

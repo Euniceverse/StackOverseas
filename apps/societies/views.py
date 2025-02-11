@@ -35,7 +35,7 @@ def top_societies(request):
     print("Top Societies Per Type:", top_societies_per_type)
 
 
-    return render(request, "homepage.html", {
+    return render(request, "home.html", {
         "top_societies_per_type": top_societies_per_type,
         "top_overall_societies": top_overall_societies,
     })

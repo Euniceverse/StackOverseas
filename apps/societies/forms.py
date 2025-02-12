@@ -30,7 +30,3 @@ class NewSocietyForm(forms.Form):
         required=False,
         help_text="Comma-separated tags (e.g. 'music, live events')"
     )
-    
-    visibility = forms.ChoiceField(
-        choices=VISIBILITY_CHOICES
-    )

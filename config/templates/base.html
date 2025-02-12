@@ -12,21 +12,29 @@
         <title>{% block title %}Student Societies{% endblock %}</title>
     </head>
     <body>
-        <!-- Navbar and Header -->
         <section class="header">
-            <div class="top-bar">
-                <div class="web-container">
-                    <h1 class="web-name">Stack Overseas Universal Societies</h1>
-                </div>
-                <div class="search-container">
-                    <form action="/search" method="GET" class="search-form">
-                        <input type="text" name="q" placeholder="Search for societies..." class="search-input">
-                        <button type="submit" class="search-button">
-                            <i class="fa fa-search"></i>
-                        </button>
-                    </form>
+            <div class="top-bar container my-2">
+                <div class="row align-items-center">
+
+                    <!-- Site Title -->
+                    <div class="col-md-3">
+                        <h1 class="web-name">Stack Overseas Universal Societies</h1>
+                    </div>
+
+                    <!-- Search Bar -->
+                    <div class="col-md-5">
+                        <form action="/search" method="GET" class="d-flex">
+                            <input type="text" name="q" placeholder="Search for societies..." class="form-control me-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </form>
+                    </div>
+
                 </div>
             </div>
+
+
             <!-- Navbar -->
             <nav>
                 <div class="nav-links">
@@ -49,34 +57,41 @@
                                 <li><a href="{% url 'societiespage'%}">All Societies</a></li>
                                 {% if user.is_authenticated %}
                                     <li><a href="#">My Societies</a></li>
-                                    <li>
-                                        <a href="{% url 'create_society' %}">Create New Society</a>
-                                    </li>
                                 {% endif %}
                             </ul>
                         </li>
-                        {% if user.is_authenticated %}
-                        <li class="dropdown">
-                            <a href="{% url 'accountpage' %}">MY ACCOUNT</a>
-                            <ul class="dropdown-menu">
-                                <li><a href="{% url 'profile' %}">Update Profile</a></li>
-                                <li><a href="#">My Societies</a></li>
-                                <li><a href="{% url 'password' %}">Change Password</a></li>
-                                <li><a href="{% url 'log_out' %}">Logout</a></li>
-                            </ul>
-                        </li>
-                        {% else %}
-                        <li>
-                            <a href="{% url 'log_in' %}">LOG IN</a>
-                        </li>
-                        {% endif %}
-
-                        {% if user.is_staff or user.is_superuser %}
-                            <li>
-                              <a href="{% url 'admin_pending_societies' %}">Admin: Pending Societies</a>
-                            </li>
-                        {% endif %}
-                    </ul>
+                        
+                        <!-- If user is logged in, show "Create New Society" button, if not, show "Log In" button -->
+                             {% if user.is_authenticated %}
+                             <li>
+                                 <a href="{% url 'create_society' %}">CREATE NEW SOCIETY</a>
+                             </li>
+                         {% else %}
+                             <li>
+                                 <a href="{% url 'log_in' %}">LOG IN</a>
+                             </li>
+                         {% endif %}
+ 
+                         <!-- MY ACCOUNT DROPDOWN (only if logged in) -->
+                         {% if user.is_authenticated %}
+                             <li class="dropdown">
+                                 <a href="{% url 'accountpage' %}">MY ACCOUNT</a>
+                                 <ul class="dropdown-menu">
+                                     <li><a href="{% url 'profile' %}">Update Profile</a></li>
+                                     <li><a href="#">My Societies</a></li>
+                                     <li><a href="{% url 'password' %}">Change Password</a></li>
+                                     <li><a href="{% url 'log_out' %}">Logout</a></li>
+                                 </ul>
+                             </li>
+                         {% endif %}
+ 
+                         <!-- ADMIN: Pending Societies (admin only) -->
+                         {% if user.is_staff or user.is_superuser %}
+                             <li>
+                               <a href="{% url 'admin_pending_societies' %}">Admin: Pending Societies</a>
+                             </li>
+                         {% endif %}
+                     </ul>
                 </div>
             </nav>
         </section>

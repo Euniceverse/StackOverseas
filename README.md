@@ -3,7 +3,7 @@
 ## Team members
 The members of the team are:
 - Hayeong Lee (k21189777)
-- Isabella Landgrebe (k)
+- Isabella Landgrebe (k23001579)
 - Chen Wang (k)
 - Saruta Kittipattananon (k)
 - Nehir Bektas (k21153319)

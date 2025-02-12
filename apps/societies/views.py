@@ -3,17 +3,18 @@ from django.shortcuts import render, redirect
 from .models import Society
 from django.contrib import messages
 from django.urls import reverse
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 from .forms import NewSocietyForm
 from apps.news.models import News
 from django.db.models import Count
+from django.shortcuts import render, redirect, get_object_or_404
 
 
 
 def societiespage(request):
     # template = get_template('societies.html')
-    societies = Society.objects.all()  # Fetch all societies
+    societies = Society.objects.all()  # fetch all societies
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
     return render(request, "societies.html", {'societies': societies, "news_list": news_list})
 
@@ -29,6 +30,7 @@ def create_society(request):
 
     if request.method == "POST":
         form = NewSocietyForm(request.POST)
+
         if form.is_valid():
         
             new_society = Society.objects.create(
@@ -36,7 +38,8 @@ def create_society(request):
                 description=form.cleaned_data['description'],
                 society_type=form.cleaned_data['society_type'],
                 manager=request.user, 
-                status='pending'  # initially set to pending
+                status='pending',  # initially set to pending
+                visibility='Private'
             )
 
             messages.success(request, "Society created. Status pending.")

@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import societiespage, create_society, top_societies
- 
+from .views import societiespage, create_society, top_societies, admin_pending_societies, admin_confirm_society_decision
+
 urlpatterns = [
     path('', societiespage, name='societiespage'),
     path('list/', top_societies, name='top_societies'),    

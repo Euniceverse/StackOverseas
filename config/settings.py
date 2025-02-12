@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from django.contrib.messages import constants as messages
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,6 +29,16 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Email configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'overseasstack@gmail.com'
+EMAIL_HOST_PASSWORD = 'btlmfvczvkrffiiy'
+EMAIL_USE_TLS = True
+PASSWORD_RESET_TIMEOUT = 14400 # 4 hours
+
+
 
 # Application definition
 
@@ -38,7 +49,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'widget_tweaks',
+
     'apps.events',
     'apps.news',
     'apps.societies',
@@ -74,6 +87,12 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+
+# Media Files
+MEDIA_URL = 'media/'
+
+MEDIA_ROOT = BASE_DIR / 'config' / 'media'
+
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -147,3 +166,44 @@ REDIRECT_URL_WHEN_LOGGED_IN = 'home'
 MESSAGE_TAGS = {
     messages.ERROR: 'danger',
 }
+
+
+
+# Allowed types of societies
+ALLOWED_SOCIETY_TYPES = [
+    "Sports",
+    "Culture",
+    "Langauge",
+    "Academia",
+    "Games",
+    "Arts",
+    "Other"
+]
+
+# Choices for event type
+EVENT_TYPE_CHOICES = [
+    ('sports', 'Sports'),
+    ('academic', 'Academic'),
+    ('arts', 'Arts'),
+    ('cultural', 'Cultural'),
+    ('social', 'Social'),
+    ('other', 'Other'),
+    ]
+
+# Add this after INSTALLED_APPS
+SITE_ID = 1
+
+# Cache configuration
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
+
+
+
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+
+DOMAIN_NAME = "127.0.0.1:8000"  # Change this if running on another port
+

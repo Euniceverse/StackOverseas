@@ -2,8 +2,9 @@ from django.db import models
 from django.conf import settings
 from django.apps import apps
 
+
 class Society(models.Model):
-    
+
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('approved', 'Approved'),
@@ -12,10 +13,12 @@ class Society(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField()
-    society_type = models.CharField(max_length=100)  
+    society_type = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    members_count = models.IntegerField(default=0)
+
     membership_request_required = models.BooleanField(default=False)
 
     visibility = models.CharField(

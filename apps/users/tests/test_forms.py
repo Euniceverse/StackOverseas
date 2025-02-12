@@ -1,14 +1,12 @@
 from django.test import TestCase
-from .forms import UserForm, LogInForm, PasswordForm, SignUpForm
-from .models import CustomUser
-from .forms import (
+from apps.users.models import CustomUser
+from apps.users.forms import (
     UserForm,
     LogInForm,
     NewPasswordMixin,
     PasswordForm,
     SignUpForm
 )
-from .models import CustomUser
 
 class UserFormTest(TestCase):
     def test_form_has_correct_fields(self):

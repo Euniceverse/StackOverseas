@@ -27,15 +27,16 @@
                     </form>
                 </div>
             </div>
+            <!-- Navbar -->
             <nav>
                 <div class="nav-links">
                     <ul>
                         <li><a href="/">HOME</a></li>
                         <li class="dropdown">
                             {% if user.is_authenticated %}
-                            <a href="/events/">EVENTS</a>
+                            <a href="{% url 'eventspage' %}">EVENTS</a>
                             <ul class="dropdown-menu">
-                                <li><a href="/events/">All Events</a></li>
+                                <li><a href="{% url 'eventspage' %}">All Events</a></li>
                                     <li><a href="#">My Events</a></li>
                             </ul>
                             {% else %}
@@ -43,9 +44,9 @@
                             {% endif %}
                         </li>
                         <li class="dropdown">
-                            <a href="/societies/">SOCIETIES</a>
+                            <a href="{% url 'societiespage'%}">SOCIETIES</a>
                             <ul class="dropdown-menu">
-                                <li><a href="/societies/">All Societies</a></li>
+                                <li><a href="{% url 'societiespage'%}">All Societies</a></li>
                                 {% if user.is_authenticated %}
                                     <li><a href="#">My Societies</a></li>
                                     <li>
@@ -56,7 +57,7 @@
                         </li>
                         {% if user.is_authenticated %}
                         <li class="dropdown">
-                            <a href="/account/">MY ACCOUNT</a>
+                            <a href="{% url 'accountpage' %}">MY ACCOUNT</a>
                             <ul class="dropdown-menu">
                                 <li><a href="{% url 'profile' %}">Update Profile</a></li>
                                 <li><a href="#">My Societies</a></li>

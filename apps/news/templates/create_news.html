@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Create News{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Create a News Article</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            {{ form.society.label_tag }}
+            {{ form.society }}
+            <small class="text-muted">{{ form.society.help_text }}</small>
+        </div>
+
+        <div class="mb-3">
+            {{ form.title.label_tag }}
+            {{ form.title }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.content.label_tag }}
+            {{ form.content }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.date_posted.label_tag }}
+            {{ form.date_posted }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.image.label_tag }}
+            {{ form.image }}
+        </div>
+
+        <div class="d-flex">
+            <button type="submit" name="save_draft" class="btn btn-secondary me-2">Save as Draft</button>
+            <button type="submit" name="post" class="btn btn-primary">Post</button>
+        </div>    
+    </form>
+</div>
+{% endblock %}

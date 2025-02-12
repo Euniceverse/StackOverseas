@@ -1,6 +1,10 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from societies.models import Society
+from django.contrib.auth import get_user_model
+from django.contrib import messages
+
+from apps.societies.models import Society
 
 class SocietiesViewsTest(TestCase):
     def setUp(self):
@@ -25,9 +29,6 @@ class SocietiesViewsTest(TestCase):
         self.assertEqual(len(response.context['societies']), 2)  # Expecting 2 test societies
         self.assertIn(self.society1, response.context['societies'])
         self.assertIn(self.society2, response.context['societies'])
-from django.test import TestCase
-from django.urls import reverse
-from apps.societies.models import Society
 
 class TopSocietiesViewTest(TestCase):
     #create society test cases for the database
@@ -70,12 +71,7 @@ class TopSocietiesViewTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['top_overall_societies']), 0)
-        self.assertEqual(len(response.context['top_societies_per_type']), 0)from django.test import TestCase, Client
-from django.urls import reverse
-from django.contrib.auth import get_user_model
-from django.contrib import messages
-
-from apps.societies.models import Society
+        self.assertEqual(len(response.context['top_societies_per_type']), 0)
 
 User = get_user_model()
 

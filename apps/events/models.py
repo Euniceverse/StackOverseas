@@ -9,7 +9,7 @@ from django.conf import settings
 
 class Event(models.Model):
     """Model representing an event (e.g. a student society meetup)."""
-
+    
     name = models.CharField(
         max_length=MAX_NAME,
     )
@@ -53,6 +53,9 @@ class Event(models.Model):
     )    
 
     is_free = models.BooleanField(default=True)
+
+    #added this foreign key
+    society = models.ForeignKey(Society, on_delete=models.CASCADE, related_name="events", null=True, blank=True)
 
     def __str__(self):
         return f"{self.name} - {self.event_type}"

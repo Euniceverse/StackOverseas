@@ -48,7 +48,7 @@ def create_society(request):
     else:
         form = NewSocietyForm()
 
-    return render(request, 'societies/create_society.html', {'form': form})
+    return render(request, 'create_society.html', {'form': form})
 
 def admin_check(user):
     return user.is_staff or user.is_superuser

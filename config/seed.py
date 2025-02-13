@@ -31,8 +31,8 @@ def create_dummy_users(n=10):
             last_name=fake.last_name(),
             preferred_name=fake.first_name(),
             password="password123",
-            is_active=True  # Ensure user is active by default
         )
+        # user.is_active=True  # Ensure user is active by default
         users.append(user)
     return users
 
@@ -64,7 +64,7 @@ def create_dummy_events(societies, n=10):
             date=fake.future_datetime(),
             keyword=fake.word(),
             is_free=random.choice([True, False]),
-            members_only=random.choice([True, False]),
+            member_only=random.choice([True, False]),
             capacity=random.randint(10, 500),
         )
         events.append(event)

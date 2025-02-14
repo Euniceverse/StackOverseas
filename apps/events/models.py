@@ -1,5 +1,11 @@
 from django.db import models
-from config.constants import MAX_NAME, MAX_DESCRIPTION, MAX_LOCATION, EVENT_TYPE_CHOICES, REGISTRATION_STATUS_CHOICES
+from config.constants import (
+    MAX_NAME, MAX_DESCRIPTION,
+    MAX_LOCATION,
+    EVENT_TYPE_CHOICES,
+    REGISTRATION_STATUS_CHOICES,
+    MAX_KEYWORD,
+    MAX_DIGIT,)
 from django.core.validators import MinValueValidator
 from decimal import Decimal
 from django.conf import settings
@@ -10,6 +16,10 @@ from django.conf import settings
 class Event(models.Model):
     """Model representing an event (e.g. a student society meetup)."""
     
+    societies = models.ManyToManyField(
+        Society,
+    )
+
     name = models.CharField(
         max_length=MAX_NAME,
     )
@@ -22,13 +32,22 @@ class Event(models.Model):
         null=False,
     )
 
+    start_time = models.TimeField(
+        null=False,
+    )
+
+    end_time = models.TimeField(
+        null=True,
+        blank=True,
+    )
+
     event_type = models.CharField(
         max_length=50,
         choices=EVENT_TYPE_CHOICES
     )
 
     keyword = models.CharField(
-      max_length=50,
+      max_length=MAX_KEYWORD,
     )
 
     location = models.CharField(
@@ -46,16 +65,13 @@ class Event(models.Model):
     )
 
     fee = models.DecimalField(
-        max_digits=10,
+        max_digits=MAX_DIGIT,
         decimal_places=2,
         default=Decimal("0.00"),
         validators=[MinValueValidator(Decimal("0.00"))]
     )    
 
     is_free = models.BooleanField(default=True)
-
-    #added this foreign key
-    society = models.ForeignKey(Society, on_delete=models.CASCADE, related_name="events", null=True, blank=True)
 
     def __str__(self):
         return f"{self.name} - {self.event_type}"

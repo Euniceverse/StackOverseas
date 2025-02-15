@@ -20,7 +20,10 @@ from django.contrib import admin
 from django.urls import path, include
 from .views import home
 from apps.societies.views import top_societies
- 
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent  # ✅ Define BASE_DIR
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home, name='home'),
@@ -33,3 +36,4 @@ urlpatterns = [
 # Serve media files during development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=BASE_DIR / "config/static")

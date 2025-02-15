@@ -58,7 +58,6 @@ def create_dummy_events(societies, n=10):
     for _ in range(n):
         event = Event.objects.create(
             event_type=random.choice([choice[0] for choice in settings.EVENT_TYPE_CHOICES]),
-            society=random.choice(societies),
             name=fake.sentence(nb_words=5),
             location=random.choice(["London", "Manchester", "Online", "Birmingham"]),
             date=fake.future_datetime(),
@@ -66,7 +65,11 @@ def create_dummy_events(societies, n=10):
             is_free=random.choice([True, False]),
             member_only=random.choice([True, False]),
             capacity=random.randint(10, 500),
+            start_time=fake.time_object(),
+            end_time=fake.time_object()
         )
+        event.society.set(random.sample(societies, random.randint(1, 3)))  # Select 1 to 3 societies
+
         events.append(event)
     return events
 

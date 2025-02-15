@@ -51,6 +51,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'widget_tweaks',
+    'rest_framework',
+    'django_filters',
+
 
     'apps.events',
     'apps.news',

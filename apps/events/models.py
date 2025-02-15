@@ -35,7 +35,7 @@ class Event(models.Model):
 
     start_time = models.TimeField(
         null=False,
-        default=datetime.time(9, 0)
+        default=datetime.time(9, 0),
     )
 
     end_time = models.TimeField(

@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 
 from .models import Society
+from .functions import approved_socities, get_societies
 from django.contrib import messages
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -10,11 +11,18 @@ from apps.news.models import News
 from django.db.models import Count
 from django.shortcuts import render, redirect, get_object_or_404
 
+from config.constants import SOCIETY_TYPE_CHOICES
+
 
 
 def societiespage(request):
     # template = get_template('societies.html')
-    societies = Society.objects.all()  # fetch all societies
+    societies = approved_socities()  # fetch all societies
+    news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
+    return render(request, "societies.html", {'societies': societies, "news_list": news_list})
+
+def my_societies(request):
+    societies = get_societies(request.user)
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
     return render(request, "societies.html", {'societies': societies, "news_list": news_list})
 
@@ -91,28 +99,39 @@ def admin_confirm_society_decision(request, society_id, action):
         'society': society,
         'action': action
     })
-def top_societies(request):
+def top_societies():
     """View to show top 5 societies per type and overall"""
 
     # get all the society type
-    society_types = Society.objects.values_list('society_type', flat=True).distinct()
-
+    # society_types = Society.objects.values_list('society_type', flat=True).distinct()
+    
     # a dictionary to start top societies
     top_societies_per_type = {}
+    # print("All Societies:", list(Society.objects.all()))
 
-    for society in society_types:
-        top_societies_per_type[society] = (
-            Society.objects.filter(society_type=society)
-            .order_by('-members_count')[:5]  
+    all_approved_socities = approved_socities()
+
+    for society_type, _ in SOCIETY_TYPE_CHOICES:
+        top_societies_per_type[society_type] = (
+            all_approved_socities.filter(society_type=society_type)
+            .order_by('-members_count')[:5]
         )
 
-    top_overall_societies = Society.objects.order_by('-members_count')[:5]
 
+    # for society in SOCIETY_TYPE_CHOICES[0]:
+    #     top_societies_per_type[society] = (
+    #         Society.objects.filter(society_type=society)
+    #         .order_by('-members_count')[:5]  
+    #     )
+
+    top_overall_societies = Society.objects.order_by('-members_count')[:5]
+    '''
     print("Top Overall Societies:", list(top_overall_societies))
     print("Top Societies Per Type:", top_societies_per_type)
-
-
-    return render(request, "home.html", {
-        "top_societies_per_type": top_societies_per_type,
-        "top_overall_societies": top_overall_societies,
-    })
+    '''
+    return({'top_overall_societies':top_overall_societies,'top_societies_per_type':top_societies_per_type})
+    # return render(request, "home.html", {
+    #     "top_societies_per_type": top_societies_per_type,
+    #     "top_overall_societies": top_overall_societies,
+    #     'user' : request.user
+    # })

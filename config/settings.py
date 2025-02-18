@@ -172,26 +172,9 @@ MESSAGE_TAGS = {
 
 
 
-# Allowed types of societies
-ALLOWED_SOCIETY_TYPES = [
-    "Sports",
-    "Culture",
-    "Langauge",
-    "Academia",
-    "Games",
-    "Arts",
-    "Other"
-]
 
-# Choices for event type
-EVENT_TYPE_CHOICES = [
-    ('sports', 'Sports'),
-    ('academic', 'Academic'),
-    ('arts', 'Arts'),
-    ('cultural', 'Cultural'),
-    ('social', 'Social'),
-    ('other', 'Other'),
-    ]
+
+
 
 # Add this after INSTALLED_APPS
 SITE_ID = 1

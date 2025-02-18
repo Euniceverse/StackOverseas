@@ -4,6 +4,7 @@ import django
 import random
 from faker import Faker
 from django.conf import settings
+import constants
 
 # Set up the project base directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -16,50 +17,84 @@ django.setup()
 from apps.users.models import CustomUser
 from apps.societies.models import Society
 from apps.events.models import Event, EventRegistration
-from config.settings import ALLOWED_SOCIETY_TYPES
+
+
+def random_location():
+    city = random.choice(list(constants.UNI_CHOICES.keys()))
+    while city == "Online":
+        city = random.choice(list(constants.UNI_CHOICES.keys()))
+    return city
 
 # Initialize Faker
 fake = Faker()
 
-def create_dummy_users(n=10):
+def generate_unique_email(first_name, last_name):
+    first_name = first_name.lower()
+    last_name = last_name.lower()
+    
+    # Choose a random uni
+    city = random_location()
+    university = random.choice(constants.UNI_CHOICES[city])
+
+    base_email = f"{first_name}.{last_name}@{university}.ac.uk"
+    email = base_email
+    counter = 1
+
+    # Check if email exists in the database and generate a unique one
+    while CustomUser.objects.filter(email=email).exists():
+        email = f"{first_name}.{last_name}{counter}@{city}.ac.uk"
+        counter += 1
+    
+    return email
+
+def create_dummy_users(n=100):
     """Creates n dummy users with updated attributes."""
     users = []
     for _ in range(n):
+        fake_first_name=fake.first_name()
+        fake_last_name=fake.last_name()
+
         user = CustomUser.objects.create_user(
-            email=fake.email().replace("@example.com", "@uni.ac.uk"),
-            first_name=fake.first_name(),
-            last_name=fake.last_name(),
-            preferred_name=fake.first_name(),
+            first_name=fake_first_name,
+            last_name=fake_last_name,
+            email= generate_unique_email(fake_first_name, fake_last_name), # type: ignore
+            preferred_name=fake_first_name+"y",
             password="password123",
         )
         # user.is_active=True  # Ensure user is active by default
         users.append(user)
     return users
 
-def create_dummy_societies(users, n=5):
+
+
+def create_dummy_societies(users, n=50):
     """Creates n dummy societies with random users as managers and members."""
     societies = []
     for _ in range(n):
         society = Society.objects.create(
             name=fake.company(),
             description=fake.text(),
-            society_type=random.choice(ALLOWED_SOCIETY_TYPES),
+            society_type = random.choice([key for key, _ in constants.SOCIETY_TYPE_CHOICES]),
             status=random.choice(["pending", "approved", "rejected"]),
             manager=random.choice(users),
-            members_count=random.randint(1, 10)  # Assign random members count
+            # members_count=random.randint(1, 10)  # Assign random members count
         )
-        # society.members.set(random.sample(users, random.randint(1, 10)))  # Assign random members
+        if society.status == "approved":
+            society.members.set(random.sample(users, random.randint(1, 10)))  # Assign random members
         societies.append(society)
     return societies
 
-def create_dummy_events(societies, n=10):
+
+
+
+def create_dummy_events(societies, n=70):
     """Creates n dummy events linked to random societies with updated attributes."""
     events = []
     for _ in range(n):
         event = Event.objects.create(
-            event_type=random.choice([choice[0] for choice in settings.EVENT_TYPE_CHOICES]),
+            event_type=random.choice([key for key in constants.EVENT_TYPE_CHOICES]),
             name=fake.sentence(nb_words=5),
-            location=random.choice(["London", "Manchester", "Online", "Birmingham"]),
+            location= random_location,
             date=fake.future_datetime(),
             keyword=fake.word(),
             is_free=random.choice([True, False]),
@@ -68,7 +103,13 @@ def create_dummy_events(societies, n=10):
             start_time=fake.time_object(),
             end_time=fake.time_object()
         )
-        event.society.set(random.sample(societies, random.randint(1, 3)))  # Select 1 to 3 societies
+
+        approved_societies = [s for s in societies if s.status == "approved"]
+
+        if approved_societies:  # Ensure there's at least one approved society
+            event.society.set(random.sample(approved_societies, random.randint(1, min(3, len(approved_societies)))))
+
+        # event.society.set(random.sample(societies, random.randint(1, 3)))  # Select 1 to 3 societies
 
         events.append(event)
     return events

@@ -95,8 +95,9 @@
                 </div>
             </nav>
         </section>
-        <div class="container">
+        <div class="content-container">
             <div class="row">
+                {% block event %}{% endblock %}
                 <!-- Main Content -->
                 <div class="col-md-8">
                     {% block content %}{% endblock %}

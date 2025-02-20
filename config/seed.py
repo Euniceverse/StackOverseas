@@ -100,7 +100,7 @@ def create_dummy_societies(users, n=50):
             # members_count=random.randint(1, 10)  # Assign random members count
         )
         if society.status == "approved":
-            society.members.set(random.sample(users, random.randint(1, users.count())))  # Assign random members
+            society.members.set(random.sample(users, random.randint(1, len(users))))  # Assign random members
         societies.append(society)
     return societies
 

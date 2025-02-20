@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 
 from .models import Society
-from .functions import approved_socities, get_societies
+from .functions import approved_socities, get_societies, manage_societies
 from django.contrib import messages
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -99,6 +99,14 @@ def admin_confirm_society_decision(request, society_id, action):
         'society': society,
         'action': action
     })
+
+
+def manage_societies(request):
+    to_manage = manage_societies()
+    news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
+    return render(request, "societies.html", {'societies': to_manage, "news_list": news_list})
+
+
 def top_societies():
     """View to show top 5 societies per type and overall"""
 
@@ -124,7 +132,7 @@ def top_societies():
     #         .order_by('-members_count')[:5]  
     #     )
 
-    top_overall_societies = Society.objects.order_by('-members_count')[:5]
+    top_overall_societies = all_approved_socities.order_by('-members_count')[:5]
     '''
     print("Top Overall Societies:", list(top_overall_societies))
     print("Top Societies Per Type:", top_societies_per_type)

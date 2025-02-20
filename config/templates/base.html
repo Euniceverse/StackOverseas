@@ -58,6 +58,9 @@
                                 {% if user.is_authenticated %}
                                     <li><a href="{% url 'my_societies'%}">My Societies</a></li>
                                 {% endif %}
+                                {% if user.is_superuser %}
+                                    <li><a href="{% url 'manage_societies'%}">Manage Societies</a></li>
+                                {% endif %}
                             </ul>
                         </li>
                         

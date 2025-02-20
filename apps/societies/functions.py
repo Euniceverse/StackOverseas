@@ -11,3 +11,6 @@ def get_societies(user):
         return Society.objects.filter(status="approved", members=user)
     return approved_socities()
 
+def manage_societies():
+    return Society.objects.filter(status__in=['pending','request_delete'])
+

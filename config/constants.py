@@ -127,7 +127,12 @@ UNI_CHOICES = {
     "Peterborough": ["aru"]
 }
 
-
+SOCIETY_STATUS_CHOICES = [
+    ('accepted', 'Accepted'),
+    ('pending', 'Pending'),
+    ('rejected', 'Rejected'),
+    ('request_delete','Request Delete')
+]
 # SOC_NAMES = 
 
 

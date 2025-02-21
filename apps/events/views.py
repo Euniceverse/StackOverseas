@@ -7,7 +7,7 @@ from .serializers import EventSerializer
 from rest_framework.pagination import PageNumberPagination
 from django.utils.timezone import now, make_aware
 from datetime import datetime
-
+from django.utils import timezone
 def eventspage(request):
     """Events page view"""
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
@@ -39,6 +39,6 @@ class EventDetailAPIView(generics.RetrieveAPIView):
 
 class UpcomingEventsAPIView(generics.ListAPIView):
     """API to list only upcoming events"""
-    queryset = Event.objects.filter(date__gte=now().date())  # Only future events
+    queryset = Event.objects.filter(date__gte=timezone.now())  # Only future events
     serializer_class = EventSerializer
     pagination_class = StandardResultsSetPagination

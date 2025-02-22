@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.contrib import messages
 
 from apps.societies.models import Society, SocietyRegistration
-from apps.users.models import CustomUser
+
 
 class SocietiesViewsTest(TestCase):
     def setUp(self):

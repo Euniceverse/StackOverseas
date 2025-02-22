@@ -1,18 +1,15 @@
-from django.shortcuts import render, redirect
-
-from .models import Society
-from .functions import approved_socities, get_societies
 from django.contrib import messages
-from django.urls import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
-
-from .forms import NewSocietyForm
-from apps.news.models import News
 from django.db.models import Count
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+
+from .models import Society, SocietyRegistration
+from .functions import approved_socities, get_societies
+from .forms import NewSocietyForm
+from apps.news.models import News
 
 from config.constants import SOCIETY_TYPE_CHOICES
-
 
 
 def societiespage(request):
@@ -28,7 +25,7 @@ def my_societies(request):
 
 @login_required
 def create_society(request):
-    """Allow a logged-in user to create a new society, limited to 3 societies max."""
+    """Allow a logged-in user to apply for a new society. Max 3."""
 
     managed_count = Society.objects.filter(manager=request.user).count()
 
@@ -40,17 +37,12 @@ def create_society(request):
         form = NewSocietyForm(request.POST)
 
         if form.is_valid():
-        
-            new_society = Society.objects.create(
-                name=form.cleaned_data['name'],
-                description=form.cleaned_data['description'],
-                society_type=form.cleaned_data['society_type'],
-                manager=request.user, 
-                status='pending',  # initially set to pending
-                visibility='Private'
-            )
+            society_registration = form.save(commit=False)
+            society_registration.applicant = request.user
+            society_registration.status = 'pending'
+            society_registration.save()            
 
-            messages.success(request, "Society created. Status pending.")
+            messages.success(request, "Society application submitted. Awaiting approval.")
         
             return redirect('societiespage')
     else:

@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
 from .models import Society, SocietyRegistration
-from .functions import approved_socities, get_societies
+from .functions import approved_societies, get_societies
 from .forms import NewSocietyForm
 from apps.news.models import News
 
@@ -14,7 +14,7 @@ from config.constants import SOCIETY_TYPE_CHOICES
 
 def societiespage(request):
     # template = get_template('societies.html')
-    societies = approved_socities()  # fetch all societies
+    societies = approved_societies()  # fetch all societies
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
     return render(request, "societies.html", {'societies': societies, "news_list": news_list})
 
@@ -101,11 +101,11 @@ def top_societies():
     top_societies_per_type = {}
     # print("All Societies:", list(Society.objects.all()))
 
-    all_approved_socities = approved_socities()
+    all_approved_societies = approved_societies()
 
     for society_type, _ in SOCIETY_TYPE_CHOICES:
         top_societies_per_type[society_type] = (
-            all_approved_socities.filter(society_type=society_type)
+            all_approved_societies.filter(society_type=society_type)
             .order_by('-members_count')[:5]
         )
 

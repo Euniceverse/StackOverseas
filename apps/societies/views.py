@@ -19,12 +19,12 @@ def societiespage(request):
     # template = get_template('societies.html')
     societies = approved_socities()  # fetch all societies
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
-    return render(request, "societies.html", {'societies': societies, "news_list": news_list, 'page':'All'})
+    return render(request, "societies.html", {'societies': societies, "news_list": news_list})
 
 def my_societies(request):
     societies = get_societies(request.user)
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
-    return render(request, "societies.html", {'societies': societies, "news_list": news_list, 'page':'My'})
+    return render(request, "societies.html", {'societies': societies, "news_list": news_list})
 
 @login_required
 def create_society(request):
@@ -101,10 +101,10 @@ def admin_confirm_society_decision(request, society_id, action):
     })
 
 
-def view_manage_societies(request):
+def manage_societies(request):
     to_manage = manage_societies()
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
-    return render(request, "societies.html", {'societies': to_manage, "news_list": news_list, 'page':'Manange'})
+    return render(request, "societies.html", {'societies': to_manage, "news_list": news_list})
 
 
 def top_societies():

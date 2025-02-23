@@ -128,7 +128,7 @@ UNI_CHOICES = {
 }
 
 SOCIETY_STATUS_CHOICES = [
-    ('approved', 'Approved'),
+    ('accepted', 'Accepted'),
     ('pending', 'Pending'),
     ('rejected', 'Rejected'),
     ('request_delete','Request Delete')

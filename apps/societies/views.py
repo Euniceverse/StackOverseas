@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 
 from .models import Society
-from .functions import approved_socities, get_societies, manage_societies
+from .functions import approved_socities, get_societies
 from django.contrib import messages
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -11,6 +11,8 @@ from apps.news.models import News
 from django.db.models import Count
 from django.shortcuts import render, redirect, get_object_or_404
 
+from django.utils.timezone import now
+
 from config.constants import SOCIETY_TYPE_CHOICES
 
 
@@ -19,12 +21,12 @@ def societiespage(request):
     # template = get_template('societies.html')
     societies = approved_socities()  # fetch all societies
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
-    return render(request, "societies.html", {'societies': societies, "news_list": news_list, 'page':'All'})
+    return render(request, "societies.html", {'societies': societies, "news_list": news_list})
 
 def my_societies(request):
     societies = get_societies(request.user)
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
-    return render(request, "societies.html", {'societies': societies, "news_list": news_list, 'page':'My'})
+    return render(request, "societies.html", {'societies': societies, "news_list": news_list})
 
 @login_required
 def create_society(request):
@@ -100,13 +102,6 @@ def admin_confirm_society_decision(request, society_id, action):
         'action': action
     })
 
-
-def view_manage_societies(request):
-    to_manage = manage_societies()
-    news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
-    return render(request, "societies.html", {'societies': to_manage, "news_list": news_list, 'page':'Manange'})
-
-
 def top_societies():
     """View to show top 5 societies per type and overall"""
 
@@ -132,7 +127,7 @@ def top_societies():
     #         .order_by('-members_count')[:5]  
     #     )
 
-    top_overall_societies = all_approved_socities.order_by('-members_count')[:5]
+    top_overall_societies = Society.objects.order_by('-members_count')[:5]
     '''
     print("Top Overall Societies:", list(top_overall_societies))
     print("Top Societies Per Type:", top_societies_per_type)
@@ -143,3 +138,46 @@ def top_societies():
     #     "top_overall_societies": top_overall_societies,
     #     'user' : request.user
     # })
+
+
+def request_delete_society(request, society_id):
+    """Handles society deletion request based on member count."""
+    society = get_object_or_404(Society, id=society_id, manager=request.user)
+
+    if request.method == "POST":
+        if society.members_count >= 100:
+            # Requires admin approval
+            society.status = 'request_delete'
+            society.visibility = 'Private'  # Make society private
+            messages.info(request, "Your deletion request is pending admin approval.")
+        else:
+            # Auto-delete small societies
+            society.status = 'deleted'
+            messages.success(request, "Your society was automatically deleted.")
+
+        society.updated_at = now()
+        society.save()
+        return redirect('societiespage')
+
+    return render(request, "societies/request_delete_society.html", {"society": society})
+
+@user_passes_test(lambda user: user.is_staff)
+def admin_confirm_delete(request, society_id, action):
+    """Admin can approve or reject deletion requests."""
+    society = get_object_or_404(Society, id=society_id, status='request_delete')
+
+    if request.method == "POST":
+        if action == "approve":
+            society.status = "deleted"
+            messages.success(request, f"Society '{society.name}' has been deleted.")
+        elif action == "reject":
+            society.status = "approved"
+            messages.warning(request, f"Society '{society.name}' deletion request was rejected.")
+
+        society.save()
+        return redirect('admin_review_deletion_requests')
+
+    return render(request, "societies/admin_confirm_delete.html", {
+        "society": society,
+        "action": action
+    })

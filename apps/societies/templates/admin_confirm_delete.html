@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Confirm Deletion</h2>
+<p>Are you sure you want to delete <strong>{{ society.name }}</strong>? This action cannot be undone.</p>
+
+<form method="post">
+    {% csrf_token %}
+    <p>Are you sure you want to {{ action }} the society "{{ society.name }}"?</p>
+    <button type="submit" name="confirm">Confirm</button>
+    <button type="submit" name="cancel">Cancel</button>
+</form>
+
+<a href="{% url 'admin_society_list' %}" class="btn btn-secondary">Cancel</a>
+{% endblock %}

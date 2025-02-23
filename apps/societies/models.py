@@ -13,6 +13,8 @@ class Society(models.Model):
         ('pending', 'Pending'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
+        ('request_delete', 'Request Delete'),
+        ('deleted', 'Deleted'),
     ]
 
     name = models.CharField(max_length=255, unique=True)
@@ -20,7 +22,7 @@ class Society(models.Model):
     society_type = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     
     # Define Many-to-Many field in the Society model instead of User
     members = models.ManyToManyField(CustomUser, related_name="societies", blank=True)

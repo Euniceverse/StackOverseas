@@ -5,15 +5,93 @@
 {% endblock %}
 
 {% block content %}
-    <h1>All News</h1>
+<div class="container mt-4">
+    <h1 class="text-center mb-4">All News</h1>
+
+    <!-- Toggle Button -->
+    <div class="text-center mb-3">
+        <button class="btn btn-secondary" onclick="toggleFilters()">Filter News</button>
+    </div>
+
+    <!-- Filter Form (Hidden by Default) -->
+    <div id="filter-form" class="card p-3 mb-4 shadow-sm" style="display: none;">
+        <form method="GET" action="{% url 'newspage' %}">
+            <div class="row">
+              <!-- Society -->
+              <div class="col-md-4">
+                <label for="society">Society:</label>
+                <select name="society" id="society" class="form-control">
+                    <option value="">All Societies</option>
+                    {% for society in societies %}
+                        <option value="{{ society.id }}" {% if request.GET.society == society.id %}selected{% endif %}>
+                            {{ society.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+              </div>
+
+                <!-- Society Type -->
+                <div class="col-md-4">
+                  <label for="society_type">Society Type:</label>
+                  <select name="society_type" id="society_type" class="form-control">
+                      <option value="">All Types</option>
+                      {% for type, label in SOCIETY_TYPE_CHOICES %}
+                          <option value="{{ type }}" {% if request.GET.society_type == type %}selected{% endif %}>
+                              {{ label }}
+                          </option>
+                      {% endfor %}
+                  </select>
+              </div>
+                <!-- Date Range -->
+                <div class="col-md-4">
+                    <label for="date">Filter by Date:</label>
+                    <select name="date" id="date" class="form-control">
+                        <option value="">Any Date</option>
+                        <option value="today" {% if request.GET.date == "today" %}selected{% endif %}>Today</option>
+                        <option value="this_week" {% if request.GET.date == "this_week" %}selected{% endif %}>This Week</option>
+                        <option value="this_month" {% if request.GET.date == "this_month" %}selected{% endif %}>This Month</option>
+                        <option value="next_3_months" {% if request.GET.date == "next_3_months" %}selected{% endif %}>Next 3 Months</option>
+                        <option value="this_year" {% if request.GET.date == "this_year" %}selected{% endif %}>This Year</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <!-- Member Only News -->
+                <div class="col-md-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="member_only" id="member_only"
+                            {% if request.GET.member_only %}checked{% endif %}>
+                        <label class="form-check-label" for="member_only">Members Only</label>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- News List -->
     {% for news in news_list %}
-        <div class="news-box">
-            <h5>{{ news.title }}</h5>
-            <p class="text-muted">Posted on: {{ news.date_posted }}</p>
-            <p>Society: {{ news.society }}</p>
-            <p>{{ news.content }}</p>
-        </div>
+    <div class="news-box mb-4">
+        <h5>{{ news.title }}</h5>
+        <p class="text-muted">Posted on: {{ news.date_posted }}</p>
+        <p>Society: {{ news.society }}</p>
+        <p>{{ news.content }}</p>
+    </div>
     {% empty %}
-        <p>No news available.</p>
+        <p class="text-center">No news available.</p>
     {% endfor %}
+</div>
+
+<!-- JavaScript to Toggle Filters -->
+<script>
+    function toggleFilters() {
+        let filterForm = document.getElementById("filter-form");
+        filterForm.style.display = filterForm.style.display === "none" ? "block" : "none";
+    }
+</script>
+
 {% endblock %}

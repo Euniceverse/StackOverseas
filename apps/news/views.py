@@ -5,11 +5,19 @@ from apps.societies.models import Society
 from .models import News
 from .forms import NewsForm
 from config.filters import NewsFilter
+from config.constants import SOCIETY_TYPE_CHOICES
 
 def newspage(request):
+    """News page with filtering"""
     news = News.objects.all()
     filtered_news = NewsFilter(request.GET, queryset=news).qs
-    return render(request, "news.html", {"news": filtered_news})
+    societies = Society.objects.filter(status="approved")  # Fetch approved societies
+
+    return render(request, "news.html", {
+        "news_list": filtered_news,
+        "societies": societies,  # Pass societies to template
+        "SOCIETY_TYPE_CHOICES": SOCIETY_TYPE_CHOICES,  # Keep this for society type filter
+    })
 
 
 #def newspage(request):

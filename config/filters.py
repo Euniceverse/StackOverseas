@@ -5,16 +5,32 @@ from apps.societies.models import Society
 from apps.events.models import Event
 from apps.news.models import News
 
+DATE_FILTER_CHOICES = {
+    "today": now().date(),
+    "this_week": now().date() - timedelta(days=7),
+    "this_month": now().date().replace(day=1),
+    "next_3_months": now().date() + timedelta(days=90),
+    "this_year": now().date().replace(month=1, day=1),
+}
 
 class GlobalFilterSet(django_filters.FilterSet):
     """Global filters applied to all models."""
     has_space = django_filters.BooleanFilter(method='filter_has_space')
     location = django_filters.CharFilter(lookup_expr='icontains')
-    society_type = django_filters.CharFilter(lookup_expr='icontains')
+    society = django_filters.ModelChoiceFilter(
+        queryset=Society.objects.filter(status="approved"),  # Show only approved societies
+        empty_label="All Societies"
+    )
+    society_type = django_filters.CharFilter(field_name="society__society_type", lookup_expr="icontains")  # Filter by Society Type
     price_range = django_filters.RangeFilter()
     is_free = django_filters.BooleanFilter(method='filter_is_free')
     member_only = django_filters.BooleanFilter()
-    date = django_filters.DateFilter(method='filter_by_date')
+    date = django_filters.ChoiceFilter(choices=[(key, key) for key in DATE_FILTER_CHOICES], method="filter_by_date")
+
+    def filter_by_date(self, queryset, name, value):
+        if value in DATE_FILTER_CHOICES:
+            return queryset.filter(date_updated__gte=DATE_FILTER_CHOICES[value])
+        return queryset
 
     def filter_has_space(self, queryset, name, value):
         if value:

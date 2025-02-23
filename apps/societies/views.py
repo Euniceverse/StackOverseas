@@ -13,6 +13,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 
 from django.utils.timezone import now
 
+from apps.payments.models import Payment
+
 from config.constants import SOCIETY_TYPE_CHOICES
 
 

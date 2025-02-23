@@ -7,6 +7,7 @@ from .serializers import EventSerializer
 from rest_framework.pagination import PageNumberPagination
 from django.utils.timezone import now, make_aware
 from datetime import datetime
+from apps.payments.models import Payment
 
 def eventspage(request):
     """Events page view"""

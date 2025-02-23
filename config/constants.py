@@ -131,7 +131,8 @@ SOCIETY_STATUS_CHOICES = [
     ('approved', 'Approved'),
     ('pending', 'Pending'),
     ('rejected', 'Rejected'),
-    ('request_delete','Request Delete')
+    ('request_delete','Request Delete'),
+    ('deleted', 'Deleted'),
 ]
 # SOC_NAMES = 
 

@@ -22,8 +22,12 @@ class Society(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     
-    # Define Many-to-Many field in the Society model instead of User
-    members = models.ManyToManyField(CustomUser, related_name="societies", blank=True)
+    members = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, 
+        through="Membership",
+        related_name="societies_joined",
+        blank=True
+    )
 
     members_count = models.IntegerField(default=0)
 
@@ -53,9 +57,121 @@ class Society(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.get_status_display()})"
-    
+
+class MembershipRole(models.TextChoices):
+    MANAGER = 'manager', 'Manager'
+    CO_MANAGER = 'co_manager', 'Co-Manager'
+    EDITOR = 'editor', 'Editor'
+    MEMBER = 'member', 'Member'
+
+class MembershipStatus(models.TextChoices):
+    PENDING = 'pending', 'Pending'
+    APPROVED = 'approved', 'Approved'
+    REJECTED = 'rejected', 'Rejected'
+
+class Membership(models.Model):
+    """
+    Intermediate table linking CustomUser and Society 
+    so each user in a society can have a role and a status.
+    """
+    society = models.ForeignKey(Society, on_delete=models.CASCADE, related_name='society_memberships')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user_memberships')
+    role = models.CharField(max_length=20, choices=MembershipRole.choices, default=MembershipRole.MEMBER)
+    status = models.CharField(max_length=20, choices=MembershipStatus.choices, default=MembershipStatus.PENDING)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.society.name} ({self.role})"
+
 @receiver(m2m_changed, sender=Society.members.through)
 def update_members_count(sender, instance, action, **kwargs):
     if action in ["post_add", "post_remove", "post_clear"]:
         instance.members_count = instance.members.count()
         instance.save()
+
+
+class RequirementType(models.TextChoices):
+    NONE = 'none', 'No Extra Requirements'
+    QUIZ = 'quiz', 'Quiz (Yes/No Questions)'
+    MANUAL = 'manual', 'Manual Approval (Essay/PDF)'
+
+class SocietyRequirement(models.Model):
+    """
+    Defines how a society wants to handle membership applications:
+    1) none -> auto-approve
+    2) quiz -> store up to 5 yes/no questions
+    3) manual -> essay/pdf for manager approval
+    """
+    society = models.OneToOneField(
+        Society,
+        on_delete=models.CASCADE,
+        related_name='requirement'
+    )
+    requirement_type = models.CharField(
+        max_length=10,
+        choices=RequirementType.choices,
+        default=RequirementType.NONE
+    )
+    # For quiz
+    threshold = models.PositiveIntegerField(
+        default=1,
+        help_text="Minimum number of correct answers required for auto-approval."
+    )
+    # For manual
+    requires_essay = models.BooleanField(default=False)
+    requires_portfolio = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Requirement for {self.society.name} ({self.get_requirement_type_display()})"
+
+
+class SocietyQuestion(models.Model):
+    """
+    If requirement_type=quiz, store up to 5 yes/no questions
+    plus the correct boolean answer.
+    """
+    society_requirement = models.ForeignKey(
+        SocietyRequirement,
+        on_delete=models.CASCADE,
+        related_name='questions'
+    )
+    question_text = models.CharField(max_length=255)
+    correct_answer = models.BooleanField()  # True=Yes is correct, False=No is correct
+
+    def __str__(self):
+        return f"Q: {self.question_text} (Correct={self.correct_answer})"
+
+
+class MembershipApplication(models.Model):
+    """
+    Stores the user's actual application or submission,
+    including quiz answers or essay upload. 
+    Managers can view this if manual approval is needed.
+    """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='society_applications'
+    )
+    society = models.ForeignKey(
+        Society,
+        on_delete=models.CASCADE,
+        related_name='applications'
+    )
+    # For quiz answers, store as a JSON or pickled field for simplicity
+    answers_json = models.JSONField(
+        default=dict,
+        blank=True
+    )
+    # For manual essay / portfolio
+    essay_text = models.TextField(blank=True)
+    portfolio_file = models.FileField(
+        upload_to='society_portfolios/',
+        blank=True, null=True
+    )
+    # Track the outcome
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_approved = models.BooleanField(default=False)
+    is_rejected = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Application of {self.user.email} to {self.society.name}"

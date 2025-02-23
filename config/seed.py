@@ -150,11 +150,11 @@ if __name__ == "__main__":
     create_superuser()
 
     # Generate users
-    users = create_dummy_users(100)
+    users = create_dummy_users(50)
     print(f"Created {len(users)} users.")
 
     # Generate societies
-    societies = create_dummy_societies(users, 100)
+    societies = create_dummy_societies(users, 50)
     print(f"Created {len(societies)} societies.")
 
     # Generate events
@@ -162,7 +162,7 @@ if __name__ == "__main__":
     print(f"Created {len(events)} events.")
 
     # Generate event registrations
-    create_dummy_event_registrations(users, events, 50)
+    create_dummy_event_registrations(users, events, 40)
     print("Dummy event registrations created.")
 
     print("Seeding complete!")

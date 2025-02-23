@@ -8,6 +8,8 @@ from rest_framework.pagination import PageNumberPagination
 from django.utils.timezone import now, make_aware
 from datetime import datetime
 from django.utils import timezone
+from config.filters import EventFilter
+
 def eventspage(request):
     """Events page view"""
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
@@ -30,7 +32,7 @@ class EventListAPIView(generics.ListAPIView):
     search_fields = ["name", "description"]
     ordering_fields = ["date", "name"]
     ordering = ["date"]
-
+    filterset_class = EventFilter  # Apply filtering Nehir
 class EventDetailAPIView(generics.RetrieveAPIView):
     """API to get details of a single event"""
     queryset = Event.objects.all()

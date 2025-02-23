@@ -21,11 +21,13 @@ class Society(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
-    
+    location = models.CharField(max_length=100, blank=True, null=True) # Nehir
+
     # Define Many-to-Many field in the Society model instead of User
     members = models.ManyToManyField(CustomUser, related_name="societies", blank=True)
 
     members_count = models.IntegerField(default=0)
+    price_range = models.DecimalField(max_digits=7, decimal_places=2, default=0.00)
 
     membership_request_required = models.BooleanField(default=False)
 
@@ -45,7 +47,7 @@ class Society(models.Model):
     # Check whether this society is approved and can be customise
     def is_customisable(self):
         return self.status == 'approved'
-    
+
     def get_events(self):
         """Lazy reference to events to avoid circular dependency."""
         Event = apps.get_model("events", "Event")
@@ -53,7 +55,7 @@ class Society(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.get_status_display()})"
-    
+
 @receiver(m2m_changed, sender=Society.members.through)
 def update_members_count(sender, instance, action, **kwargs):
     if action in ["post_add", "post_remove", "post_clear"]:

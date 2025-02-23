@@ -1,25 +1,24 @@
-from django.shortcuts import render, redirect
-
-from .models import Society
-from .functions import approved_socities, get_societies
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db.models import Count
 
+from .models import Society
+from .functions import approved_socities, get_societies
 from .forms import NewSocietyForm
 from apps.news.models import News
-from django.db.models import Count
-from django.shortcuts import render, redirect, get_object_or_404
-
+from config.filters import SocietyFilter
 from config.constants import SOCIETY_TYPE_CHOICES
-
-
 
 def societiespage(request):
     # template = get_template('societies.html')
     societies = approved_socities()  # fetch all societies
-    news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
-    return render(request, "societies.html", {'societies': societies, "news_list": news_list})
+    # news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
+    # return render(request, "societies.html", {'societies': societies, "news_list": news_list})
+    filtered_societies = SocietyFilter(request.GET, queryset=societies).qs
+    return render(request, "societies.html", {"societies": filtered_societies})
+
 
 def my_societies(request):
     societies = get_societies(request.user)
@@ -40,18 +39,18 @@ def create_society(request):
         form = NewSocietyForm(request.POST)
 
         if form.is_valid():
-        
+
             new_society = Society.objects.create(
                 name=form.cleaned_data['name'],
                 description=form.cleaned_data['description'],
                 society_type=form.cleaned_data['society_type'],
-                manager=request.user, 
+                manager=request.user,
                 status='pending',  # initially set to pending
                 visibility='Private'
             )
 
             messages.success(request, "Society created. Status pending.")
-        
+
             return redirect('societiespage')
     else:
         form = NewSocietyForm()
@@ -104,7 +103,7 @@ def top_societies():
 
     # get all the society type
     # society_types = Society.objects.values_list('society_type', flat=True).distinct()
-    
+
     # a dictionary to start top societies
     top_societies_per_type = {}
     # print("All Societies:", list(Society.objects.all()))
@@ -121,7 +120,7 @@ def top_societies():
     # for society in SOCIETY_TYPE_CHOICES[0]:
     #     top_societies_per_type[society] = (
     #         Society.objects.filter(society_type=society)
-    #         .order_by('-members_count')[:5]  
+    #         .order_by('-members_count')[:5]
     #     )
 
     top_overall_societies = Society.objects.order_by('-members_count')[:5]

@@ -1,6 +1,6 @@
 from django import forms
 from config.constants import VISIBILITY_CHOICES, SOCIETY_TYPE_CHOICES
-
+from apps.societies.models import Society
 class NewSocietyForm(forms.Form):
     name = forms.CharField(
         max_length=50,
@@ -30,3 +30,17 @@ class NewSocietyForm(forms.Form):
         required=False,
         help_text="Comma-separated tags (e.g. 'music, live events')"
     )
+
+    # Nehir
+    def save(self, commit=True):
+        """Override save to map base_location to location in Society model"""
+        society = Society(
+            name=self.cleaned_data["name"],
+            description=self.cleaned_data["description"],
+            society_type=self.cleaned_data["society_type"],
+            location=self.cleaned_data["base_location"],  # Map base_location to location
+            status="pending"  # Societies start as pending
+        )
+        if commit:
+            society.save()
+        return society

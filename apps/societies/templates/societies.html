@@ -5,8 +5,91 @@
 {% block content %}
 <div class="container mt-4">
     <h2 class="text-center mb-4">All Societies</h2>
-    <div class="row">
 
+    <!-- Toggle Button -->
+    <div class="text-center mb-3">
+        <button class="btn btn-secondary" onclick="toggleFilters()">Filter Societies</button>
+    </div>
+
+    <!-- Filter Form (Hidden by Default) -->
+    <div id="filter-form" class="card p-3 mb-4 shadow-sm" style="display: none;">
+        <form method="GET" action="{% url 'societiespage' %}">
+            <div class="row">
+                <!-- Location Dropdown -->
+                {% comment %}
+                <div class="col-md-4">
+                    <label for="location">Location:</label>
+                    <select name="location" id="location" class="form-control">
+                        <option value="">All Locations</option>
+                        {% for city in UNI_CHOICES.keys %}
+                            <option value="{{ city }}" {% if request.GET.location == city %}selected{% endif %}>{{ city }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endcomment %}
+
+                <!-- Society Type Dropdown -->
+                <div class="col-md-4">
+                    <label for="society_type">Society Type:</label>
+                    <select name="society_type" id="society_type" class="form-control">
+                        <option value="">All Types</option>
+                        <option value="sports" {% if request.GET.society_type == "sports" %}selected{% endif %}>Sports</option>
+                        <option value="academic" {% if request.GET.society_type == "academic" %}selected{% endif %}>Academic</option>
+                        <option value="arts" {% if request.GET.society_type == "arts" %}selected{% endif %}>Arts</option>
+                        <option value="cultural" {% if request.GET.society_type == "cultural" %}selected{% endif %}>Cultural</option>
+                        <option value="social" {% if request.GET.society_type == "social" %}selected{% endif %}>Social</option>
+                        <option value="other" {% if request.GET.society_type == "other" %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+
+                <!-- Price Range Slider -->
+                <div class="col-md-4">
+                    <label for="price_range">Price Range (£):</label>
+                    <div class="d-flex flex-column align-items-center">
+                        <input type="range" name="price_range_min" id="price_range_min" class="form-range" min="0" max="200" step="10"
+                            value="{{ request.GET.price_range_min|default:0 }}"
+                            oninput="updatePriceRange()">
+                        <input type="range" name="price_range_max" id="price_range_max" class="form-range mt-2" min="0" max="200" step="10"
+                            value="{{ request.GET.price_range_max|default:1000 }}"
+                            oninput="updatePriceRange()">
+                        <div class="mt-2">
+                            <span id="min_price_display">£{{ request.GET.price_range_min|default:0 }}</span> -
+                            <span id="max_price_display">£{{ request.GET.price_range_max|default:200 }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <!-- Checkboxes -->
+                <div class="col-md-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="is_free" id="is_free"
+                            {% if request.GET.is_free %}checked{% endif %}>
+                        <label class="form-check-label" for="is_free">Free Only</label>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="has_space" id="has_space"
+                            {% if request.GET.has_space %}checked{% endif %}>
+                        <label class="form-check-label" for="has_space">Only Societies with Space</label>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Societies List -->
+    <div class="row">
         {% for society in societies %}
         <div class="col-md-4 mb-4">
             <div class="card shadow-sm">
@@ -25,6 +108,49 @@
         {% endfor %}
     </div>
 </div>
+
+<!-- JavaScript -->
+<script>
+  function toggleFilters() {
+      let filterForm = document.getElementById("filter-form");
+      filterForm.style.display = filterForm.style.display === "none" ? "block" : "none";
+  }
+
+  function updatePriceRange() {
+      let minPrice = document.getElementById("price_range_min");
+      let maxPrice = document.getElementById("price_range_max");
+      let minPriceDisplay = document.getElementById("min_price_display");
+      let maxPriceDisplay = document.getElementById("max_price_display");
+      let isFree = document.getElementById("is_free");
+
+      if (parseInt(minPrice.value) > parseInt(maxPrice.value)) {
+          minPrice.value = maxPrice.value;
+      }
+
+      // If "Free Only" is checked, disable price range and set it to £0
+      if (isFree.checked) {
+          minPrice.value = 0;
+          maxPrice.value = 0;
+          minPrice.disabled = true;
+          maxPrice.disabled = true;
+      } else {
+          minPrice.disabled = false;
+          maxPrice.disabled = false;
+      }
+
+      // Update displayed values
+      minPriceDisplay.innerText = "£" + minPrice.value;
+      maxPriceDisplay.innerText = "£" + maxPrice.value;
+  }
+
+  // Event listener for "Free Only" checkbox
+  document.getElementById("is_free").addEventListener("change", updatePriceRange);
+
+  // Initialize price display on page load
+  window.onload = function() {
+      updatePriceRange();
+  };
+</script>
+
+
 {% endblock %}
-
-

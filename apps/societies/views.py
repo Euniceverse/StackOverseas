@@ -11,13 +11,31 @@ from apps.news.models import News
 from config.filters import SocietyFilter
 from config.constants import SOCIETY_TYPE_CHOICES
 
+
 def societiespage(request):
-    # template = get_template('societies.html')
-    societies = approved_socities()  # fetch all societies
-    # news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
-    # return render(request, "societies.html", {'societies': societies, "news_list": news_list})
+    societies = Society.objects.all()
+
+    # Apply filters
     filtered_societies = SocietyFilter(request.GET, queryset=societies).qs
+
+    # Sorting
+    sort_option = request.GET.get("sort", "name_asc")
+
+    if sort_option == "name_asc":
+        filtered_societies = filtered_societies.order_by("name")
+    elif sort_option == "name_desc":
+        filtered_societies = filtered_societies.order_by("-name")
+    elif sort_option == "date_created":
+        filtered_societies = filtered_societies.order_by("created_at")
+    elif sort_option == "price_low_high":
+        filtered_societies = filtered_societies.order_by("price_range")
+    elif sort_option == "price_high_low":
+        filtered_societies = filtered_societies.order_by("-price_range")
+    elif sort_option == "popularity":
+        filtered_societies = filtered_societies.order_by("-members_count")
+
     return render(request, "societies.html", {"societies": filtered_societies})
+
 
 
 def my_societies(request):

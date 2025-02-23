@@ -11,6 +11,31 @@
         <button class="btn btn-secondary" onclick="toggleFilters()">Filter Societies</button>
     </div>
 
+    <!-- Sorting Dropdown -->
+<div class="text-center mb-3">
+  <form method="GET" action="{% url 'societiespage' %}">
+      <label for="sort">Sort by:</label>
+      <select name="sort" class="form-select d-inline w-auto" onchange="this.form.submit()">
+          <option value="popularity" {% if request.GET.sort == "popularity" %}selected{% endif %}>Popularity</option>
+          <option value="name_asc" {% if request.GET.sort == "name_asc" %}selected{% endif %}>Alphabetical (A-Z)</option>
+          <option value="name_desc" {% if request.GET.sort == "name_desc" %}selected{% endif %}>Alphabetical (Z-A)</option>
+          <option value="date_newest" {% if request.GET.sort == "date_newest" %}selected{% endif %}>Newest First</option>
+          <option value="date_oldest" {% if request.GET.sort == "date_oldest" %}selected{% endif %}>Oldest First</option>
+          <option value="availability" {% if request.GET.sort == "availability" %}selected{% endif %}>Availability</option>
+          <option value="price_low_high" {% if request.GET.sort == "price_low_high" %}selected{% endif %}>Price: Low to High</option>
+          <option value="price_high_low" {% if request.GET.sort == "price_high_low" %}selected{% endif %}>Price: High to Low</option>
+      </select>
+
+      <!-- Preserve Existing Filters -->
+      <input type="hidden" name="society_type" value="{{ request.GET.society_type }}">
+      <input type="hidden" name="price_range_min" value="{{ request.GET.price_range_min }}">
+      <input type="hidden" name="price_range_max" value="{{ request.GET.price_range_max }}">
+      <input type="hidden" name="is_free" value="{{ request.GET.is_free }}">
+      <input type="hidden" name="has_space" value="{{ request.GET.has_space }}">
+  </form>
+</div>
+
+
     <!-- Filter Form (Hidden by Default) -->
     <div id="filter-form" class="card p-3 mb-4 shadow-sm" style="display: none;">
         <form method="GET" action="{% url 'societiespage' %}">

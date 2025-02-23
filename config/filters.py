@@ -21,7 +21,7 @@ class GlobalFilterSet(django_filters.FilterSet):
         queryset=Society.objects.filter(status="approved"),  # Show only approved societies
         empty_label="All Societies"
     )
-    society_type = django_filters.CharFilter(field_name="society__society_type", lookup_expr="icontains")  # Filter by Society Type
+    society_type = django_filters.CharFilter(field_name="society_type", lookup_expr="icontains")
     price_range = django_filters.RangeFilter()
     is_free = django_filters.BooleanFilter(method='filter_is_free')
     member_only = django_filters.BooleanFilter()

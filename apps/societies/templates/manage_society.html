@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Manage {{ society.name }}
+{% endblock %}
+
+{% block content %}
+{%if not user.is_superuser%}
+  <h2>Manage Society: {{ society.name }}</h2>
+{% endif %}
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Member Email</th>
+      <th>Role</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for membership in memberships %}
+    <tr>
+      <td>{{ membership.user.email }}</td>
+      <td>{{ membership.get_role_display }}</td>
+      <td>{{ membership.get_status_display }}</td>
+      <td>
+        <!-- Only show Approve if they are pending -->
+        {% if membership.status == 'pending' %}
+        <form action="{% url 'update_membership' society.id membership.user.id %}" 
+              method="post"
+              onsubmit="return confirm('Are you sure you want to APPROVE this user?');"
+              style="display:inline;">
+          {% csrf_token %}
+          <button class="btn btn-success" name="action" value="approve">Approve</button>
+        </form>
+        {% endif %}
+        
+        <!-- Remove button: confirm again -->
+        <form action="{% url 'update_membership' society.id membership.user.id %}" 
+              method="post" 
+              onsubmit="return confirm('Are you sure you want to REMOVE this user?');"
+              style="display:inline;">
+          {% csrf_token %}
+          <button class="btn btn-danger" name="action" value="remove">Remove</button>
+        </form>
+
+        <!-- Promote to Co-Manager -->
+        <form action="{% url 'update_membership' society.id membership.user.id %}" 
+              method="post" 
+              onsubmit="return confirm('Promote this user to CO-MANAGER?');"
+              style="display:inline;">
+          {% csrf_token %}
+          <button class="btn btn-warning" name="action" value="promote_co_manager">Promote to Co-Manager</button>
+        </form>
+
+        <!-- Promote to Editor -->
+        <form action="{% url 'update_membership' society.id membership.user.id %}" 
+              method="post" 
+              onsubmit="return confirm('Promote this user to EDITOR?');"
+              style="display:inline;">
+          {% csrf_token %}
+          <button class="btn btn-info" name="action" value="promote_editor">Promote to Editor</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

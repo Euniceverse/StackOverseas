@@ -162,3 +162,27 @@ def remove_widget(request, society_id, widget_id):
     messages.success(request, "Widget removed successfully.")
     return redirect("society_admin_view", society_id=society_id)
 
+def society_page(request, society_id):
+    """Public society page that displays widgets dynamically."""
+    society = get_object_or_404(Society, id=society_id)
+    widgets = Widget.objects.filter(society=society).order_by("position")
+
+    # determine user access level
+    is_member = society.members.filter(id=request.user.id).exists() if request.user.is_authenticated else False
+    is_manager = request.user == society.manager if request.user.is_authenticated else False
+    
+    # remove member-only widgets for non-members
+    if not is_member:
+        widgets = widgets.exclude(widget_type__in=["discussion", "members"])
+
+    return render(
+        request,
+        "society_page.html",
+        {
+            "society": society,
+            "widgets": widgets,
+            "is_member": is_member,
+            "is_manager": is_manager,
+        },
+    )
+    

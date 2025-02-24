@@ -60,6 +60,7 @@
                                 {% endif %}
                                 {% if user.is_superuser %}
                                     <li><a href="{% url 'manage_societies'%}">Manage Societies</a></li>
+                                    <li><a href="{% url 'all_members'%}">All Members</a></li>
                                 {% endif %}
                             </ul>
                         </li>

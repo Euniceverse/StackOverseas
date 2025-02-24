@@ -6,7 +6,9 @@ Manage {{ society.name }}
 {% endblock %}
 
 {% block content %}
-<h2>Manage Society: {{ society.name }}</h2>
+{%if not user.is_superuser%}
+  <h2>Manage Society: {{ society.name }}</h2>
+{% endif %}
 
 {% if messages %}
   {% for message in messages %}
@@ -15,6 +17,7 @@ Manage {{ society.name }}
     </div>
   {% endfor %}
 {% endif %}
+
 
 <table class="table">
   <thead>

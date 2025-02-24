@@ -92,7 +92,7 @@ def create_dummy_societies(users, n=50):
     societies = []
     for _ in range(n):
         society = Society.objects.create(
-            name=fake.company(),
+            name=fake.unique.company(),
             description=fake.text(),
             society_type = random.choice([key for key, _ in constants.SOCIETY_TYPE_CHOICES]),
             status=random.choice([key for key, _ in constants.SOCIETY_STATUS_CHOICES]),

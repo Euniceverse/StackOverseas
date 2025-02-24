@@ -22,6 +22,7 @@ urlpatterns = [
     path('societiespage/', societiespage, name='societiespage'),
     path('my_societies/', my_societies, name='my_societies'),
     path('manage_societies/', view_manage_societies, name= 'manage_societies'),
+    path('all_members/', view_all_members, name= 'all_members'),
     path('list/', top_societies, name='top_societies'),    
     path('create/', create_society, name='create_society'),
     path('admin/pending/', admin_pending_societies, name='admin_pending_societies'),

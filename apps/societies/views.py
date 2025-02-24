@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 
 
 from .models import Society, Membership, MembershipRole, MembershipStatus
-from .functions import approved_socities, get_societies, manage_societies
+from .functions import approved_socities, get_societies, manage_societies, get_all_users
 
 from django.contrib import messages
 from django.urls import reverse
@@ -139,11 +139,24 @@ def manage_society(request, society_id):
     # Get all memberships for this society
     memberships = Membership.objects.filter(society=society).select_related('user')
 
-    return render(request, 'societies/manage_society.html', {
+    return render(request, 'manage_society.html', {
         'society': society,
         'memberships': memberships,
+        'user' : request.user
     })
 
+def view_all_members(request):
+    if request.user.is_superuser:
+        all_members = get_all_users()
+        society = get_object_or_404(Society, id=1)
+        return render(request, 'manage_society.html', {
+        'society': society,
+        'memberships': all_members,
+        'user' : request.user
+    })
+    else:
+        messages.error(request, "You do not have permission to view all members.")
+        return redirect('societiespage')
 
 @login_required
 def update_membership(request, society_id, user_id):

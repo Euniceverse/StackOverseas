@@ -1,5 +1,5 @@
 '''for society functions'''
-from .models import Society
+from .models import Society, Membership
 from apps.users.models import CustomUser
 from django import template
 from config.constants import SOCIETY_TYPE_CHOICES
@@ -9,13 +9,31 @@ def approved_socities():
 
 def get_societies(user):
     """Get all approved societies where the given user is a member."""
-    if CustomUser.objects.filter(pk=user.pk).exists():
-        return Society.objects.filter(status="approved", members=user)
-    return approved_socities()
+
+    # Check if the user exists
+    if not CustomUser.objects.filter(pk=user.pk).exists():
+        return approved_socities()  # Fallback if user doesn't exist
+
+    # Query societies managed by the user
+    managing_societies = Society.objects.filter(manager_id=user.id)
+    
+    # Query approved societies where the user is a member
+    member_societies = Society.objects.filter(status="approved", members=user)
+
+    if managing_societies.exists():
+        # The union (|) operator combines two QuerySets and removes duplicates
+        return managing_societies | member_societies
+    
+    return member_societies
 
 
 def manage_societies():
     return Society.objects.filter(status__in=['pending','request_delete'])
+
+
+def get_all_users():
+    # return CustomUser.objects.filter(is_superuser = False)
+    return Membership.objects.all()
 
 
 register = template.Library()

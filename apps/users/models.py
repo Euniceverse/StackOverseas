@@ -3,13 +3,13 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from datetime import timedelta
-
+import re
 
 def validate_ac_uk_email(email):
     """Ensure the email ends with .ac.uk"""
     if not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.ac\.uk$", email):
         raise ValidationError("Only .ac.uk email addresses are allowed.")
-    
+
 class CustomUserManager(BaseUserManager):
 
     def create_user(self, email, first_name, last_name, preferred_name, password=None):
@@ -25,14 +25,14 @@ class CustomUserManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
         return user
-    
+
     def create_superuser(self, email, first_name, last_name, preferred_name, password):
         user = self.create_user(email, first_name, last_name, preferred_name, password)
         user.is_staff = True
         user.is_superuser = True
         user.save(using=self._db)
         return user
-    
+
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True, validators=[validate_ac_uk_email])
@@ -50,10 +50,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     # fixing conflicts with Django's default auth system
     groups = models.ManyToManyField(Group, related_name="customuser_groups", blank=True)
     user_permissions = models.ManyToManyField(Permission, related_name="customuser_permissions", blank=True)
-    
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'preferred_name']
-    
+
     def can_change_preferred_name(self):
         """Check if the user can change their preferred name."""
         if self.last_verified_date:
@@ -75,7 +75,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         self.request_email_verification()
         print("User must verify their email before the name change is completed.")
         return False
-    
+
     def confirm_preferred_name_change(self, new_name):
         """Confirm the name change after email verification."""
         self.preferred_name = new_name

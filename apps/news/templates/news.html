@@ -5,15 +5,156 @@
 {% endblock %}
 
 {% block content %}
-    <h1>All News</h1>
+<div class="container mt-4">
+    <h1 class="text-center mb-4">All News</h1>
+
+    <!-- Toggle Button -->
+    <div class="text-center mb-3">
+        <button class="btn btn-secondary" onclick="toggleFilters()">Filter News</button>
+    </div>
+
+    <!-- Sorting Dropdown -->
+    <form method="GET" action="{% url 'newspage' %}" class="mb-3">
+      <div class="row align-items-center">
+          <div class="col-md-4">
+              <label for="sort">Sort by:</label>
+              <select name="sort" id="sort" class="form-control" onchange="this.form.submit()">
+                  <option value="newest" {% if selected_sort == "newest" %}selected{% endif %}>Newest First</option>
+                  <option value="oldest" {% if selected_sort == "oldest" %}selected{% endif %}>Oldest First</option>
+                  <option value="popularity" {% if selected_sort == "popularity" %}selected{% endif %}>Most Popular</option>
+              </select>
+          </div>
+      </div>
+
+      <!-- Preserve Existing Filters -->
+      <input type="hidden" name="society" value="{{ request.GET.society }}">
+      <input type="hidden" name="society_type" value="{{ request.GET.society_type }}">
+      <input type="hidden" name="date" value="{{ request.GET.date }}">
+      <input type="hidden" name="member_only" value="{{ request.GET.member_only }}">
+    </form>
+
+    <!-- Filter Form -->
+    <div id="filter-form" class="card p-3 mb-4 shadow-sm">
+        <form method="GET" action="{% url 'newspage' %}">
+            <div class="row">
+              <!-- Society -->
+              <div class="col-md-4">
+                <label for="society">Society:</label>
+                <select name="society" id="society" class="form-control">
+                    <option value="">All Societies</option>
+                    {% for society in societies %}
+                        <option value="{{ society.id }}" {% if request.GET.society == society.id|stringformat:"s" %}selected{% endif %}>
+                            {{ society.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+              </div>
+
+                <!-- Society Type -->
+                <div class="col-md-4">
+                  <label for="society_type">Society Type:</label>
+                  <select name="society_type" id="society_type" class="form-control">
+                      <option value="">All Types</option>
+                      {% for type, label in SOCIETY_TYPE_CHOICES %}
+                          <option value="{{ type }}" {% if request.GET.society_type == type %}selected{% endif %}>
+                              {{ label }}
+                          </option>
+                      {% endfor %}
+                  </select>
+              </div>
+                <!-- Date Range -->
+                <div class="col-md-4">
+                    <label for="date">Filter by Date:</label>
+                    <select name="date" id="date" class="form-control">
+                        <option value="">Any Date</option>
+                        <option value="today" {% if request.GET.date == "today" %}selected{% endif %}>Today</option>
+                        <option value="this_week" {% if request.GET.date == "this_week" %}selected{% endif %}>This Week</option>
+                        <option value="this_month" {% if request.GET.date == "this_month" %}selected{% endif %}>This Month</option>
+                        <option value="this_year" {% if request.GET.date == "this_year" %}selected{% endif %}>This Year</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <!-- Member Only News -->
+                <div class="col-md-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="member_only" id="member_only"
+                            {% if request.GET.member_only %}checked{% endif %}>
+                        <label class="form-check-label" for="member_only">Members Only</label>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- News List -->
     {% for news in news_list %}
-        <div class="news-box">
-            <h5>{{ news.title }}</h5>
-            <p class="text-muted">Posted on: {{ news.date_posted }}</p>
-            <p>Society: {{ news.society }}</p>
-            <p>{{ news.content }}</p>
-        </div>
+    <div class="news-box mb-4">
+        <h5>{{ news.title }}</h5>
+        <p class="text-muted">Posted on: {{ news.date_posted }}</p>
+        <p>Society: {{ news.society }}</p>
+        <p>{{ news.content }}</p>
+    </div>
     {% empty %}
-        <p>No news available.</p>
+        <p class="text-center">No news available.</p>
     {% endfor %}
+</div>
+
+<script>
+  function toggleFilters() {
+      let filterForm = document.getElementById("filter-form");
+      let isHidden = filterForm.style.display === "none" || filterForm.style.display === "";
+
+      // Toggle visibility
+      filterForm.style.display = isHidden ? "block" : "none";
+
+      // Store the state in localStorage
+      localStorage.setItem("newsFiltersVisible", isHidden ? "true" : "false");
+  }
+
+  function resetFiltersVisibility() {
+      let filterForm = document.getElementById("filter-form");
+      filterForm.style.display = "none"; // Always hide filters on page refresh
+      localStorage.removeItem("newsFiltersVisible"); // Clear stored visibility state
+  }
+
+  function restoreFilters() {
+      let filterForm = document.getElementById("filter-form");
+      let isFiltersVisible = localStorage.getItem("newsFiltersVisible");
+
+      if (isFiltersVisible === "true") {
+          filterForm.style.display = "block";
+      } else {
+          filterForm.style.display = "none";
+      }
+  }
+
+  function toggleSocietyType() {
+      let societySelect = document.getElementById("society");
+      let societyTypeSelect = document.getElementById("society_type");
+
+      if (societySelect.value) {
+          societyTypeSelect.disabled = true;
+      } else {
+          societyTypeSelect.disabled = false;
+      }
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+      resetFiltersVisibility();  // Ensures filters are hidden on refresh
+      restoreFilters();  // Restores filters if toggled within the same session
+      toggleSocietyType();  // Handles disabling of Society Type dropdown
+
+      document.getElementById("society").addEventListener("change", toggleSocietyType);
+  });
+</script>
+
+
+
+
 {% endblock %}

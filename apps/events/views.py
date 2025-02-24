@@ -7,6 +7,8 @@ from .serializers import EventSerializer
 from rest_framework.pagination import PageNumberPagination
 from django.utils.timezone import now, make_aware
 from datetime import datetime
+from django.utils import timezone
+from config.filters import EventFilter
 
 def eventspage(request):
     """Events page view"""
@@ -30,7 +32,7 @@ class EventListAPIView(generics.ListAPIView):
     search_fields = ["name", "description"]
     ordering_fields = ["date", "name"]
     ordering = ["date"]
-
+    filterset_class = EventFilter  # Apply filtering Nehir
 class EventDetailAPIView(generics.RetrieveAPIView):
     """API to get details of a single event"""
     queryset = Event.objects.all()
@@ -39,6 +41,6 @@ class EventDetailAPIView(generics.RetrieveAPIView):
 
 class UpcomingEventsAPIView(generics.ListAPIView):
     """API to list only upcoming events"""
-    queryset = Event.objects.filter(date__gte=now().date())  # Only future events
+    queryset = Event.objects.filter(date__gte=timezone.now())  # Only future events
     serializer_class = EventSerializer
     pagination_class = StandardResultsSetPagination

@@ -1,3 +1,4 @@
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Count
@@ -10,16 +11,35 @@ from .models import Society, SocietyRegistration, Widget
 from .functions import approved_societies, get_societies
 from .forms import NewSocietyForm
 from apps.news.models import News
-
+from config.filters import SocietyFilter
 from config.constants import SOCIETY_TYPE_CHOICES
 
 import json
 
 def societiespage(request):
-    # template = get_template('societies.html')
-    societies = approved_societies()  # fetch all societies
-    news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
-    return render(request, "societies.html", {'societies': societies, "news_list": news_list})
+    societies = Society.objects.all()
+
+    # Apply filters
+    filtered_societies = SocietyFilter(request.GET, queryset=societies).qs
+
+    # Sorting
+    sort_option = request.GET.get("sort", "name_asc")
+
+    if sort_option == "name_asc":
+        filtered_societies = filtered_societies.order_by("name")
+    elif sort_option == "name_desc":
+        filtered_societies = filtered_societies.order_by("-name")
+    elif sort_option == "date_created":
+        filtered_societies = filtered_societies.order_by("created_at")
+    elif sort_option == "price_low_high":
+        filtered_societies = filtered_societies.order_by("price_range")
+    elif sort_option == "price_high_low":
+        filtered_societies = filtered_societies.order_by("-price_range")
+    elif sort_option == "popularity":
+        filtered_societies = filtered_societies.order_by("-members_count")
+
+    return render(request, "societies.html", {"societies": filtered_societies})
+
 
 def my_societies(request):
     societies = get_societies(request.user)
@@ -46,7 +66,6 @@ def create_society(request):
             society_registration.save()            
 
             messages.success(request, "Society application submitted. Awaiting approval.")
-        
             return redirect('societiespage')
     else:
         form = NewSocietyForm()
@@ -99,7 +118,7 @@ def top_societies():
 
     # get all the society type
     # society_types = Society.objects.values_list('society_type', flat=True).distinct()
-    
+
     # a dictionary to start top societies
     top_societies_per_type = {}
     # print("All Societies:", list(Society.objects.all()))
@@ -116,7 +135,7 @@ def top_societies():
     # for society in SOCIETY_TYPE_CHOICES[0]:
     #     top_societies_per_type[society] = (
     #         Society.objects.filter(society_type=society)
-    #         .order_by('-members_count')[:5]  
+    #         .order_by('-members_count')[:5]
     #     )
 
     top_overall_societies = Society.objects.order_by('-members_count')[:5]

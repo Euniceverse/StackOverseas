@@ -52,10 +52,10 @@ def get_user_membership(all_memberships, user):
     return all_memberships.filter(user=user).first()
 
 
-def top_societies():
+def top_societies(user):
     """Return a dict with top societies per type and top overall societies."""
     top_societies_per_type = {}
-    all_approved = approved_socities()
+    all_approved = approved_socities(user)
 
     for society_type, _ in SOCIETY_TYPE_CHOICES:
         top_societies_per_type[society_type] = (

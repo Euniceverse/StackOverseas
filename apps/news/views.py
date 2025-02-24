@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from apps.societies.models import Society
@@ -84,3 +84,18 @@ def news_detail(request, news_id):
     news.views = F("views") + 1  # Increment views
     news.save(update_fields=["views"])  # Save without modifying timestamps
     return render(request, "news_detail.html", {"news": news})
+
+
+@login_required
+def edit_news(request, news_id):
+    news_item = get_object_or_404(News, id=news_id)
+
+    if request.method == "POST":
+        form = NewsForm(request.POST, request.FILES, instance=news_item)
+        if form.is_valid():
+            form.save()
+            return redirect("news_list")
+    else:
+        form = NewsForm(instance=news_item)
+    
+    return render(request, "edit_news.html", {"form": form, "news_item": news_item})

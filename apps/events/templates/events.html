@@ -1,58 +1,44 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load static %}
 
-{% block title %}
-Events
-{% endblock %}
+{% block title %}Events{% endblock %}
 
-{% block content %}
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
+{% block fullpage %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'events.css' %}">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js" defer></script>
-    <script src="{% static 'js/events.js' %}" defer></script>
+    <script src="{% static 'js/view-switcher.js' %}" defer></script>
 
-    <div class="header">
-        <div class="title">
-            <h>🗓️ Event Calendar</h>
-        </div>
-        <div class="search">
-            <p>search</p>
-        </div>
-    </div>
-    <hr>
-
-    <div class="event-calendar"> 
-        <div class="container-calendar">
-            <div id="calendar"></div> 
-        </div>
-        <div class="container-event-detail">
-            <div id="event-detail">
-                <span class="container-close">
-                    <div id="event-detail-close">
-                        <strong>></strong>
-                    </div>
-                </span>
-                <span class="empty">
-                </span>
-                <span class="event-detail-title">
-                    <strong>Event Details</strong>
-                </span>
+    <div class="event-header">
+        <div class="event-title">All Events</div>
     
-                <div class="event-detail-attributes">
-                    <p><strong>Name:</strong> <span id="event-name">-</span></p>
-                    <p><strong>Date:</strong> <span id="event-date">-</span></p>
-                    <p><strong>Time:</strong> <span id="event-time">-</span></p>
-                    <p><strong>Location:</strong> <span id="event-location">-</span></p>
-                    <p><strong>Fee:</strong> <span id="event-fee">-</span></p>
-                    <p><strong>Description:</strong> <span id="event-description">-</span></p>
-                </div>
+        <div class="event-search">
+            {% include "components/search.html" %}
+        </div>
+
+        <div class="event-filter">
+            {% include "components/filter.html" %}
+        </div>
+
+    </div>
+
+    <div class="event-body">
+        <div class="event-api-view-bar">
+            <span id="list-button">LIST</span>
+            <span id="calendar-button">CALENDAR</span>
+            <span id="map-button">MAP</span>
+        </div>
+        <div class="event-api-views">
+            <div class="event-view-list">
+                {% include "components/list.html" %}
+            </div>
+            <div class="event-view-calendar">
+                {% include "components/calendar.html" %}
+            </div>
+            <div class="event-view-map">
+                {% include "components/map.html" %}
             </div>
         </div>
+        <div class="event-api-view"></div>
     </div>
-
-{% endblock %}
-
-{% block news_panel %}
-    {% include 'news-panel.html' %}
 {% endblock %}
 

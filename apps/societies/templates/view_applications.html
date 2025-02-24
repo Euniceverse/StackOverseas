@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Pending Applications for {{ society.name }}
+{% endblock %}
+
+{% block content %}
+<h2>Pending Applications (Manual Approval)</h2>
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+{% if applications %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Essay</th>
+        <th>Portfolio</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for app in applications %}
+      <tr>
+        <td>{{ app.user.email }}</td>
+        <td>
+          {% if app.essay_text %}
+            <pre>{{ app.essay_text }}</pre>
+          {% else %}
+            <em>No essay</em>
+          {% endif %}
+        </td>
+        <td>
+          {% if app.portfolio_file %}
+            <a href="{{ app.portfolio_file.url }}" target="_blank">View PDF</a>
+          {% else %}
+            <em>No file</em>
+          {% endif %}
+        </td>
+        <td>
+          <a href="{% url 'decide_application' society.id app.id 'approve' %}" 
+             class="btn btn-success">
+             Approve
+          </a>
+          <a href="{% url 'decide_application' society.id app.id 'reject' %}"
+             class="btn btn-danger">
+             Reject
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>No pending applications.</p>
+{% endif %}
+{% endblock %}

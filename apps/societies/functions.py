@@ -2,13 +2,17 @@
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
-from .models import Society, SocietyRegistration
+from .models import Society, SocietyRegistration, Membership
 from apps.users.models import CustomUser
+from django import template
+from config.constants import SOCIETY_TYPE_CHOICES
 
 def staff_required(user):
     return user.is_staff
 
-def approved_societies():
+def approved_societies(user):
+    if user.is_superuser:
+        return Society.objects.all()
     return Society.objects.filter(status="approved")
 
 def get_societies(user):

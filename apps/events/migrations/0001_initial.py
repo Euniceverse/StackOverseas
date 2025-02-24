@@ -23,6 +23,8 @@ class Migration(migrations.Migration):
                 ('date', models.DateTimeField()),
                 ('start_time', models.TimeField(default=datetime.time(9, 0))),
                 ('end_time', models.TimeField(blank=True, null=True)),
+                ('start_time', models.TimeField(default=datetime.time(9, 0))),
+                ('end_time', models.TimeField(blank=True, null=True)),
                 ('event_type', models.CharField(choices=[('sports', 'Sports'), ('academic', 'Academic'), ('arts', 'Arts'), ('cultural', 'Cultural'), ('social', 'Social'), ('other', 'Other')], max_length=50)),
                 ('keyword', models.CharField(max_length=50)),
                 ('location', models.CharField(max_length=255)),

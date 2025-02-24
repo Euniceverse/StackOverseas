@@ -1,71 +1,65 @@
-.search-container {
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-}
 
-.search-form {
-  margin-bottom: 2rem;
-}
-
-.search-input-group {
-  display: flex;
-  gap: 1rem;
+/* 🔹 Search input text color */
+#searchContainer {
+    display: flex;
+    width: 600pt;
 }
 
 .search-input {
-  flex: 1;
-  padding: 0.75rem;
-  border: 2px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
+    display: flex;
+    width: 600pt;
+    height: 50pt;
+    padding: 10px;
+    font-size: 30px;
+    border-radius: 200px;
+    padding-left: 30pt;
+    text-align: left;
+    outline: none;
+    color: #000; /* 🔥 Change input text color */
+    background-color: #fff; /* Ensure visibility */
 }
 
-.search-button {
-  padding: 0.75rem 1.5rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s;
+.search-input .selected {
+    text-align: center;
 }
 
-.search-button:hover {
-  background-color: #0056b3;
+/* 🔹 Placeholder text color */
+.search-input::placeholder {
+    color: #B7E3E4; /* Light gray placeholder text */
+    opacity: 1; /* Ensures visibility in all browsers */
+    text-align: center;
 }
 
-.society-card {
-  background: white;
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 1rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+/* 🔹 Dropdown list text color */
+.autocomplete-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 5px 0;
+    width: 600pt;
+    background: #EBF4BC;
+    border-radius: 15px;
+    position: absolute;
+    z-index: 1000;
+    display: none;
+    margin-top: 60pt;
+    padding-left: 25pt;
+    padding-top: 10pt;
+    padding-bottom: 10pt;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    color: #000; /* 🔥 Change dropdown text color */
 }
 
-.tags {
-  display: flex;
-  gap: 0.5rem;
-  margin: 1rem 0;
-  flex-wrap: wrap;
+/* 🔹 Dropdown list item styles */
+.autocomplete-list li {
+    padding: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+    color: #222; /* 🔥 Change text color */
 }
 
-.tag {
-  background: #e9ecef;
-  padding: 0.25rem 0.75rem;
-  border-radius: 15px;
-  font-size: 0.875rem;
+/* 🔹 Highlighted or selected item */
+.autocomplete-list li:hover, .autocomplete-list li.active {
+    color: #F03F35; /* Text color for active item */
+    border-radius: 15px;
 }
 
-.view-more {
-  display: inline-block;
-  margin-top: 1rem;
-  color: #007bff;
-  text-decoration: none;
-}
-
-.no-results {
-  text-align: center;
-  color: #666;
-  margin-top: 2rem;
-}

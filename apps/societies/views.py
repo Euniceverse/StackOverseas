@@ -1,4 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
+
+
+from .models import Society, Membership, MembershipRole, MembershipStatus
+from .functions import approved_socities, get_societies, manage_societies, get_all_users
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Count
@@ -9,9 +14,10 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .models import Society, SocietyRegistration, Widget
 from .functions import approved_societies, get_societies
-from .forms import NewSocietyForm
+from .forms import NewSocietyForm, JoinSocietyForm
 from apps.news.models import News
-from config.filters import SocietyFilter
+from config.filters import SocietyFilterfrom django.http import HttpResponseNotFound
+
 from config.constants import SOCIETY_TYPE_CHOICES
 
 import json
@@ -44,7 +50,7 @@ def societiespage(request):
 def my_societies(request):
     societies = get_societies(request.user)
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
-    return render(request, "societies.html", {'societies': societies, "news_list": news_list})
+    return render(request, "societies.html", {'societies': societies, "news_list": news_list, 'page':'My'})
 
 @login_required
 def create_society(request):
@@ -104,51 +110,301 @@ def admin_confirm_society_decision(request, society_id, action):
                 society.delete()  # or set status='rejected' if you prefer
                 messages.warning(request, f"Society '{society.name}' has been rejected and discarded.")
 
-            return redirect('admin_pending_societies')
+            return redirect('manage_societies')
 
         elif 'cancel' in request.POST:
-            return redirect('admin_pending_societies')
+            return redirect('manage_societies')
 
-    return render(request, 'societies/admin_confirm_decision.html', {
+    return render(request, 'admin_confirm_decision.html', {
         'society': society,
         'action': action
     })
-def top_societies():
+
+def view_manage_societies(request):
+    to_manage = manage_societies()
+    news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
+    return render(request, "societies.html", {'societies': to_manage, "news_list": news_list, 'page':'Manange'})
+
+
+# def top_societies():
     """View to show top 5 societies per type and overall"""
 
-    # get all the society type
-    # society_types = Society.objects.values_list('society_type', flat=True).distinct()
 
-    # a dictionary to start top societies
-    top_societies_per_type = {}
-    # print("All Societies:", list(Society.objects.all()))
+@login_required
+def manage_society(request, society_id):
+    """
+    Display a page listing all current Membership objects for this society.
+    Only the manager or co_manager may view this page.
+    """
+    society = get_object_or_404(Society, id=society_id)
 
-    all_approved_societies = approved_societies()
+    # Check if request.user is the manager (the one who created the society):
+    if society.manager == request.user:
+        is_authorized = True
+    else:
+        # Or check if they are a co_manager of this society
+        co_manager_membership = Membership.objects.filter(
+            society=society,
+            user=request.user,
+            role=MembershipRole.CO_MANAGER,
+            status=MembershipStatus.APPROVED
+        ).first()
+        is_authorized = bool(co_manager_membership)
 
-    for society_type, _ in SOCIETY_TYPE_CHOICES:
-        top_societies_per_type[society_type] = (
-            all_approved_societies.filter(society_type=society_type)
-            .order_by('-members_count')[:5]
+    if not is_authorized:
+        messages.error(request, "You do not have permission to manage this society.")
+        return redirect('societiespage')
+
+    # Get all memberships for this society
+    memberships = Membership.objects.filter(society=society).select_related('user')
+
+    return render(request, 'manage_society.html', {
+        'society': society,
+        'memberships': memberships,
+        'user' : request.user
+    })
+
+def view_all_members(request):
+    if request.user.is_superuser:
+        all_members = get_all_users()
+        society = get_object_or_404(Society, id=1)
+        return render(request, 'manage_society.html', {
+        'society': society,
+        'memberships': all_members,
+        'user' : request.user
+    })
+    else:
+        messages.error(request, "You do not have permission to view all members.")
+        return redirect('societiespage')
+
+@login_required
+def update_membership(request, society_id, user_id):
+
+    society = get_object_or_404(Society, id=society_id)
+    membership = get_object_or_404(Membership, society=society, user_id=user_id)
+
+    # Double-check the request.user is allowed to manage
+    # i.e. they are the society manager or co-manager
+    if society.manager == request.user:
+        pass
+    else:
+        co_manager_membership = Membership.objects.filter(
+            society=society,
+            user=request.user,
+            role=MembershipRole.CO_MANAGER,
+            status=MembershipStatus.APPROVED
+        ).first()
+        if not co_manager_membership:
+            messages.error(request, "You do not have permission to update members for this society.")
+            return redirect('societiespage')
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'approve':
+            membership.status = MembershipStatus.APPROVED
+            membership.save()
+            messages.success(request, f"{membership.user.email} has been approved!")
+        
+        elif action == 'remove':
+            # Remove the membership entirely
+            membership.delete()
+            messages.success(request, f"{membership.user.email} has been removed from {society.name}.")
+        
+        elif action == 'promote_co_manager':
+            membership.role = MembershipRole.CO_MANAGER
+            membership.status = MembershipStatus.APPROVED  # ensure they are now approved
+            membership.save()
+            messages.success(request, f"{membership.user.email} is now a Co-Manager.")
+        
+        elif action == 'promote_editor':
+            membership.role = MembershipRole.EDITOR
+            membership.status = MembershipStatus.APPROVED
+            membership.save()
+            messages.success(request, f"{membership.user.email} is now an Editor.")
+        
+        return redirect('manage_society', society_id=society_id)
+    
+    # If it's not POST, just redirect back
+    return redirect('manage_society', society_id=society_id)
+
+def society_detail(request, society_id):
+    """Temporary society detail page just to show a Manage This Society button."""
+    society = get_object_or_404(Society, id=society_id)
+    return render(request, 'societies/society_detail.html', {'society': society})
+
+@login_required
+def join_society(request, society_id):
+    """Display the join form for a society and handle submission."""
+    society = get_object_or_404(Society, id=society_id)
+
+    # Check if user is already in the membership table with an approved or pending status
+    existing_member = Membership.objects.filter(society=society, user=request.user).first()
+    if existing_member and existing_member.status in [MembershipStatus.APPROVED, MembershipStatus.PENDING]:
+        messages.info(request, "You are already a member or have an application pending.")
+        return redirect('society_detail', society_id=society.id)
+
+    if request.method == 'POST':
+        form = JoinSocietyForm(society=society, user=request.user, data=request.POST, files=request.FILES)
+        if form.is_valid():
+            application = form.create_membership_and_application()
+            if application.is_approved:
+                messages.success(request, "You have joined the society successfully!")
+            elif application.is_rejected:
+                messages.error(request, "Your application was rejected based on your answers.")
+            else:
+                messages.info(request, "Your application has been submitted and is pending approval.")
+            return redirect('society_detail', society_id=society.id)
+    else:
+        form = JoinSocietyForm(society=society, user=request.user)
+
+    return render(request, 'societies/join_society.html', {
+        'society': society,
+        'form': form
+    })
+
+
+@login_required
+def view_applications(request, society_id):
+    from .models import MembershipApplication
+    """If the society is set to 'manual' or has any applications, managers can see them here."""
+    society = get_object_or_404(Society, id=society_id)
+    # Only manager or co_manager can see
+    is_manager_or_co = False
+    if society.manager == request.user:
+        is_manager_or_co = True
+    else:
+        from .models import MembershipRole
+        membership_co = Membership.objects.filter(
+            society=society,
+            user=request.user,
+            role=MembershipRole.CO_MANAGER,
+            status=MembershipStatus.APPROVED
+        ).first()
+        is_manager_or_co = bool(membership_co)
+
+    if not is_manager_or_co:
+        messages.error(request, "You do not have permission to view applications.")
+        return redirect('society_detail', society_id=society.id)
+
+    # Show all membership applications for this society
+    applications = society.applications.filter(is_approved=False, is_rejected=False)
+
+    return render(request, "societies/view_applications.html", {
+        'society': society,
+        'applications': applications,
+    })
+
+
+@login_required
+def decide_application(request, society_id, application_id, decision):
+    from .models import MembershipApplication
+    """Manager or co-manager can approve or reject an application with requirement_type=manual."""
+    society = get_object_or_404(Society, id=society_id)
+    application = get_object_or_404(society.applications, id=application_id)
+    # same manager check
+    is_manager_or_co = False
+    if society.manager == request.user:
+        is_manager_or_co = True
+    else:
+        from .models import MembershipRole
+        membership_co = Membership.objects.filter(
+            society=society,
+            user=request.user,
+            role=MembershipRole.CO_MANAGER,
+            status=MembershipStatus.APPROVED
+        ).first()
+        is_manager_or_co = bool(membership_co)
+
+    if not is_manager_or_co:
+        messages.error(request, "You do not have permission to decide on applications.")
+        return redirect('society_detail', society_id=society.id)
+
+    if decision not in ['approve', 'reject']:
+        messages.error(request, "Invalid decision.")
+        return redirect('view_applications', society_id=society.id)
+
+    if decision == 'approve':
+        application.is_approved = True
+        application.save()
+        # Update membership
+        membership, created = Membership.objects.get_or_create(
+            society=society,
+            user=application.user,
+            defaults={'role': 'member', 'status': 'pending'}
         )
+        membership.status = MembershipStatus.APPROVED
+        membership.save()
+        messages.success(request, f"Application for {application.user.email} approved.")
+    else:
+        application.is_rejected = True
+        application.save()
+        # remove membership if any
+        Membership.objects.filter(society=society, user=application.user).delete()
+        messages.warning(request, f"Application for {application.user.email} rejected.")
 
 
-    # for society in SOCIETY_TYPE_CHOICES[0]:
-    #     top_societies_per_type[society] = (
-    #         Society.objects.filter(society_type=society)
-    #         .order_by('-members_count')[:5]
-    #     )
+    return redirect('view_applications', society_id=society.id)
 
-    top_overall_societies = Society.objects.order_by('-members_count')[:5]
-    '''
-    print("Top Overall Societies:", list(top_overall_societies))
-    print("Top Societies Per Type:", top_societies_per_type)
-    '''
-    return({'top_overall_societies':top_overall_societies,'top_societies_per_type':top_societies_per_type})
-    # return render(request, "home.html", {
-    #     "top_societies_per_type": top_societies_per_type,
-    #     "top_overall_societies": top_overall_societies,
-    #     'user' : request.user
-    # })
+
+    # top_overall_societies = all_approved_socities.order_by('-members_count')[:5]
+    # '''
+    # print("Top Overall Societies:", list(top_overall_societies))
+    # print("Top Societies Per Type:", top_societies_per_type)
+    # '''
+    # return({'top_overall_societies':top_overall_societies,'top_societies_per_type':top_societies_per_type})
+    # # return render(request, "home.html", {
+    # #     "top_societies_per_type": top_societies_per_type,
+    # #     "top_overall_societies": top_overall_societies,
+    # #     'user' : request.user
+    # # })
+
+# handle when manager wants to delete the society
+def request_delete_society(request, society_id):
+    society = get_object_or_404(Society, id=society_id)
+    #society = Society.objects.filter(id=society_id, manager=request.user).first()
+
+    if request.method == "POST":
+        if society.members_count >= 100:
+            society.status = 'request_delete'
+            society.visibility = 'Private' 
+            messages.info(request, "Your deletion request is pending admin approval.")
+        else:
+            society.status = 'deleted'
+            messages.success(request, "Your society was automatically deleted.")
+
+        society.updated_at = now()
+        society.save()
+        return redirect('societiespage')
+
+    return render(request, "request_delete_society.html", {"society": society})
+
+# when need the admin approval
+@user_passes_test(lambda user: user.is_staff)
+def admin_confirm_delete(request, society_id):
+    society = get_object_or_404(Society, id=society_id, status='request_delete')
+  
+    if request.method == "POST":
+        action = request.POST.get("action")
+        print("Action received:", action) 
+        if action == "approve":
+            society.status = "deleted"
+            print(f"Updating {society.name} status to 'deleted'") 
+            messages.success(request, f"Society '{society.name}' has been deleted.")
+        elif action == "reject":
+            society.status = "approved"
+            print(f"Updating {society.name} status to 'approved'")  
+            messages.warning(request, f"Society '{society.name}' deletion request was rejected.")
+
+        society.save()
+        return redirect('societiespage')
+
+    return render(request, "admin_confirm_delete.html", {
+        "society": society,
+        "action": None
+    })
+
+
     
 @login_required
 def society_admin_view(request, society_id):
@@ -231,3 +487,5 @@ def update_widget_order(request, society_id):
             return JsonResponse({"error": str(e)}, status=400)
 
     return JsonResponse({"error": "Invalid request"}, status=400)
+
+

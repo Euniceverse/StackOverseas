@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from apps.societies.views import top_societies
+from apps.societies.functions import top_societies
 
 def home(request):
     """Display the main page.

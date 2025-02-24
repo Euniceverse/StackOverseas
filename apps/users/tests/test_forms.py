@@ -210,3 +210,78 @@ class SignUpFormTest(TestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertIn('password_confirmation', form.errors)
+
+    def test_duplicate_email(self):
+        # Create a user first
+        CustomUser.objects.create_user(
+            email='existing@university.ac.uk',
+            password='ValidPassword123',
+            first_name='John',
+            last_name='Doe',
+            preferred_name='Johnny'
+        )
+
+        # Try to create another user with the same email
+        form = SignUpForm(data={
+            'email': 'existing@university.ac.uk',
+            'first_name': 'Jane',
+            'last_name': 'Smith',
+            'preferred_name': 'Jane',
+            'new_password': 'ValidPassword123',
+            'password_confirmation': 'ValidPassword123'
+        })
+        self.assertFalse(form.is_valid())
+        self.assertIn('email', form.errors)
+        self.assertIn('This email is already registered', str(form.errors['email']))
+
+    def test_non_academic_email(self):
+        # Test various non-academic email formats
+        invalid_emails = [
+            'test@gmail.com',
+            'test@yahoo.com',
+            'test@university.com',
+            'test@university.co.uk',
+        ]
+
+        for email in invalid_emails:
+            form = SignUpForm(data={
+                'email': email,
+                'first_name': 'John',
+                'last_name': 'Doe',
+                'preferred_name': 'Johnny',
+                'new_password': 'ValidPassword123',
+                'password_confirmation': 'ValidPassword123'
+            })
+            self.assertFalse(form.is_valid())
+            self.assertIn('email', form.errors)
+
+        # Test malformed email addresses separately
+        malformed_emails = [
+            'test@.ac.uk',
+            '@university.ac.uk',
+        ]
+
+        for email in malformed_emails:
+            form = SignUpForm(data={
+                'email': email,
+                'first_name': 'John',
+                'last_name': 'Doe',
+                'preferred_name': 'Johnny',
+                'new_password': 'ValidPassword123',
+                'password_confirmation': 'ValidPassword123'
+            })
+            self.assertFalse(form.is_valid())
+            self.assertIn('email', form.errors)
+
+    def test_save_sets_is_active_false(self):
+        form = SignUpForm(data={
+            'email': 'newuser@university.ac.uk',
+            'first_name': 'Alice',
+            'last_name': 'Smith',
+            'preferred_name': 'Ally',
+            'new_password': 'SecurePassword123',
+            'password_confirmation': 'SecurePassword123'
+        })
+        self.assertTrue(form.is_valid())
+        user = form.save()
+        self.assertFalse(user.is_active)

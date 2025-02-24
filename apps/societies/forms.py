@@ -39,3 +39,4 @@ class NewSocietyForm(forms.ModelForm):
         if isinstance(tags, list): 
             return tags
         return [tag.strip() for tag in tags.split(",") if tag.strip()]
+

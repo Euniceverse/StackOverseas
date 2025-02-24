@@ -9,9 +9,20 @@ from apps.societies.models import Society, SocietyRegistration
 class SocietiesViewsTest(TestCase):
     def setUp(self):
         self.client = Client()
-        # Create test societies
-        self.society1 = Society.objects.create(name="Tech Club", description="A club for tech enthusiasts.")
-        self.society2 = Society.objects.create(name="Art Society", description="A place for art lovers.")
+        self.user = get_user_model().objects.create_user(
+            email='test@example.ac.uk',
+            password='password123',
+            first_name='Test',
+            last_name='User',
+            preferred_name='Tester'
+        )
+
+        self.society = Society.objects.create(
+            name="Tech Club",
+            description="A club for tech enthusiasts",
+            society_type="academic",
+            manager=self.user
+        )
 
     def test_societies_page_status_code(self):
         """Test if /societies/ page loads correctly"""
@@ -26,9 +37,8 @@ class SocietiesViewsTest(TestCase):
     def test_societies_in_context(self):
         """Test if societies are passed to the template"""
         response = self.client.get(reverse('societiespage'))
-        self.assertEqual(len(response.context['societies']), 2)  # Expecting 2 test societies
-        self.assertIn(self.society1, response.context['societies'])
-        self.assertIn(self.society2, response.context['societies'])
+        self.assertEqual(len(response.context['societies']), 1)  # Expecting 1 test society
+        self.assertIn(self.society, response.context['societies'])
 
 class TopSocietiesViewTest(TestCase):
     #create society test cases for the database
@@ -59,7 +69,7 @@ class TopSocietiesViewTest(TestCase):
         top_societies_per_type = response.context['top_societies_per_type']
 
         self.assertEqual(list(top_societies_per_type["Arts"]), [self.society5, self.society3])
-      
+
         self.assertEqual(list(top_societies_per_type["Academics"]), [self.society4, self.society6])
 
         self.assertEqual(list(top_societies_per_type["Technology"]), [self.society2])
@@ -94,7 +104,7 @@ class CreateSocietyViewTest(TestCase):
         """Non-logged-in users should be redirected to login page."""
         response = self.client.get(self.create_url)
         self.assertNotEqual(response.status_code, 200)
-    
+
     def test_can_access_create_society_when_logged_in(self):
         """Logged-in users can see the create society page."""
         self.client.login(email="test@university.ac.uk", password="Password123")
@@ -147,3 +157,4 @@ class CreateSocietyViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('societiespage'))
         self.assertFalse(SocietyRegistration.objects.filter(name='Society4').exists()) 
+

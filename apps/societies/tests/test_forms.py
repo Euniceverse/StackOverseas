@@ -3,6 +3,7 @@ from apps.societies.forms import NewSocietyForm
 from apps.societies.models import SocietyRegistration 
 from apps.users.models import CustomUser
 
+
 class NewSocietyFormTest(TestCase):
     """Testing for NewSocietyForm."""
     
@@ -55,7 +56,16 @@ class NewSocietyFormTest(TestCase):
         }
         form = NewSocietyForm(data=form_data)
         self.assertFalse(form.is_valid())
+        self.assertIn('base_location', form.errors)
+        self.assertIn('society_type', form.errors)
         self.assertIn('name', form.errors)
+
+    def test_society_type_choices(self):
+        form = NewSocietyForm()
+        self.assertEqual(
+            list(form.fields['society_type'].choices),
+            list(SOCIETY_TYPE_CHOICES)
+        )
 
     def test_dynamic_choices(self):
         from config.constants import SOCIETY_TYPE_CHOICES

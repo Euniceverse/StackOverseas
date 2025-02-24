@@ -19,7 +19,7 @@ from config.constants import SOCIETY_TYPE_CHOICES
 
 def societiespage(request):
     # template = get_template('societies.html')
-    societies = approved_socities()  # fetch all societies
+    societies = approved_socities(request.user)  # fetch all societies
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
     return render(request, "societies.html", {'societies': societies, "news_list": news_list, 'page':'All'})
 

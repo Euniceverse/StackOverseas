@@ -4,7 +4,9 @@ from apps.users.models import CustomUser
 from django import template
 from config.constants import SOCIETY_TYPE_CHOICES
 
-def approved_socities():
+def approved_socities(user):
+    if user.is_superuser:
+        return Society.objects.all()
     return Society.objects.filter(status="approved")
 
 def get_societies(user):

@@ -30,12 +30,12 @@
                             <a href="{% url 'admin_confirm_delete' society.id %}" class="btn btn-danger mt-2">Handle Delete Request</a>
                             
                         {% else %}
-                            <span class="badge bg-secondary">Unknown</span>
+                            <span class="badge bg-secondary">Deleted</span>
                         {% endif %}
                     </p>
                     <td>{{ soc.manager }}</td>
                     <div>
-                    {%if society.status == "pending" or society.status == "request_delete" %}
+                    {%if society.status == "pending" %}
                     <td>
                         <!-- Approve button -->
                         <a href="{% url 'admin_confirm_society_decision' society.id 'approve' %}" 

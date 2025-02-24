@@ -51,7 +51,7 @@ fake = Faker()
 def generate_unique_email(first_name, last_name):
     first_name = first_name.lower()
     last_name = last_name.lower()
-    
+
     # Choose a random uni
     city = random_location()
     university = random.choice(constants.UNI_CHOICES[city])
@@ -64,7 +64,7 @@ def generate_unique_email(first_name, last_name):
     while CustomUser.objects.filter(email=email).exists():
         email = f"{first_name}.{last_name}{counter}@{city}.ac.uk"
         counter += 1
-    
+
     return email
 
 def create_dummy_users(n=100):
@@ -166,3 +166,44 @@ if __name__ == "__main__":
     print("Dummy event registrations created.")
 
     print("Seeding complete!")
+
+
+from django.utils.timezone import now
+import random
+from datetime import timedelta
+from apps.news.models import News
+from apps.societies.models import Society
+
+def create_fake_news():
+    # Fetch only approved societies from the seed data
+    approved_societies = list(Society.objects.filter(status="approved"))
+
+    if not approved_societies:
+        print("No approved societies found. Fake news will not be created.")
+        return
+
+    # Clear old fake news before seeding new ones
+    News.objects.all().delete()
+
+    # Generate 20 fake news articles linked to seeded societies
+    fake_news_entries = []
+    for i in range(20):  # Creating 20 fake news entries
+        society = random.choice(approved_societies)  # Ensure news belongs to a seeded society
+
+        fake_news_entries.append(
+            News(
+                title=f"Test News {i+1}",
+                content="This is a test news content for filtering and sorting.",
+                date_posted=now() - timedelta(days=random.randint(1, 30)),
+                views=random.randint(0, 100),  # Randomized views for popularity sorting
+                society=society,  # Properly linking to an approved seeded society
+            )
+        )
+
+    # Bulk create for efficiency
+    News.objects.bulk_create(fake_news_entries)
+
+    print(f"Successfully created {len(fake_news_entries)} fake news articles!")
+
+# Call the function when seeding
+create_fake_news()

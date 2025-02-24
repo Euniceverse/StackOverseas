@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{{ society.name }}</h1>
+<p>{{ society.description }}</p>
+
+{% if is_manager %}
+    <a href="{% url 'society_admin_view' society.id %}">Manage Page</a>
+    <p>Drag & drop widgets to rearrange them.</p>
+{% endif %}
+
+<div id="widgets-container">
+    <ul id="sortable-widgets">
+        {% for widget in widgets %}
+            <li class="widget ui-state-default" data-widget-id="{{ widget.id }}">
+                <h3>{{ widget.get_widget_type_display }}</h3>
+                <div class="widget-content">
+                    {% if widget.widget_type == "announcements" %}
+                        <p>Latest announcements will appear here.</p>
+                    {% elif widget.widget_type == "events" %}
+                        <p>Upcoming events will be displayed here.</p>
+                    {% elif widget.widget_type == "gallery" %}
+                        <p>Photo gallery will be displayed here.</p>
+                    {% elif widget.widget_type == "contacts" %}
+                        <p>Contact information for the society will be displayed here.</p>
+                    {% elif widget.widget_type == "featured" %}
+                        <p>Featured members (president, vice, etc.) will be displayed here.</p>
+                    {% elif widget.widget_type == "leaderboard" %}
+                        <p>Leaderboard will be displayed here.</p>
+                    {% elif widget.widget_type == "news" %}
+                        <p>News will be displayed here.</p>
+                    {% endif %}
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+
+{% if is_manager %}
+    <button id="save-order">Save Order</button>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- Include jQuery & jQuery UI -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    console.log("Page loaded");
+
+    {% if is_manager %}
+        console.log("User is a manager. Initializing drag-and-drop...");
+
+        // Check if jQuery UI is working
+        if (!$.ui) {
+            console.error("jQuery UI is not loaded! Check script includes.");
+            return;
+        }
+
+        // Enable drag-and-drop sorting
+        $("#sortable-widgets").sortable({
+            placeholder: "ui-state-highlight",
+            update: function(event, ui) {
+                console.log("Widgets rearranged!");
+                let order = [];
+                $(".widget").each(function() {
+                    order.push($(this).data("widget-id"));
+                });
+                $("#save-order").data("order", order);
+                console.log("New order:", order);
+            }
+        }).disableSelection(); // Prevents text selection while dragging
+
+        // Save new widget order
+        $("#save-order").click(function() {
+            let order = $(this).data("order") || [];
+            if (order.length === 0) {
+                alert("Nothing to save!");
+                return;
+            }
+
+            console.log("Saving new widget order...", order);
+
+            $.ajax({
+                url: "{% url 'update_widget_order' society.id %}",
+                method: "POST",
+                contentType: "application/json",
+                headers: { "X-CSRFToken": "{{ csrf_token }}" },
+                data: JSON.stringify({ widget_order: order }),
+                success: function(response) {
+                    alert("Widget order saved!");
+                    console.log("Server response:", response);
+                },
+                error: function(xhr) {
+                    alert("Error saving order: " + xhr.responseText);
+                    console.error("AJAX error:", xhr.responseText);
+                }
+            });
+        });
+    {% else %}
+        console.log("User is NOT a manager. Drag-and-drop disabled.");
+    {% endif %}
+});
+</script>
+{% endblock %}

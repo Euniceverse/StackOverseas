@@ -1,27 +1,47 @@
-from django.shortcuts import render, redirect
-
-
 from .models import Society, Membership, MembershipRole, MembershipStatus
 from .functions import approved_socities, get_societies, manage_societies, get_all_users
-
 from django.contrib import messages
-from django.urls import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
-
 from .forms import NewSocietyForm, JoinSocietyForm
 from apps.news.models import News
 from django.db.models import Count
+from django.http import JsonResponse, HttpResponseNotFound
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponseNotFound
+from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 
+from .models import Society, SocietyRegistration, Widget
+from .functions import approved_societies, get_societies
+from .forms import NewSocietyForm
+from apps.news.models import News
+from config.filters import SocietyFilter
 from config.constants import SOCIETY_TYPE_CHOICES
-
+import json
 
 def societiespage(request):
-    # template = get_template('societies.html')
-    societies = approved_socities(request.user)  # fetch all societies
-    news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
-    return render(request, "societies.html", {'societies': societies, "news_list": news_list, 'page':'All'})
+    societies = Society.objects.all()
+
+    # Apply filters
+    filtered_societies = SocietyFilter(request.GET, queryset=societies).qs
+
+    # Sorting
+    sort_option = request.GET.get("sort", "name_asc")
+
+    if sort_option == "name_asc":
+        filtered_societies = filtered_societies.order_by("name")
+    elif sort_option == "name_desc":
+        filtered_societies = filtered_societies.order_by("-name")
+    elif sort_option == "date_created":
+        filtered_societies = filtered_societies.order_by("created_at")
+    elif sort_option == "price_low_high":
+        filtered_societies = filtered_societies.order_by("price_range")
+    elif sort_option == "price_high_low":
+        filtered_societies = filtered_societies.order_by("-price_range")
+    elif sort_option == "popularity":
+        filtered_societies = filtered_societies.order_by("-members_count")
+
+    return render(request, "societies.html", {"societies": filtered_societies})
+
 
 def my_societies(request):
     societies = get_societies(request.user)
@@ -30,7 +50,7 @@ def my_societies(request):
 
 @login_required
 def create_society(request):
-    """Allow a logged-in user to create a new society, limited to 3 societies max."""
+    """Allow a logged-in user to apply for a new society. Max 3."""
 
     managed_count = Society.objects.filter(manager=request.user).count()
 
@@ -42,18 +62,12 @@ def create_society(request):
         form = NewSocietyForm(request.POST)
 
         if form.is_valid():
-        
-            new_society = Society.objects.create(
-                name=form.cleaned_data['name'],
-                description=form.cleaned_data['description'],
-                society_type=form.cleaned_data['society_type'],
-                manager=request.user, 
-                status='pending',  # initially set to pending
-                visibility='Private'
-            )
+            society_registration = form.save(commit=False)
+            society_registration.applicant = request.user
+            society_registration.status = 'pending'
+            society_registration.save()            
 
-            messages.success(request, "Society created. Status pending.")
-        
+            messages.success(request, "Society application submitted. Awaiting approval.")
             return redirect('societiespage')
     else:
         form = NewSocietyForm()
@@ -314,6 +328,19 @@ def decide_application(request, society_id, application_id, decision):
             society=society,
             user=application.user,
             defaults={'role': 'member', 'status': 'pending'}
+    # get all the society type
+    # society_types = Society.objects.values_list('society_type', flat=True).distinct()
+
+    # a dictionary to start top societies
+    top_societies_per_type = {}
+    # print("All Societies:", list(Society.objects.all()))
+
+    all_approved_societies = approved_societies()
+
+    for society_type, _ in SOCIETY_TYPE_CHOICES:
+        top_societies_per_type[society_type] = (
+            all_approved_societies.filter(society_type=society_type)
+            .order_by('-members_count')[:5]
         )
         membership.status = MembershipStatus.APPROVED
         membership.save()
@@ -385,4 +412,102 @@ def admin_confirm_delete(request, society_id):
         "society": society,
         "action": None
     })
+    # for society in SOCIETY_TYPE_CHOICES[0]:
+    #     top_societies_per_type[society] = (
+    #         Society.objects.filter(society_type=society)
+    #         .order_by('-members_count')[:5]
+    #     )
 
+    top_overall_societies = Society.objects.order_by('-members_count')[:5]
+    '''
+    print("Top Overall Societies:", list(top_overall_societies))
+    print("Top Societies Per Type:", top_societies_per_type)
+    '''
+    return({'top_overall_societies':top_overall_societies,'top_societies_per_type':top_societies_per_type})
+    # return render(request, "home.html", {
+    #     "top_societies_per_type": top_societies_per_type,
+    #     "top_overall_societies": top_overall_societies,
+    #     'user' : request.user
+    # })
+    
+@login_required
+def society_admin_view(request, society_id):
+    """View for society managers to configure the society page"""
+    society = get_object_or_404(Society, id=society_id)
+
+    if request.user != society.manager:
+        messages.error(request, "You are not authorized to edit this society.")
+        return redirect("society_page", society_id=society.id)
+
+    if request.method == "POST":
+        widget_type = request.POST.get("widget_type")
+        Widget.objects.create(society=society, widget_type=widget_type, position=Widget.objects.filter(society=society).count())
+        messages.success(request, f"{widget_type} widget added!")
+
+    widgets = Widget.objects.filter(society=society).order_by("position")
+
+    return render(request, "society_admin.html", {"society": society, "widgets": widgets})
+
+@login_required
+def remove_widget(request, society_id, widget_id):
+    """Allows society managers to remove widgets"""
+    widget = get_object_or_404(Widget, id=widget_id, society_id=society_id)
+
+    if request.user != widget.society.manager:
+        messages.error(request, "You are not authorized to delete this widget.")
+        return redirect("society_admin_view", society_id=society_id)
+
+    widget.delete()
+    messages.success(request, "Widget removed successfully.")
+    return redirect("society_admin_view", society_id=society_id)
+
+def society_page(request, society_id):
+    """Public society page that displays widgets dynamically."""
+    society = get_object_or_404(Society, id=society_id)
+    widgets = Widget.objects.filter(society=society).order_by("position")
+
+    # determine user access level
+    is_member = society.members.filter(id=request.user.id).exists() if request.user.is_authenticated else False
+    is_manager = request.user == society.manager if request.user.is_authenticated else False
+    
+    # remove member-only widgets for non-members
+    if not is_member:
+        widgets = widgets.exclude(widget_type__in=["discussion", "members"])
+
+    return render(
+        request,
+        "society_page.html",
+        {
+            "society": society,
+            "widgets": widgets,
+            "is_member": is_member,
+            "is_manager": is_manager,
+        },
+    )
+    
+@csrf_exempt
+#@login_required
+def update_widget_order(request, society_id):
+    """Update widget order when the manager rearranges widgets."""
+    if request.method == "POST":
+        society = get_object_or_404(Society, id=society_id)
+        
+        # ensures only the manager can update order
+        if request.user != society.manager:
+            return JsonResponse({"error": "Permission denied"}, status=403)
+
+        try:
+            data = json.loads(request.body)
+            widget_order = data.get("widget_order", [])
+            
+            for index, widget_id in enumerate(widget_order):
+                widget = Widget.objects.get(id=widget_id, society=society)
+                widget.position = index
+                widget.save()
+
+            return JsonResponse({"success": True})
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+
+    return JsonResponse({"error": "Invalid request"}, status=400)

@@ -4,10 +4,34 @@ from django.contrib import messages
 from apps.societies.models import Society
 from .models import News
 from .forms import NewsForm
+from config.filters import NewsFilter
+from config.constants import SOCIETY_TYPE_CHOICES
 
 def newspage(request):
-    """News page view"""
-    return render(request, "news.html")
+    """News page with filtering and sorting"""
+    news = News.objects.all()
+
+    # Apply filtering
+    filtered_news = NewsFilter(request.GET, queryset=news).qs
+
+    # Get sorting option from request
+    sort_option = request.GET.get("sort", "newest")
+
+    if sort_option == "newest":
+        filtered_news = filtered_news.order_by("-date_posted")
+    elif sort_option == "oldest":
+        filtered_news = filtered_news.order_by("date_posted")
+    elif sort_option == "popularity":
+        filtered_news = filtered_news.order_by("-views")  # Assuming `views` field tracks popularity
+
+    societies = Society.objects.filter(status="approved")
+
+    return render(request, "news.html", {
+        "news_list": filtered_news,
+        "societies": societies,
+        "SOCIETY_TYPE_CHOICES": SOCIETY_TYPE_CHOICES,
+        "selected_sort": sort_option,
+    })
 
 def news_list(request):
     """Retrieve latest 10 published news for news-panel.html"""
@@ -19,16 +43,16 @@ def create_news(request):
     """Create a news post."""
     # fetch societies managed by the logged-in user
     managed_societies = Society.objects.filter(manager=request.user)
-    
+
     if not managed_societies.exists():
         messages.error(request, "You do not manage any societies.")
         return redirect("home")
-    
+
     if request.method == "POST":
         form = NewsForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             news = form.save(commit=False)
-            
+
             try:
                 selected_society = Society.objects.get(id=int(request.POST["society"]))
             except (Society.DoesNotExist, ValueError):
@@ -40,15 +64,15 @@ def create_news(request):
                 return redirect("create_news")
 
             if "save_draft" in request.POST:
-                news.is_published = False  
+                news.is_published = False
                 messages.success(request, "News saved as draft!")
             elif "post" in request.POST:
-                news.is_published = True  
+                news.is_published = True
                 messages.success(request, "News successfully posted!")
-                
+
             news.save()
             messages.success(request, "News successfully created!")
-            return redirect("news_list") 
+            return redirect("news_list")
     else:
         form = NewsForm(user=request.user)
 
@@ -67,3 +91,10 @@ def edit_news(request, news_id):
         form = NewsForm(instance=news_item)
     
     return render(request, "edit_news.html", {"form": form, "news_item": news_item})
+
+def news_detail(request, news_id):
+    """Display a single news article and increment view count"""
+    news = News.objects.get(id=news_id)
+    news.views = F("views") + 1  # Increment views
+    news.save(update_fields=["views"])  # Save without modifying timestamps
+    return render(request, "news_detail.html", {"news": news})

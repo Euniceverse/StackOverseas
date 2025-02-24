@@ -13,10 +13,11 @@
     {% endfor %}
   {% endif %}
 
-  <form method="POST" action="">
+  <form method="POST">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Create</button>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
     <a href="{% url 'societiespage' %}" class="btn btn-secondary">Cancel</a>
   </form>
 {% endblock %}

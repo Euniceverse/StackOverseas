@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Customize {{ society.name }} Page</h1>
+
+{% if messages %}
+  <ul>
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<h2>Active Widgets</h2>
+<ul>
+    {% for widget in widgets %}
+    <li>
+        {{ widget.get_widget_type_display }}
+        <a href="{% url 'remove_widget' society.id widget.id %}">Remove</a>
+    </li>
+    {% endfor %}
+</ul>
+
+<h2>Add New Widget</h2>
+<form method="POST">
+    {% csrf_token %}
+    <label for="widget_type">Select Widget:</label>
+    <select name="widget_type">
+        <option value="announcements">Announcements</option>
+        <option value="events">Upcoming Events</option>
+        <option value="gallery">Gallery</option>
+        <option value="contacts">Contact Information</option>
+        <option value="featured">Featured Members</option>
+        <option value="leaderboard">Leaderboard</option>
+        <option value="news">News</option>
+    </select>
+    <button type="submit">Add Widget</button>
+</form>
+{% endblock %}

@@ -2,16 +2,19 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Count
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 
-from .models import Society, SocietyRegistration
+from .models import Society, SocietyRegistration, Widget
 from .functions import approved_societies, get_societies
 from .forms import NewSocietyForm
 from apps.news.models import News
 from config.filters import SocietyFilter
 from config.constants import SOCIETY_TYPE_CHOICES
 
+import json
 
 def societiespage(request):
     societies = Society.objects.all()
@@ -146,3 +149,85 @@ def top_societies():
     #     "top_overall_societies": top_overall_societies,
     #     'user' : request.user
     # })
+    
+@login_required
+def society_admin_view(request, society_id):
+    """View for society managers to configure the society page"""
+    society = get_object_or_404(Society, id=society_id)
+
+    if request.user != society.manager:
+        messages.error(request, "You are not authorized to edit this society.")
+        return redirect("society_page", society_id=society.id)
+
+    if request.method == "POST":
+        widget_type = request.POST.get("widget_type")
+        Widget.objects.create(society=society, widget_type=widget_type, position=Widget.objects.filter(society=society).count())
+        messages.success(request, f"{widget_type} widget added!")
+
+    widgets = Widget.objects.filter(society=society).order_by("position")
+
+    return render(request, "society_admin.html", {"society": society, "widgets": widgets})
+
+@login_required
+def remove_widget(request, society_id, widget_id):
+    """Allows society managers to remove widgets"""
+    widget = get_object_or_404(Widget, id=widget_id, society_id=society_id)
+
+    if request.user != widget.society.manager:
+        messages.error(request, "You are not authorized to delete this widget.")
+        return redirect("society_admin_view", society_id=society_id)
+
+    widget.delete()
+    messages.success(request, "Widget removed successfully.")
+    return redirect("society_admin_view", society_id=society_id)
+
+def society_page(request, society_id):
+    """Public society page that displays widgets dynamically."""
+    society = get_object_or_404(Society, id=society_id)
+    widgets = Widget.objects.filter(society=society).order_by("position")
+
+    # determine user access level
+    is_member = society.members.filter(id=request.user.id).exists() if request.user.is_authenticated else False
+    is_manager = request.user == society.manager if request.user.is_authenticated else False
+    
+    # remove member-only widgets for non-members
+    if not is_member:
+        widgets = widgets.exclude(widget_type__in=["discussion", "members"])
+
+    return render(
+        request,
+        "society_page.html",
+        {
+            "society": society,
+            "widgets": widgets,
+            "is_member": is_member,
+            "is_manager": is_manager,
+        },
+    )
+    
+@csrf_exempt
+#@login_required
+def update_widget_order(request, society_id):
+    """Update widget order when the manager rearranges widgets."""
+    if request.method == "POST":
+        society = get_object_or_404(Society, id=society_id)
+        
+        # ensures only the manager can update order
+        if request.user != society.manager:
+            return JsonResponse({"error": "Permission denied"}, status=403)
+
+        try:
+            data = json.loads(request.body)
+            widget_order = data.get("widget_order", [])
+            
+            for index, widget_id in enumerate(widget_order):
+                widget = Widget.objects.get(id=widget_id, society=society)
+                widget.position = index
+                widget.save()
+
+            return JsonResponse({"success": True})
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+
+    return JsonResponse({"error": "Invalid request"}, status=400)

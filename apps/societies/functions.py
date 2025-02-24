@@ -8,7 +8,7 @@ from apps.users.models import CustomUser
 def staff_required(user):
     return user.is_staff
 
-def approved_socities():
+def approved_societies():
     return Society.objects.filter(status="approved")
 
 def get_societies(user):

@@ -123,8 +123,35 @@
       localStorage.removeItem("newsFiltersVisible"); // Clear stored visibility state
   }
 
-  // Ensure filters are hidden when the page loads
-  document.addEventListener("DOMContentLoaded", resetFiltersVisibility);
+  function restoreFilters() {
+      let filterForm = document.getElementById("filter-form");
+      let isFiltersVisible = localStorage.getItem("newsFiltersVisible");
+
+      if (isFiltersVisible === "true") {
+          filterForm.style.display = "block";
+      } else {
+          filterForm.style.display = "none";
+      }
+  }
+
+  function toggleSocietyType() {
+      let societySelect = document.getElementById("society");
+      let societyTypeSelect = document.getElementById("society_type");
+
+      if (societySelect.value) {
+          societyTypeSelect.disabled = true;
+      } else {
+          societyTypeSelect.disabled = false;
+      }
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+      resetFiltersVisibility();  // Ensures filters are hidden on refresh
+      restoreFilters();  // Restores filters if toggled within the same session
+      toggleSocietyType();  // Handles disabling of Society Type dropdown
+
+      document.getElementById("society").addEventListener("change", toggleSocietyType);
+  });
 </script>
 
 

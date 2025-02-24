@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load static %}
+{% load society_extras %}  {# <-- Our custom template filter #}
+
+{% block title %}
+  Society Detail - {{ society.name }}
+{% endblock %}
+
+{% block content %}
+<h2>{{ society.name }}</h2>
+<p>{{ society.description }}</p>
+<p>Type: {{ society.society_type }}</p>
+<p>Members: {{ society.members_count }}</p>
+
+{% if user.is_authenticated %}
+  {% for membership in memberships %}
+    {% if membership.user == user and membership.role in 'manager co_manager editor' and membership.status == 'approved' %}
+      <a href="{% url 'event_create' society.id %}" class="btn btn-primary">Create Event</a>
+      {% break %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
+{% if user.is_authenticated %}
+    {# Use the custom filter to retrieve the membership for request.user #}
+    {% with my_membership=society.society_memberships.all|get_user_membership:user %}
+    
+    {% if my_membership %}
+        {% if my_membership.status == 'approved' %}
+            <p>You are a member of this society (Role: {{ my_membership.get_role_display }}).</p>
+        {% elif my_membership.status == 'pending' %}
+            <p>Your membership application is pending.</p>
+        {% endif %}
+    {% else %}
+        {# If user is not in membership, show the Join button #}
+        <a href="{% url 'join_society' society.id %}" class="btn btn-primary">
+          Join Society
+        </a>
+    {% endif %}
+    
+    {# Show Manage Society if role is manager, co_manager, or editor and they are approved #}
+    {% if my_membership and my_membership.status == 'approved' and my_membership.role in 'manager co_manager editor' %}
+      <a href="{% url 'manage_society' society.id %}" class="btn btn-warning">
+        Manage This Society
+      </a>
+    {% endif %}
+    
+    {% endwith %}
+{% else %}
+    <p><a href="{% url 'log_in' %}">Log in</a> to join this society.</p>
+{% endif %}
+{% endblock %}

@@ -19,7 +19,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 from .views import home
-from apps.societies.views import top_societies
+from apps.societies.functions import top_societies
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent  # ✅ Define BASE_DIR

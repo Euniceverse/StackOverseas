@@ -16,5 +16,6 @@ def create_news_on_event(sender, instance, created, **kwargs):
                 content=f"New Event on {instance.date.strftime('%B %d, %Y')}. Hosted by {host.society.name}.",
                 society=host.society, 
                 date_posted=now(),
-                is_published=True  
+                is_published=False,
+                event=instance # linked to Event  
             )

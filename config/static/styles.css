@@ -5,9 +5,17 @@
     font-family: 'Kanit', sans-serif;
   }
 
+  html, body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
   .bg-light{
     background-color: #D6EEFF;
   }
+
+
 
   /*-----header-----*/
   .header{
@@ -17,6 +25,12 @@
 
   .header-short{
     min-height: 4vh;
+  }
+
+  .body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
   }
 
   /*-----search bar-----*/

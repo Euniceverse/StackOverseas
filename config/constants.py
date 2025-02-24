@@ -129,7 +129,13 @@ UNI_CHOICES = {
     "Peterborough": ["aru"]
 }
 
-
+SOCIETY_STATUS_CHOICES = [
+    ('approved', 'Approved'),
+    ('pending', 'Pending'),
+    ('rejected', 'Rejected'),
+    ('request_delete','Request Delete'),
+    ('deleted', 'Deleted'),
+]
 # SOC_NAMES = 
 
 event_choices_dict = [{"value": key, "label": label} for key, label in EVENT_TYPE_CHOICES]

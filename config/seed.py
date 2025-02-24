@@ -25,6 +25,26 @@ def random_location():
         city = random.choice(list(constants.UNI_CHOICES.keys()))
     return city
 
+def create_superuser():
+    """Creates a default superuser if one doesn't exist."""
+    User = CustomUser  # Your custom user model
+    
+    superuser_email = "admin@example.ac.uk"
+    
+    if not User.objects.filter(email=superuser_email).exists():
+        User.objects.create_superuser(
+            email=superuser_email,
+            first_name="Admin",
+            last_name="User",
+            preferred_name="Admin",
+            password="password123"  # Change this to a secure password
+        )
+        print("Superuser created successfully!")
+    else:
+        print("Superuser already exists, skipping creation.")
+
+
+
 # Initialize Faker
 fake = Faker()
 
@@ -72,15 +92,15 @@ def create_dummy_societies(users, n=50):
     societies = []
     for _ in range(n):
         society = Society.objects.create(
-            name=fake.company(),
+            name=fake.unique.company(),
             description=fake.text(),
             society_type = random.choice([key for key, _ in constants.SOCIETY_TYPE_CHOICES]),
-            status=random.choice(["pending", "approved", "rejected"]),
+            status=random.choice([key for key, _ in constants.SOCIETY_STATUS_CHOICES]),
             manager=random.choice(users),
             # members_count=random.randint(1, 10)  # Assign random members count
         )
         if society.status == "approved":
-            society.members.set(random.sample(users, random.randint(1, 10)))  # Assign random members
+            society.members.set(random.sample(users, random.randint(1, len(users))))  # Assign random members
         societies.append(society)
     return societies
 
@@ -126,20 +146,23 @@ def create_dummy_event_registrations(users, events, n=20):
 if __name__ == "__main__":
     print("Generating dummy data...")
 
+    # Generate superuser
+    create_superuser()
+
     # Generate users
-    users = create_dummy_users(10)
+    users = create_dummy_users(50)
     print(f"Created {len(users)} users.")
 
     # Generate societies
-    societies = create_dummy_societies(users, 10)
+    societies = create_dummy_societies(users, 50)
     print(f"Created {len(societies)} societies.")
 
     # Generate events
-    events = create_dummy_events(societies, 15)
+    events = create_dummy_events(societies, 30)
     print(f"Created {len(events)} events.")
 
     # Generate event registrations
-    create_dummy_event_registrations(users, events, 20)
+    create_dummy_event_registrations(users, events, 40)
     print("Dummy event registrations created.")
 
     print("Seeding complete!")

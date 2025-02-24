@@ -1,3 +1,5 @@
+import json
+
 MAX_NAME = 50
 MAX_DESCRIPTION = 200
 MAX_LOCATION = 255
@@ -130,4 +132,9 @@ UNI_CHOICES = {
 
 # SOC_NAMES = 
 
+event_choices_dict = [{"value": key, "label": label} for key, label in EVENT_TYPE_CHOICES]
 
+with open("event_choices.json", "w") as f:
+    json.dump(event_choices_dict, f)
+
+    

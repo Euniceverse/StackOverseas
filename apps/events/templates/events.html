@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Events{% endblock %}
+
+{% block fullpage %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'events.css' %}">
+    <script src="{% static 'js/view-switcher.js' %}" defer></script>
+
+    <div class="event-header">
+        <div class="event-title">All Events</div>
+    
+        <div class="event-search">
+            {% include "components/search.html" %}
+        </div>
+
+        <div class="event-filter">
+            {% include "components/filter.html" %}
+        </div>
+
+    </div>
+
+    <div class="event-body">
+        <div class="event-api-view-bar">
+            <span id="list-button">LIST</span>
+            <span id="calendar-button">CALENDAR</span>
+            <span id="map-button">MAP</span>
+        </div>
+        <div class="event-api-views">
+            <div class="event-view-list">
+                {% include "components/list.html" %}
+            </div>
+            <div class="event-view-calendar">
+                {% include "components/calendar.html" %}
+            </div>
+            <div class="event-view-map"></div>
+        </div>
+        <div class="event-api-view"></div>
+    </div>
+{% endblock %}
+

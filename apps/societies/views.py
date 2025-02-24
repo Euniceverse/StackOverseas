@@ -149,3 +149,16 @@ def society_admin_view(request, society_id):
 
     return render(request, "society_admin.html", {"society": society, "widgets": widgets})
 
+@login_required
+def remove_widget(request, society_id, widget_id):
+    """Allows society managers to remove widgets"""
+    widget = get_object_or_404(Widget, id=widget_id, society_id=society_id)
+
+    if request.user != widget.society.manager:
+        messages.error(request, "You are not authorized to delete this widget.")
+        return redirect("society_admin_view", society_id=society_id)
+
+    widget.delete()
+    messages.success(request, "Widget removed successfully.")
+    return redirect("society_admin_view", society_id=society_id)
+

@@ -1,62 +1,49 @@
+# apps/events/filter.py
 import django_filters
 from django.db.models import Count, F
 from apps.events.models import Event
 
-
 class EventFilter(django_filters.FilterSet):
     """
-    django_filters.FilterSet을 활용해
-    Query Param -> DB 필터 를 매핑
+    프론트엔드에서 넘기는 쿼리 파라미터들을
+    실제 DB 필드와 매핑해주는 커스텀 FilterSet
     """
-    # ① event_type: 기본 exact 매칭 (예: `?event_type=sports`)
+
+    # 1) event_type: 예) ?event_type=sports
     event_type = django_filters.CharFilter(field_name='event_type', lookup_expr='exact')
 
-    # ② member_only: Boolean 필터 (예: `?member_only=true` / `?member_only=false`)
+    # 2) member_only: 예) ?member_only=true 혹은 ?member_only=false
     member_only = django_filters.BooleanFilter(field_name='member_only')
 
-    # ③ fee_min / fee_max: DecimalField에 대한 gte, lte 필터
-    #    프론트에서 `?fee_min=10&fee_max=50` 이렇게 보내면,
-    #    fee >= 10 AND fee <= 50 로 필터
+    # 3) fee_min, fee_max: 예) ?fee_min=10&fee_max=50
     fee_min = django_filters.NumberFilter(field_name='fee', lookup_expr='gte')
     fee_max = django_filters.NumberFilter(field_name='fee', lookup_expr='lte')
 
-    # ④ location: exact 매칭
-    #    (예: `?location=london`)
+    # 4) location: 예) ?location=london
     location = django_filters.CharFilter(field_name='location', lookup_expr='exact')
 
-    # ⑤ availability: custom method filter
-    #    (예: `?availability=available`, `?availability=full`, `?availability=waiting`)
+    # 5) availability: (가상 필드) ?availability=available / full / waiting
+    #    capacity와 registrations(신청자 수)를 비교해 자리 여부를 필터링
     availability = django_filters.CharFilter(method='filter_availability')
 
     class Meta:
         model = Event
-        # 아래 fields는 "기본적으로" 처리할 수 있는 필드를 지정
-        fields = []  # 개별 필드는 위에서 따로 선언했으니 여기는 비워둬도 OK
+        fields = []  # 여기서는 모든 필터를 개별 필드로 정의했으므로 빈 리스트
 
     def filter_availability(self, queryset, name, value):
         """
-        value: 'available' | 'full' | 'waiting' 등
-        capacity와 registrations.count() 비교
+        capacity와 registrations 수를 비교해서
+        'available', 'full', 'waiting'을 필터링
         """
-        # registrations 수를 annotate 해서 비교
+        # registrations 수(= reg_count)를 annotate
         queryset = queryset.annotate(reg_count=Count('registrations'))
 
         if value == 'available':
-            # capacity != null, reg_count < capacity 인 경우
-            return queryset.filter(
-                capacity__isnull=False,
-                reg_count__lt=F('capacity')
-            )
+            return queryset.filter(capacity__isnull=False, reg_count__lt=F('capacity'))
         elif value == 'full':
-            # capacity != null, reg_count == capacity
-            return queryset.filter(
-                capacity__isnull=False,
-                reg_count=F('capacity')
-            )
+            return queryset.filter(capacity__isnull=False, reg_count=F('capacity'))
         elif value == 'waiting':
-            # capacity != null, reg_count > capacity
-            return queryset.filter(
-                capacity__isnull=False,
-                reg_count__gt=F('capacity')
-            )
-        return queryset  # value가 none이거나 예외면 필터 적용 안 함
+            return queryset.filter(capacity__isnull=False, reg_count__gt=F('capacity'))
+
+        # 그 외 값이면 필터 미적용
+        return queryset

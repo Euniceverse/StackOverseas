@@ -15,32 +15,35 @@ document.addEventListener("DOMContentLoaded", function () {
     ];
 
     const filterValueMapping = {
-        "Sports": "sports",
-        "Academic": "academic",
-        "Arts": "arts",
-        "Cultural": "cultural",
-        "Social": "social",
-        "Other": "other",
-
-        "General": "",
+        "Sports": "event_type=('sports', 'Sports')",
+        "Academic": "event_type=('academic', 'Academic')",
+        "Arts": "event_type=('arts', 'Arts')",
+        "Cultural": "event_type=('cultural', 'Cultural')",
+        "Social": "event_type=('social', 'Social')",
+        "Other": "event_type=('other', 'Other')",
+    
+        "General": "member_only=false",  // 아무 파라미터도 보내지 않는다면 ""로
         "Members only": "member_only=true",
-
-        "London": "london",
-        "Manchester": "manchester",
-        "Birmingham": "birmingham",
-        "Liverpool": "liverpool",
-        "Online": "online",
-
+    
+        "London": "location=london",
+        "Manchester": "location=manchester",
+        "Birmingham": "location=birmingham",
+        "Liverpool": "location=liverpool",
+        "Online": "location=online",
+    
         "Available": "availability=available",
         "Full": "availability=full",
         "Waiting List": "availability=waiting",
-
+    
+        // Fee 관련
+        // fee=0 → free, fee_min=10&fee_max=50 → 10 ~ 50
         "Free": "fee_max=0",
         "Under £10": "fee_max=10",
         "£10 - £50": "fee_min=10&fee_max=50",
         "£50 - £100": "fee_min=50&fee_max=100",
         "£100+": "fee_min=100"
     };
+    
 
     function createDropdown(label, options) {
         const container = document.createElement("div");

@@ -12,27 +12,21 @@
 <div id="widgets-container">
     <ul id="sortable-widgets">
         {% for widget in widgets %}
-            <li class="widget" data-widget-id="{{ widget.id }}">
+            <li class="widget ui-state-default" data-widget-id="{{ widget.id }}">
                 <h3>{{ widget.get_widget_type_display }}</h3>
                 <div class="widget-content">
                     {% if widget.widget_type == "announcements" %}
                         <p>Latest announcements will appear here.</p>
-
                     {% elif widget.widget_type == "events" %}
                         <p>Upcoming events will be displayed here.</p>
-
                     {% elif widget.widget_type == "gallery" %}
                         <p>Photo gallery will be displayed here.</p>
-
                     {% elif widget.widget_type == "contacts" %}
                         <p>Contact information for the society will be displayed here.</p>
-
                     {% elif widget.widget_type == "featured" %}
                         <p>Featured members (president, vice, etc.) will be displayed here.</p>
-
                     {% elif widget.widget_type == "leaderboard" %}
                         <p>Leaderboard will be displayed here.</p>
-
                     {% elif widget.widget_type == "news" %}
                         <p>News will be displayed here.</p>
                     {% endif %}
@@ -45,27 +39,39 @@
 {% if is_manager %}
     <button id="save-order">Save Order</button>
 {% endif %}
-
 {% endblock %}
 
 {% block extra_scripts %}
 <!-- Include jQuery & jQuery UI -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
 <script>
 $(document).ready(function() {
+    console.log("Page loaded");
+
     {% if is_manager %}
-        // Enable drag & drop sorting
+        console.log("User is a manager. Initializing drag-and-drop...");
+
+        // Check if jQuery UI is working
+        if (!$.ui) {
+            console.error("jQuery UI is not loaded! Check script includes.");
+            return;
+        }
+
+        // Enable drag-and-drop sorting
         $("#sortable-widgets").sortable({
+            placeholder: "ui-state-highlight",
             update: function(event, ui) {
+                console.log("Widgets rearranged!");
                 let order = [];
-                $(".widget").each(function(index) {
+                $(".widget").each(function() {
                     order.push($(this).data("widget-id"));
                 });
-                $("#save-order").data("order", order); // Store order temporarily
+                $("#save-order").data("order", order);
+                console.log("New order:", order);
             }
-        });
+        }).disableSelection(); // Prevents text selection while dragging
 
         // Save new widget order
         $("#save-order").click(function() {
@@ -75,6 +81,8 @@ $(document).ready(function() {
                 return;
             }
 
+            console.log("Saving new widget order...", order);
+
             $.ajax({
                 url: "{% url 'update_widget_order' society.id %}",
                 method: "POST",
@@ -83,12 +91,16 @@ $(document).ready(function() {
                 data: JSON.stringify({ widget_order: order }),
                 success: function(response) {
                     alert("Widget order saved!");
+                    console.log("Server response:", response);
                 },
                 error: function(xhr) {
                     alert("Error saving order: " + xhr.responseText);
+                    console.error("AJAX error:", xhr.responseText);
                 }
             });
         });
+    {% else %}
+        console.log("User is NOT a manager. Drag-and-drop disabled.");
     {% endif %}
 });
 </script>

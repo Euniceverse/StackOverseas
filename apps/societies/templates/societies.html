@@ -31,6 +31,24 @@
                             <span class="badge bg-secondary">Unknown</span>
                         {% endif %}
                     </p>
+                    <td>{{ soc.manager }}</td>
+                    <div>
+                    {%if society.status == "pending" or society.status == "request_delete" %}
+                    <td>
+                        <!-- Approve button -->
+                        <a href="{% url 'admin_confirm_society_decision' society.id 'approve' %}" 
+                           class="btn btn-success btn-sm">
+                           Approve
+                        </a>
+                        
+                        <!-- Reject button -->
+                        <a href="{% url 'admin_confirm_society_decision' society.id 'reject' %}" 
+                           class="btn btn-danger btn-sm">
+                           Reject
+                        </a>
+                      </td>
+                    {% endif %}
+                    </div>
                     {% endif %}
 
                     <p class="card-text">{{ society.description|truncatewords:15 }}</p>

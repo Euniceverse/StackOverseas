@@ -91,12 +91,12 @@ def admin_confirm_society_decision(request, society_id, action):
                 society.delete()  # or set status='rejected' if you prefer
                 messages.warning(request, f"Society '{society.name}' has been rejected and discarded.")
 
-            return redirect('admin_pending_societies')
+            return redirect('manage_societies')
 
         elif 'cancel' in request.POST:
-            return redirect('admin_pending_societies')
+            return redirect('manage_societies')
 
-    return render(request, 'societies/admin_confirm_decision.html', {
+    return render(request, 'admin_confirm_decision.html', {
         'society': society,
         'action': action
     })

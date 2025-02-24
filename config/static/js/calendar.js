@@ -11,6 +11,9 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
+    // ✅ 🟢 페이지 로드 시 필터 초기화
+    localStorage.removeItem("filterQueryString");  // 🛑 기존 필터 제거
+
     // Function to fetch events dynamically
     function fetchFilteredEvents(fetchInfo, successCallback, failureCallback) {
         let queryString = localStorage.getItem("filterQueryString") || "";
@@ -104,9 +107,5 @@ document.addEventListener("DOMContentLoaded", function () {
         window.calendar.refetchEvents();
     });
 
-    // ✅ Apply saved filters on page load
-    const savedQuery = localStorage.getItem("filterQueryString") || "";
-    if (savedQuery) {
-        document.dispatchEvent(new CustomEvent("filtersUpdated", { detail: savedQuery }));
-    }
+    // ✅ 🟢 필터를 초기화했으므로, 새로고침 후에도 `filtersUpdated` 이벤트를 트리거하지 않음
 });

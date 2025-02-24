@@ -64,6 +64,12 @@ html, body {
     display: block;
 }
 
+.event-view-map {
+    margin: 0%;
+    display: block;
+    height: 650pt;
+}
+
 .event-api-view-bar span {
     padding: 8px 16px;
     border-radius: 5px;

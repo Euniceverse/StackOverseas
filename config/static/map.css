@@ -1,4 +1,5 @@
-#calendarContainer {
+#mapContainer {
+    display: block;
     width: 800px;
     background: #fff;
     border-radius: 10px;

@@ -17,13 +17,13 @@ class News(models.Model):
     is_published = models.BooleanField(default=False)
     views = models.PositiveIntegerField(default=0)  # Track number of views
 
-    event = models.ForeignKey(
-        Event,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="news_articles"
-    )
+    # event = models.ForeignKey(
+    #     Event,
+    #     on_delete=models.SET_NULL,
+    #     null=True,
+    #     blank=True,
+    #     related_name="news_articles"
+    # )
 
     def get_event(self):
         Event = apps.get_model("events", "Event")

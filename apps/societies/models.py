@@ -97,7 +97,7 @@ class SocietyRegistration(models.Model):
     applicant = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="society_applications"
+        related_name="society_registrations"
     )
     
     name = models.CharField(max_length=255, unique=True)
@@ -241,7 +241,7 @@ class MembershipApplication(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='society_applications'
+        related_name='membership_applications'
     )
     society = models.ForeignKey(
         Society,

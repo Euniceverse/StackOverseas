@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 
 
 from .models import Society, Membership, MembershipRole, MembershipStatus
-from .functions import approved_socities, get_societies, manage_societies, get_all_users
+from .functions import *
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -13,10 +13,10 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import Society, SocietyRegistration, Widget
-from .functions import approved_societies, get_societies
 from .forms import NewSocietyForm, JoinSocietyForm
 from apps.news.models import News
-from config.filters import SocietyFilterfrom django.http import HttpResponseNotFound
+from config.filters import SocietyFilter
+from django.http import HttpResponseNotFound
 
 from config.constants import SOCIETY_TYPE_CHOICES
 
@@ -121,13 +121,12 @@ def admin_confirm_society_decision(request, society_id, action):
     })
 
 def view_manage_societies(request):
-    to_manage = manage_societies()
+    to_manage = manage_societies(request.user)
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
     return render(request, "societies.html", {'societies': to_manage, "news_list": news_list, 'page':'Manange'})
 
 
-# def top_societies():
-    """View to show top 5 societies per type and overall"""
+
 
 
 @login_required

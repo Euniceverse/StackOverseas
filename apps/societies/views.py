@@ -186,3 +186,29 @@ def society_page(request, society_id):
         },
     )
     
+@csrf_exempt
+#@login_required
+def update_widget_order(request, society_id):
+    """Update widget order when the manager rearranges widgets."""
+    if request.method == "POST":
+        society = get_object_or_404(Society, id=society_id)
+        
+        # ensures only the manager can update order
+        if request.user != society.manager:
+            return JsonResponse({"error": "Permission denied"}, status=403)
+
+        try:
+            data = json.loads(request.body)
+            widget_order = data.get("widget_order", [])
+            
+            for index, widget_id in enumerate(widget_order):
+                widget = Widget.objects.get(id=widget_id, society=society)
+                widget.position = index
+                widget.save()
+
+            return JsonResponse({"success": True})
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+
+    return JsonResponse({"error": "Invalid request"}, status=400)

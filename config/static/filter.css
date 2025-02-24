@@ -1,0 +1,94 @@
+#dropdownContainer {
+    display: flex;
+    flex-direction: row;
+    cursor: pointer;
+    width: 800px;
+    justify-content: space-between;
+
+}
+
+.custom-dropdown {
+    display: flex;
+    height: 30pt;
+    width: 150px;
+    justify-content: space-between;
+}
+
+/* Default (Closed state with V icon) */
+.custom-selected {
+    display: flex;
+    flex-direction: row;
+    background-color: #F3F0FD;
+    color: rgb(0, 0, 0);
+    border-radius: 20px;
+    width: 150pt;
+    text-align: center;
+    align-items: center;
+}
+
+/* When an option is selected (Show X instead of V) */
+.custom-selected.selected {
+    background-color: #F03F35;
+    color: white;
+}
+
+.selected-text {
+    display: flex;
+    flex-grow: 2;
+    justify-content: center;
+}
+
+/* V Icon (default state) */
+.dropdown-icon {
+    display: flex;
+    flex-grow: 1;
+    font-size: 10px;
+    justify-content: left;    
+}
+
+/* X Icon (selected state) */
+.clear-selection {
+    display: flex;
+    flex-grow: 1;
+    font-size: 15px;
+    cursor: pointer;
+    color: white;
+    justify-content: center;    
+    border-radius: 50%;
+    margin-bottom: 9pt;
+    width: 10px;
+    height: 10px;
+    display: none; /* ✅ Initially hidden */
+}
+
+/* Opened dropdown */
+.custom-options {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    background-color: #EBF4BC;
+    border-radius: 10px;
+    list-style: none;
+    z-index: 10;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 40pt;
+    padding-top: 10pt;
+    padding-right: 32px;
+    padding-bottom: 10pt;
+    width: 110pt;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Hover effects */
+.custom-options li {
+    /* padding: 16pt; */
+    cursor: pointer;
+    text-align: center;
+}
+
+.custom-options li:hover {
+    color: #f03f35;
+}
+
+

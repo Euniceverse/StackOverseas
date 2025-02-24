@@ -7,6 +7,9 @@ from .serializers import EventSerializer
 from rest_framework.pagination import PageNumberPagination
 from django.utils.timezone import now, make_aware
 from datetime import datetime
+from .filters import EventFilter  # 경로/파일명은 실제 프로젝트 구조에 맞춰 조정
+
+
 
 def eventspage(request):
     """Events page view"""
@@ -19,14 +22,18 @@ class StandardResultsSetPagination(PageNumberPagination):
     page_size_query_param = "page_size"
     max_page_size = 100
 
-
 class EventListAPIView(generics.ListAPIView):
     """API to list all future events with timezone-aware filtering"""
     queryset = Event.objects.filter(date__gte=make_aware(datetime.now())).order_by("date")
     serializer_class = EventSerializer
     pagination_class = StandardResultsSetPagination
+
+    # ❷ 'filter_backends'는 그대로 두되...
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ["event_type", "location"]
+
+    # ❸ 기존 filterset_fields = ["event_type", "location"] → 'filterset_class' 사용
+    filterset_class = EventFilter
+
     search_fields = ["name", "description"]
     ordering_fields = ["date", "name"]
     ordering = ["date"]

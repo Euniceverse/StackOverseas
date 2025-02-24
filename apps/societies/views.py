@@ -1,16 +1,19 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Count
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 
-from .models import Society, SocietyRegistration
+from .models import Society, SocietyRegistration, Widget
 from .functions import approved_societies, get_societies
 from .forms import NewSocietyForm
 from apps.news.models import News
 
 from config.constants import SOCIETY_TYPE_CHOICES
 
+import json
 
 def societiespage(request):
     # template = get_template('societies.html')
@@ -127,3 +130,22 @@ def top_societies():
     #     "top_overall_societies": top_overall_societies,
     #     'user' : request.user
     # })
+    
+@login_required
+def society_admin_view(request, society_id):
+    """View for society managers to configure the society page"""
+    society = get_object_or_404(Society, id=society_id)
+
+    if request.user != society.manager:
+        messages.error(request, "You are not authorized to edit this society.")
+        return redirect("society_page", society_id=society.id)
+
+    if request.method == "POST":
+        widget_type = request.POST.get("widget_type")
+        Widget.objects.create(society=society, widget_type=widget_type, position=Widget.objects.filter(society=society).count())
+        messages.success(request, f"{widget_type} widget added!")
+
+    widgets = Widget.objects.filter(society=society).order_by("position")
+
+    return render(request, "society_admin.html", {"society": society, "widgets": widgets})
+

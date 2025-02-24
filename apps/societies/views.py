@@ -12,6 +12,7 @@ from .forms import NewSocietyForm, JoinSocietyForm
 from apps.news.models import News
 from django.db.models import Count
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponseNotFound
 
 from config.constants import SOCIETY_TYPE_CHOICES
 
@@ -326,4 +327,62 @@ def decide_application(request, society_id, application_id, decision):
 
 
     return redirect('view_applications', society_id=society.id)
+
+
+    # top_overall_societies = all_approved_socities.order_by('-members_count')[:5]
+    # '''
+    # print("Top Overall Societies:", list(top_overall_societies))
+    # print("Top Societies Per Type:", top_societies_per_type)
+    # '''
+    # return({'top_overall_societies':top_overall_societies,'top_societies_per_type':top_societies_per_type})
+    # # return render(request, "home.html", {
+    # #     "top_societies_per_type": top_societies_per_type,
+    # #     "top_overall_societies": top_overall_societies,
+    # #     'user' : request.user
+    # # })
+
+# handle when manager wants to delete the society
+def request_delete_society(request, society_id):
+    society = get_object_or_404(Society, id=society_id)
+    #society = Society.objects.filter(id=society_id, manager=request.user).first()
+
+    if request.method == "POST":
+        if society.members_count >= 100:
+            society.status = 'request_delete'
+            society.visibility = 'Private' 
+            messages.info(request, "Your deletion request is pending admin approval.")
+        else:
+            society.status = 'deleted'
+            messages.success(request, "Your society was automatically deleted.")
+
+        society.updated_at = now()
+        society.save()
+        return redirect('societiespage')
+
+    return render(request, "request_delete_society.html", {"society": society})
+
+# when need the admin approval
+@user_passes_test(lambda user: user.is_staff)
+def admin_confirm_delete(request, society_id):
+    society = get_object_or_404(Society, id=society_id, status='request_delete')
+  
+    if request.method == "POST":
+        action = request.POST.get("action")
+        print("Action received:", action) 
+        if action == "approve":
+            society.status = "deleted"
+            print(f"Updating {society.name} status to 'deleted'") 
+            messages.success(request, f"Society '{society.name}' has been deleted.")
+        elif action == "reject":
+            society.status = "approved"
+            print(f"Updating {society.name} status to 'approved'")  
+            messages.warning(request, f"Society '{society.name}' deletion request was rejected.")
+
+        society.save()
+        return redirect('societiespage')
+
+    return render(request, "admin_confirm_delete.html", {
+        "society": society,
+        "action": None
+    })
 

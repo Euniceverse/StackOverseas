@@ -328,6 +328,7 @@ def decide_application(request, society_id, application_id, decision):
             society=society,
             user=application.user,
             defaults={'role': 'member', 'status': 'pending'}
+        )
     # get all the society type
     # society_types = Society.objects.values_list('society_type', flat=True).distinct()
 

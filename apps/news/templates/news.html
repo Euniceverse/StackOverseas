@@ -13,8 +13,28 @@
         <button class="btn btn-secondary" onclick="toggleFilters()">Filter News</button>
     </div>
 
-    <!-- Filter Form (Hidden by Default) -->
-    <div id="filter-form" class="card p-3 mb-4 shadow-sm" style="display: none;">
+    <!-- Sorting Dropdown -->
+    <form method="GET" action="{% url 'newspage' %}" class="mb-3">
+      <div class="row align-items-center">
+          <div class="col-md-4">
+              <label for="sort">Sort by:</label>
+              <select name="sort" id="sort" class="form-control" onchange="this.form.submit()">
+                  <option value="newest" {% if selected_sort == "newest" %}selected{% endif %}>Newest First</option>
+                  <option value="oldest" {% if selected_sort == "oldest" %}selected{% endif %}>Oldest First</option>
+                  <option value="popularity" {% if selected_sort == "popularity" %}selected{% endif %}>Most Popular</option>
+              </select>
+          </div>
+      </div>
+
+      <!-- Preserve Existing Filters -->
+      <input type="hidden" name="society" value="{{ request.GET.society }}">
+      <input type="hidden" name="society_type" value="{{ request.GET.society_type }}">
+      <input type="hidden" name="date" value="{{ request.GET.date }}">
+      <input type="hidden" name="member_only" value="{{ request.GET.member_only }}">
+    </form>
+
+    <!-- Filter Form -->
+    <div id="filter-form" class="card p-3 mb-4 shadow-sm">
         <form method="GET" action="{% url 'newspage' %}">
             <div class="row">
               <!-- Society -->
@@ -23,7 +43,7 @@
                 <select name="society" id="society" class="form-control">
                     <option value="">All Societies</option>
                     {% for society in societies %}
-                        <option value="{{ society.id }}" {% if request.GET.society == society.id %}selected{% endif %}>
+                        <option value="{{ society.id }}" {% if request.GET.society == society.id|stringformat:"s" %}selected{% endif %}>
                             {{ society.name }}
                         </option>
                     {% endfor %}
@@ -50,7 +70,6 @@
                         <option value="today" {% if request.GET.date == "today" %}selected{% endif %}>Today</option>
                         <option value="this_week" {% if request.GET.date == "this_week" %}selected{% endif %}>This Week</option>
                         <option value="this_month" {% if request.GET.date == "this_month" %}selected{% endif %}>This Month</option>
-                        <option value="next_3_months" {% if request.GET.date == "next_3_months" %}selected{% endif %}>Next 3 Months</option>
                         <option value="this_year" {% if request.GET.date == "this_year" %}selected{% endif %}>This Year</option>
                     </select>
                 </div>
@@ -86,12 +105,29 @@
     {% endfor %}
 </div>
 
-<!-- JavaScript to Toggle Filters -->
 <script>
-    function toggleFilters() {
-        let filterForm = document.getElementById("filter-form");
-        filterForm.style.display = filterForm.style.display === "none" ? "block" : "none";
-    }
+  function toggleFilters() {
+      let filterForm = document.getElementById("filter-form");
+      let isHidden = filterForm.style.display === "none" || filterForm.style.display === "";
+
+      // Toggle visibility
+      filterForm.style.display = isHidden ? "block" : "none";
+
+      // Store the state in localStorage
+      localStorage.setItem("newsFiltersVisible", isHidden ? "true" : "false");
+  }
+
+  function resetFiltersVisibility() {
+      let filterForm = document.getElementById("filter-form");
+      filterForm.style.display = "none"; // Always hide filters on page refresh
+      localStorage.removeItem("newsFiltersVisible"); // Clear stored visibility state
+  }
+
+  // Ensure filters are hidden when the page loads
+  document.addEventListener("DOMContentLoaded", resetFiltersVisibility);
 </script>
+
+
+
 
 {% endblock %}

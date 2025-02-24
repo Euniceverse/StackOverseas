@@ -14,6 +14,7 @@ class News(models.Model):
     date_updated = models.DateTimeField(auto_now=True)
     image = models.ImageField(upload_to=upload_to, blank=True, null=True)
     is_published = models.BooleanField(default=False)
+    views = models.PositiveIntegerField(default=0)  # Track number of views
 
     def get_event(self):
         Event = apps.get_model("events", "Event")

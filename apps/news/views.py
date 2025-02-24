@@ -8,21 +8,30 @@ from config.filters import NewsFilter
 from config.constants import SOCIETY_TYPE_CHOICES
 
 def newspage(request):
-    """News page with filtering"""
+    """News page with filtering and sorting"""
     news = News.objects.all()
+
+    # Apply filtering
     filtered_news = NewsFilter(request.GET, queryset=news).qs
-    societies = Society.objects.filter(status="approved")  # Fetch approved societies
+
+    # Get sorting option from request
+    sort_option = request.GET.get("sort", "newest")
+
+    if sort_option == "newest":
+        filtered_news = filtered_news.order_by("-date_posted")
+    elif sort_option == "oldest":
+        filtered_news = filtered_news.order_by("date_posted")
+    elif sort_option == "popularity":
+        filtered_news = filtered_news.order_by("-views")  # Assuming `views` field tracks popularity
+
+    societies = Society.objects.filter(status="approved")
 
     return render(request, "news.html", {
         "news_list": filtered_news,
-        "societies": societies,  # Pass societies to template
-        "SOCIETY_TYPE_CHOICES": SOCIETY_TYPE_CHOICES,  # Keep this for society type filter
+        "societies": societies,
+        "SOCIETY_TYPE_CHOICES": SOCIETY_TYPE_CHOICES,
+        "selected_sort": sort_option,
     })
-
-
-#def newspage(request):
-#    """News page view"""
-#    return render(request, "news.html")
 
 def news_list(request):
     """Retrieve latest 10 published news for news-panel.html"""
@@ -68,3 +77,10 @@ def create_news(request):
         form = NewsForm(user=request.user)
 
     return render(request, "create_news.html", {"form": form})
+
+def news_detail(request, news_id):
+    """Display a single news article and increment view count"""
+    news = News.objects.get(id=news_id)
+    news.views = F("views") + 1  # Increment views
+    news.save(update_fields=["views"])  # Save without modifying timestamps
+    return render(request, "news_detail.html", {"news": news})

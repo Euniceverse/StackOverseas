@@ -15,3 +15,7 @@ pytz==2024.2
 six==1.16.0
 sqlparse==0.5.1
 typing_extensions==4.12.2
+sentence-transformers==2.5.1
+openai==1.29.0
+faiss-cpu==1.7.4
+python-dotenv==1.0.0

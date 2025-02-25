@@ -9,6 +9,9 @@ from django.utils.timezone import now, make_aware
 from datetime import datetime
 from django.utils import timezone
 from config.filters import EventFilter
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
+from .models import Event
 
 def eventspage(request):
     """Events page view"""
@@ -44,3 +47,42 @@ class UpcomingEventsAPIView(generics.ListAPIView):
     queryset = Event.objects.filter(date__gte=timezone.now())  # Only future events
     serializer_class = EventSerializer
     pagination_class = StandardResultsSetPagination
+
+
+def create_event(request):
+    if request.method == "POST":
+        name = request.POST["name"]
+        city = request.POST["city"]
+        location = request.POST["location"]
+
+        # Get latitude & longitude from hidden fields in the form
+        latitude = request.POST.get("latitude", None)
+        longitude = request.POST.get("longitude", None)
+
+        # Save event with location data
+        Event.objects.create(
+            name=name,
+            city=city,
+            location=location,
+            latitude=latitude,
+            longitude=longitude
+        )
+
+        return redirect("event_map")
+
+    return render(request, "event_form.html")
+
+def event_list(request):
+    events = Event.objects.all()
+    data = [{
+        "name": e.name,
+        "address": e.location,
+        "latitude": e.latitude,
+        "longitude": e.longitude
+    } for e in events]
+    return JsonResponse(data, safe=False)
+
+from django.shortcuts import render
+
+def event_map(request):
+    return render(request, "event_map.html")

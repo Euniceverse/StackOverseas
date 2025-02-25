@@ -1,0 +1,38 @@
+<label for="location">Event Location:</label>
+<input id="location" type="text" name="location" placeholder="Enter event location" required onkeyup="autocompleteAddress()">
+
+<ul id="suggestions" style="border: 1px solid #ccc; display: none;"></ul>
+
+<!-- Hidden inputs for latitude & longitude -->
+<input type="hidden" id="latitude" name="latitude">
+<input type="hidden" id="longitude" name="longitude">
+
+<script>
+function autocompleteAddress() {
+    let query = document.getElementById('location').value;
+    if (query.length < 3) return;
+
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&countrycodes=gb`)
+    .then(response => response.json())
+    .then(data => {
+        let suggestionsList = document.getElementById('suggestions');
+        suggestionsList.innerHTML = "";
+        if (data.length > 0) {
+            suggestionsList.style.display = "block";
+            data.forEach(place => {
+                let item = document.createElement("li");
+                item.textContent = place.display_name;
+                item.onclick = function() {
+                    document.getElementById('location').value = place.display_name;
+                    document.getElementById('latitude').value = place.lat;
+                    document.getElementById('longitude').value = place.lon;
+                    suggestionsList.style.display = "none";
+                };
+                suggestionsList.appendChild(item);
+            });
+        } else {
+            suggestionsList.style.display = "none";
+        }
+    });
+}
+</script>

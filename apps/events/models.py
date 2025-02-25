@@ -16,64 +16,22 @@ from django.conf import settings
 
 class Event(models.Model):
     """Model representing an event (e.g. a student society meetup)."""
-    
-    society = models.ManyToManyField(
-        Society,
-    )
+    society=models.ManyToManyField(Society)
+    name=models.CharField(max_length=MAX_NAME)
+    description=models.TextField(max_length=MAX_DESCRIPTION)
+    date=models.DateTimeField(null=False)
+    start_time=models.TimeField(null=False,default=datetime.time(9,0))
+    end_time=models.TimeField(null=True,blank=True)
+    event_type=models.CharField(max_length=50,choices=EVENT_TYPE_CHOICES)
+    keyword=models.CharField(max_length=MAX_KEYWORD)
+    location=models.CharField(max_length=MAX_LOCATION)
+    capacity=models.PositiveIntegerField(blank=True,null=True,validators=[MinValueValidator(1)])
+    member_only=models.BooleanField(default=False)
+    fee=models.DecimalField(max_digits=MAX_DIGIT,decimal_places=2,default=Decimal("0.00"),validators=[MinValueValidator(Decimal("0.00"))])
+    is_free=models.BooleanField(default=True)
 
-    name = models.CharField(
-        max_length=MAX_NAME,
-    )
-
-    description = models.TextField(
-        max_length=MAX_DESCRIPTION,
-    )
-
-    date = models.DateTimeField(
-        null=False,
-    )
-
-    start_time = models.TimeField(
-        null=False,
-        default=datetime.time(9, 0),
-    )
-
-    end_time = models.TimeField(
-        null=True,
-        blank=True,
-    )
-
-    event_type = models.CharField(
-        max_length=50,
-        choices=EVENT_TYPE_CHOICES
-    )
-
-    keyword = models.CharField(
-      max_length=MAX_KEYWORD,
-    )
-
-    location = models.CharField(
-        max_length=MAX_LOCATION
-    )
-
-    capacity = models.PositiveIntegerField(
-        blank=True,
-        null=True,
-        validators=[MinValueValidator(1)]
-    )
-
-    member_only = models.BooleanField(
-        default=False,
-    )
-
-    fee = models.DecimalField(
-        max_digits=MAX_DIGIT,
-        decimal_places=2,
-        default=Decimal("0.00"),
-        validators=[MinValueValidator(Decimal("0.00"))]
-    )    
-
-    is_free = models.BooleanField(default=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.name} - {self.event_type}"

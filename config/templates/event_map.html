@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+</head>
+<body>
+
+<h2>Event Locations</h2>
+<div id="map" style="height: 500px;"></div>
+
+<script>
+// Initialize the map
+var map = L.map('map').setView([51.5074, -0.1278], 10);  // Default to London
+
+// Load OpenStreetMap tiles
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+// Fetch event locations from the API
+fetch('/api/events/')
+    .then(response => response.json())
+    .then(events => {
+        events.forEach(event => {
+            L.marker([event.latitude, event.longitude])
+                .addTo(map)
+                .bindPopup(`<b>${event.name}</b><br>${event.address}`);
+        });
+    })
+    .catch(error => console.error('Error loading events:', error));
+</script>
+
+</body>
+</html>

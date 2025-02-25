@@ -42,7 +42,7 @@ h {
 }
 
 .event-calendar.active .container-calendar {
-    width: 60%; 
+    width: 60%;
     align-self: left;
 }
 
@@ -57,7 +57,7 @@ h {
     height: 655px;
     opacity: 0;
     visibility: hidden;
-    transform: translateX(50px); 
+    transform: translateX(50px);
     transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out, visibility 0s linear 0.4s;
 }
 
@@ -85,4 +85,24 @@ h {
 
 #event-detail-close:hover {
     background-color: rgb(160, 60, 60);
+}
+
+
+.map-button-container {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.map-button {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 15px;
+  text-decoration: none;
+  font-size: 16px;
+  border-radius: 5px;
+  transition: background 0.3s;
+}
+
+.map-button:hover {
+  background-color: #0056b3;
 }

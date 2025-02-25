@@ -23,6 +23,7 @@ from apps.societies.views import top_societies
 from pathlib import Path
 from .views import ai_search
 BASE_DIR = Path(__file__).resolve().parent.parent  # ✅ Define BASE_DIR
+from apps.events.views import event_list, event_map
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,6 +33,8 @@ urlpatterns = [
     path('news/', include('apps.news.urls')),
     path('societies/', include('apps.societies.urls')),
     path('users/', include('apps.users.urls')),
+    path("event-map/", event_map, name="event_map"),
+    path("api/events/", event_list, name="event_list"),
 ]
 
 # Serve media files during development

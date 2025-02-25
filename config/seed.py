@@ -86,16 +86,100 @@ def create_dummy_societies(users, n=50):
 
 
 
+import os
+import sys
+import django
+import random
+import requests
+from faker import Faker
+from django.conf import settings
 
-def create_dummy_events(societies, n=70):
-    """Creates n dummy events linked to random societies with updated attributes."""
+# Set up Django environment
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+django.setup()
+
+from apps.societies.models import Society
+from apps.events.models import Event
+
+# Initialize Faker
+fake = Faker()
+
+import os
+import sys
+import django
+import random
+import time
+import requests
+from faker import Faker
+from django.utils.timezone import make_aware
+
+# Set up Django environment
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+django.setup()
+
+from apps.societies.models import Society
+from apps.events.models import Event
+
+# Initialize Faker
+fake = Faker()
+
+# Dictionary to store cached coordinates (reduce API calls)
+location_cache = {}
+
+def get_coordinates(address):
+    """Fetch latitude & longitude using OpenStreetMap Nominatim API with error handling and caching."""
+    if address in location_cache:
+        return location_cache[address]  # ✅ Use cached coordinates
+
+    url = f"https://nominatim.openstreetmap.org/search?format=json&q={address},UK"
+
+    try:
+        response = requests.get(url, headers={"User-Agent": "my-app"})
+        response.raise_for_status()  # Raise HTTP errors (e.g., 429 Too Many Requests)
+
+        data = response.json()  # Convert to JSON safely
+        print(f"📍 API response for {address}: {data}")  # ✅ Debugging print
+
+        if data:
+            lat, lon = float(data[0]["lat"]), float(data[0]["lon"])
+            location_cache[address] = (lat, lon)  # ✅ Cache the coordinates
+            time.sleep(1)  # ✅ Delay to prevent API bans
+            return lat, lon
+
+    except requests.exceptions.RequestException as e:
+        print(f"⚠️ API request failed for {address}: {e}")
+
+    except ValueError as e:
+        print(f"⚠️ JSON decode error for {address}: {e}")
+
+    return None, None  # Return None if lookup fails
+
+
+def create_dummy_events(societies, n=15):
+    """Creates n dummy events linked to random societies with real coordinates."""
     events = []
+
+    sample_addresses = [
+        "Big Ben, London", "Buckingham Palace, London", "Oxford University, Oxford",
+        "Manchester Town Hall, Manchester", "Birmingham Library, Birmingham",
+        "Edinburgh Castle, Edinburgh", "Liverpool Cathedral, Liverpool"
+    ]
+
     for _ in range(n):
+        address = random.choice(sample_addresses)
+        latitude, longitude = get_coordinates(address)  # Fetch real lat/lon
+
+        if latitude is None or longitude is None:
+            print(f"❌ Skipping event at {address} (could not fetch coordinates)")
+            continue  # Skip event if location lookup failed
+
         event = Event.objects.create(
-            event_type=random.choice([key for key in constants.EVENT_TYPE_CHOICES]),
+            event_type=random.choice(["sports", "music", "academic", "social"]),
             name=fake.sentence(nb_words=5),
-            location= random_location,
-            date=fake.future_datetime(),
+            location=address,
+            latitude=latitude,
+            longitude=longitude,
+            date=make_aware(fake.future_datetime()),  # ✅ Convert to timezone-aware datetime
             keyword=fake.word(),
             is_free=random.choice([True, False]),
             member_only=random.choice([True, False]),
@@ -105,14 +189,34 @@ def create_dummy_events(societies, n=70):
         )
 
         approved_societies = [s for s in societies if s.status == "approved"]
-
-        if approved_societies:  # Ensure there's at least one approved society
+        if approved_societies:
             event.society.set(random.sample(approved_societies, random.randint(1, min(3, len(approved_societies)))))
 
-        # event.society.set(random.sample(societies, random.randint(1, 3)))  # Select 1 to 3 societies
-
         events.append(event)
+
     return events
+
+
+if __name__ == "__main__":
+    print("🚀 Generating dummy data...")
+
+    # Fetch existing approved societies
+    societies = list(Society.objects.filter(status="approved"))
+
+    if not societies:
+        print("❌ No approved societies found. Exiting.")
+        sys.exit()
+
+    # Delete old events
+    Event.objects.all().delete()
+    print("🗑️ Old events removed.")
+
+    # Generate new events
+    events = create_dummy_events(societies, 15)
+    print(f"✅ Created {len(events)} events with valid locations.")
+
+    print("🎉 Dummy data seeding complete!")
+
 
 def create_dummy_event_registrations(users, events, n=20):
     """Creates dummy event registrations."""

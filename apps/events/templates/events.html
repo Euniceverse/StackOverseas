@@ -21,9 +21,14 @@ Events
     </div>
     <hr>
 
-    <div class="event-calendar"> 
+    <!-- Add "View Map" button -->
+<div class="map-button-container">
+        <a href="{% url 'event_map' %}" class="map-button">🗺️ View Map</a>
+    </div>
+
+    <div class="event-calendar">
         <div class="container-calendar">
-            <div id="calendar"></div> 
+            <div id="calendar"></div>
         </div>
         <div class="container-event-detail">
             <div id="event-detail">
@@ -37,7 +42,7 @@ Events
                 <span class="event-detail-title">
                     <strong>Event Details</strong>
                 </span>
-    
+
                 <div class="event-detail-attributes">
                     <p><strong>Name:</strong> <span id="event-name">-</span></p>
                     <p><strong>Date:</strong> <span id="event-date">-</span></p>
@@ -55,4 +60,3 @@ Events
 {% block news_panel %}
     {% include 'news-panel.html' %}
 {% endblock %}
-

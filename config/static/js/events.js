@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     console.log("✅ Events API Response:", data);
 
                     let events = data.results.map(event => {
-                        // 1. Separate the date (e.g., "2025-02-17") from the time portion 
+                        // 1. Separate the date (e.g., "2025-02-17") from the time portion
                         //    (which we ignore) in event.date (e.g., "2025-02-17T07:32:06.961900Z")
                         let datePart = event.date.split("T")[0]; // "YYYY-MM-DD"
 
@@ -85,4 +85,24 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("🔄 Close button clicked");
         eventCalendar.classList.remove("active");
     });
+});
+
+
+document.addEventListener("DOMContentLoaded", function () {
+  var map = L.map("map").setView([51.5074, -0.1278], 10);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors",
+  }).addTo(map);
+
+  fetch("/api/events/")
+      .then((response) => response.json())
+      .then((events) => {
+          events.forEach((event) => {
+              L.marker([event.latitude, event.longitude])
+                  .addTo(map)
+                  .bindPopup(`<b>${event.name}</b><br>${event.address}`);
+          });
+      })
+      .catch((error) => console.error("Error loading events:", error));
 });

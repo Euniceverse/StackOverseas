@@ -22,7 +22,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 // Fetch event locations from the API
-fetch('/api/events/')
+fetch('{% url "event_list" %}')
     .then(response => response.json())
     .then(events => {
         events.forEach(event => {

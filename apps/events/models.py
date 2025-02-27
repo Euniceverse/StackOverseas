@@ -25,6 +25,7 @@ class Event(models.Model):
     event_type=models.CharField(max_length=50,choices=EVENT_TYPE_CHOICES)
     keyword=models.CharField(max_length=MAX_KEYWORD)
     location=models.CharField(max_length=MAX_LOCATION)
+    city = models.CharField(max_length=100, blank=True, null=True)
     capacity=models.PositiveIntegerField(blank=True,null=True,validators=[MinValueValidator(1)])
     member_only=models.BooleanField(default=False)
     fee=models.DecimalField(max_digits=MAX_DIGIT,decimal_places=2,default=Decimal("0.00"),validators=[MinValueValidator(Decimal("0.00"))])

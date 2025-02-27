@@ -1,38 +1,170 @@
-<label for="location">Event Location:</label>
-<input id="location" type="text" name="location" placeholder="Enter event location" required onkeyup="autocompleteAddress()">
+{% extends 'base.html' %}
+{% load static %}
 
-<ul id="suggestions" style="border: 1px solid #ccc; display: none;"></ul>
+{% block title %}Create New Event{% endblock %}
 
-<!-- Hidden inputs for latitude & longitude -->
-<input type="hidden" id="latitude" name="latitude">
-<input type="hidden" id="longitude" name="longitude">
+{% block content %}
+<div class="event-form-container">
+    <h2>Create New Event</h2>
+
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" onsubmit="return validateForm()">
+        {% csrf_token %}
+
+        <!-- Name Field -->
+        <div class="form-group">
+            <label for="name">Event Name:</label>
+            <input type="text" id="name" name="name" class="form-control"
+                   value="{{ preserved_name|default:'' }}" required>
+        </div>
+
+        <!-- Date Field -->
+        <div class="form-group">
+            <label for="date">Event Date:</label>
+            <input type="datetime-local" id="date" name="date"
+                   class="form-control" required>
+        </div>
+
+        <!-- City Field -->
+        <div class="form-group">
+            <label for="city">City:</label>
+            <input type="text" id="city" name="city" class="form-control"
+                   value="{{ preserved_city|default:'' }}" required
+                   onkeyup="updateAddressSuggestions()">
+        </div>
+
+        <!-- Address Autocomplete -->
+        <div class="form-group">
+            <label for="location">Full Address:</label>
+            <input type="text" id="location" name="location"
+                   class="form-control" autocomplete="off"
+                   placeholder="Start typing your UK address..."
+                   value="{{ preserved_location|default:'' }}" required
+                   onkeyup="updateAddressSuggestions()">
+            <ul id="suggestions" class="address-suggestions"></ul>
+        </div>
+
+        <!-- Hidden Coordinates -->
+        <input type="hidden" id="latitude" name="latitude">
+        <input type="hidden" id="longitude" name="longitude">
+
+        <button type="submit" class="btn btn-primary">Create Event</button>
+    </form>
+</div>
+
+<style>
+    .event-form-container {
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .address-suggestions {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        max-height: 200px;
+        overflow-y: auto;
+        display: none;
+    }
+
+    .address-suggestions li {
+        padding: 10px;
+        cursor: pointer;
+        border-bottom: 1px solid #eee;
+    }
+
+    .address-suggestions li:hover {
+        background-color: #f8f9fa;
+    }
+</style>
 
 <script>
-function autocompleteAddress() {
-    let query = document.getElementById('location').value;
-    if (query.length < 3) return;
+let timeoutId;
 
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&countrycodes=gb`)
-    .then(response => response.json())
-    .then(data => {
-        let suggestionsList = document.getElementById('suggestions');
-        suggestionsList.innerHTML = "";
-        if (data.length > 0) {
-            suggestionsList.style.display = "block";
-            data.forEach(place => {
-                let item = document.createElement("li");
-                item.textContent = place.display_name;
-                item.onclick = function() {
-                    document.getElementById('location').value = place.display_name;
-                    document.getElementById('latitude').value = place.lat;
-                    document.getElementById('longitude').value = place.lon;
-                    suggestionsList.style.display = "none";
-                };
-                suggestionsList.appendChild(item);
+function updateAddressSuggestions() {
+    const city = document.getElementById('city').value;
+    const address = document.getElementById('location').value;
+    const suggestions = document.getElementById('suggestions');
+
+    // Clear previous timeout
+    clearTimeout(timeoutId);
+
+    // Minimum 3 characters to search
+    if (address.length < 3) {
+        suggestions.style.display = 'none';
+        return;
+    }
+
+    // Build search query with city filter
+    let query = '';
+    if (city) query += `${city}, `;
+    query += address;
+
+    // Show loading state
+    suggestions.innerHTML = '<li class="loading">Searching addresses...</li>';
+    suggestions.style.display = 'block';
+
+    // Add debounce
+    timeoutId = setTimeout(() => {
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=gb&addressdetails=1`)
+            .then(response => response.json())
+            .then(data => {
+                suggestions.innerHTML = '';
+
+                if (data.length > 0) {
+                    data.forEach(place => {
+                        const li = document.createElement('li');
+                        li.textContent = place.display_name;
+                        li.onclick = () => {
+                            document.getElementById('location').value = place.display_name;
+                            document.getElementById('latitude').value = place.lat;
+                            document.getElementById('longitude').value = place.lon;
+                            suggestions.style.display = 'none';
+                        };
+                        suggestions.appendChild(li);
+                    });
+                } else {
+                    const li = document.createElement('li');
+                    li.textContent = 'No addresses found. Try a different search.';
+                    li.className = 'no-results';
+                    suggestions.appendChild(li);
+                }
+            })
+            .catch(error => {
+                suggestions.innerHTML = '<li class="error">Error loading suggestions</li>';
             });
-        } else {
-            suggestionsList.style.display = "none";
-        }
-    });
+    }, 300);
 }
+
+function validateForm() {
+    const lat = document.getElementById('latitude').value;
+    const lng = document.getElementById('longitude').value;
+
+    if (!lat || !lng) {
+        alert('Please select a valid address from the suggestions');
+        return false;
+    }
+    return true;
+}
+
+// Close suggestions when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.form-group')) {
+        document.getElementById('suggestions').style.display = 'none';
+    }
+});
 </script>
+{% endblock %}

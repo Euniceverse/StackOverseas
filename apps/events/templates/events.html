@@ -21,8 +21,9 @@ Events
     </div>
     <hr>
 
-    <!-- Add "View Map" button -->
-<div class="map-button-container">
+    <!-- Add this next to the map button -->
+    <div class="map-button-container">
+        <a href="{% url 'create_event' %}" class="create-button">➕ Create New Event</a>
         <a href="{% url 'event_map' %}" class="map-button">🗺️ View Map</a>
     </div>
 

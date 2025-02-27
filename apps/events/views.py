@@ -12,6 +12,8 @@ from config.filters import EventFilter
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from .models import Event
+from django.utils.timezone import make_aware
+from datetime import datetime
 
 def eventspage(request):
     """Events page view"""
@@ -51,23 +53,51 @@ class UpcomingEventsAPIView(generics.ListAPIView):
 
 def create_event(request):
     if request.method == "POST":
-        name = request.POST["name"]
-        city = request.POST["city"]
-        location = request.POST["location"]
+        name = request.POST.get("name")
+        city = request.POST.get("city")
+        location = request.POST.get("location")
+        latitude = request.POST.get("latitude")
+        longitude = request.POST.get("longitude")
+        date_str = request.POST.get("date")
 
-        # Get latitude & longitude from hidden fields in the form
-        latitude = request.POST.get("latitude", None)
-        longitude = request.POST.get("longitude", None)
+        # Validation
+        missing = []
+        if not name: missing.append("Event Name")
+        if not city: missing.append("City")
+        if not location: missing.append("Address")
+        if not latitude or not longitude: missing.append("Valid Address Selection")
+        if not date_str: missing.append("Event Date")
 
-        # Save event with location data
+        if missing:
+            return render(request, "event_form.html", {
+                "error": f"Missing required fields: {', '.join(missing)}",
+                "preserved_name": name,
+                "preserved_city": city,
+                "preserved_location": location
+            })
+
+        try:
+            # Convert date and coordinates
+            date = make_aware(datetime.strptime(date_str, "%Y-%m-%dT%H:%M"))
+            latitude = float(latitude)
+            longitude = float(longitude)
+        except (ValueError, TypeError) as e:
+            return render(request, "event_form.html", {
+                "error": f"Invalid data format: {str(e)}",
+                "preserved_name": name,
+                "preserved_city": city,
+                "preserved_location": location
+            })
+
+        # Create event
         Event.objects.create(
             name=name,
             city=city,
             location=location,
             latitude=latitude,
-            longitude=longitude
+            longitude=longitude,
+            date=date
         )
-
         return redirect("event_map")
 
     return render(request, "event_form.html")

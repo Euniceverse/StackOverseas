@@ -21,7 +21,7 @@ class Society(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
-    location = models.CharField(max_length=100, blank=True, null=True) # Nehir
+    location = models.CharField(max_length=255, blank=True, null=True) # Nehir
 
     # Define Many-to-Many field in the Society model instead of User
     members = models.ManyToManyField(CustomUser, related_name="societies", blank=True)

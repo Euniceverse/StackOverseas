@@ -158,7 +158,7 @@ class MembershipApplication(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='society_applications'
+        related_name='society_membership_applications'
     )
     society = models.ForeignKey(
         Society,

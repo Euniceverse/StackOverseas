@@ -1,5 +1,5 @@
 from .models import Society, Membership, MembershipRole, MembershipStatus
-from .functions import approved_socities, get_societies, manage_societies, get_all_users
+from .functions import approved_societies, get_societies, manage_societies, get_all_users
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import NewSocietyForm, JoinSocietyForm
@@ -11,7 +11,6 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import Society, SocietyRegistration, Widget
-from .functions import approved_societies, get_societies
 from .forms import NewSocietyForm
 from apps.news.models import News
 from config.filters import SocietyFilter
@@ -227,7 +226,16 @@ def update_membership(request, society_id, user_id):
 def society_detail(request, society_id):
     """Temporary society detail page just to show a Manage This Society button."""
     society = get_object_or_404(Society, id=society_id)
-    return render(request, 'societies/society_detail.html', {'society': society})
+    memberships = Membership.objects.filter(society=society)
+    
+    user_membership = memberships.filter(user=request.user).first() if request.user.is_authenticated else None
+
+    return render(request, 'society_detail.html', {
+        'society': society,
+        'memberships': memberships,
+        'user_membership': user_membership, 
+    })
+    #return render(request, 'society_detail.html', {'society': society})
 
 @login_required
 def join_society(request, society_id):
@@ -328,6 +336,7 @@ def decide_application(request, society_id, application_id, decision):
             society=society,
             user=application.user,
             defaults={'role': 'member', 'status': 'pending'}
+        )
     # get all the society type
     # society_types = Society.objects.values_list('society_type', flat=True).distinct()
 
@@ -476,7 +485,7 @@ def society_page(request, society_id):
 
     return render(
         request,
-        "society_page.html",
+        "societies/society_page.html",
         {
             "society": society,
             "widgets": widgets,

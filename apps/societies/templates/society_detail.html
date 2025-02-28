@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-{% load society_extras %}  {# <-- Our custom template filter #}
+
 
 {% block title %}
   Society Detail - {{ society.name }}
@@ -15,16 +15,17 @@
 {% if user.is_authenticated %}
   {% for membership in memberships %}
     {% if membership.user == user and membership.role in 'manager co_manager editor' and membership.status == 'approved' %}
+      {% ifchanged %}
       <a href="{% url 'event_create' society.id %}" class="btn btn-primary">Create Event</a>
-      {% break %}
+      {% endifchanged %}
     {% endif %}
   {% endfor %}
 {% endif %}
 
 {% if user.is_authenticated %}
     {# Use the custom filter to retrieve the membership for request.user #}
-    {% with my_membership=society.society_memberships.all|get_user_membership:user %}
-    
+    {% with my_membership=user_membership %}
+  
     {% if my_membership %}
         {% if my_membership.status == 'approved' %}
             <p>You are a member of this society (Role: {{ my_membership.get_role_display }}).</p>

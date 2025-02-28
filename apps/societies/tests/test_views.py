@@ -2,6 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.contrib import messages
+from django.contrib.auth.models import User
 
 from apps.societies.models import Society, SocietyRegistration
 
@@ -158,3 +159,60 @@ class CreateSocietyViewTest(TestCase):
         self.assertRedirects(response, reverse('societiespage'))
         self.assertFalse(SocietyRegistration.objects.filter(name='Society4').exists()) 
 
+
+class RequestDeleteSocietyTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username="testuser", password="password123")
+
+        self.small_society = Society.objects.create(
+            name="Small Society",
+            members_count=50,
+            status="approved",
+            visibility="Public",
+            manager=self.user
+        )
+
+        self.large_society = Society.objects.create(
+            name="Large Society",
+            members_count=150,
+            status="approved",
+            visibility="Public",
+            manager=self.user
+        )
+
+        self.url_small = reverse("request_delete_society", args=[self.small_society.id])
+        self.url_large = reverse("request_delete_society", args=[self.large_society.id])
+
+    def test_get_request_delete_page(self):
+        self.client.login(username="testuser", password="password123")
+        response = self.client.get(self.url_small)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "request_delete_society.html")
+        self.assertContains(response, "Are you sure you want to request the deletion")
+
+    def test_post_delete_small_society(self):
+        self.client.login(username="testuser", password="password123")
+        response = self.client.post(self.url_small)
+
+        # check if society is marked as deleted
+        self.small_society.refresh_from_db()
+        self.assertEqual(self.small_society.status, "deleted")
+
+        self.assertRedirects(response, reverse("societiespage"))
+
+    def test_post_delete_large_society(self):
+        self.client.login(username="testuser", password="password123")
+        response = self.client.post(self.url_large)
+        self.large_society.refresh_from_db()
+        self.assertEqual(self.large_society.status, "request_delete")
+        self.assertEqual(self.large_society.visibility, "Private")
+        self.assertRedirects(response, reverse("societiespage"))
+
+    def test_unauthorized_user_cannot_delete(self):
+        other_user = User.objects.create_user(username="otheruser", password="password123")
+        self.client.login(username="otheruser", password="password123")
+        response = self.client.post(self.url_small)
+        self.small_society.refresh_from_db()
+        self.assertEqual(self.small_society.status, "approved") 
+        self.assertEqual(response.status_code, 403)

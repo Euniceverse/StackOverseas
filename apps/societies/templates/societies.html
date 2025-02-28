@@ -4,8 +4,8 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="text-center mb-4">All Societies</h2>
-
+    <h2 class="text-center mb-4">{{page}} Societies</h2>
+    <div class="row">
     <!-- Toggle Button -->
     <div class="text-center mb-3">
         <button class="btn btn-secondary" onclick="toggleFilters()">Filter Societies</button>
@@ -123,6 +123,44 @@
                 {% endif %}
                 <div class="card-body">
                     <h5 class="card-title">{{ society.name }}</h5>
+
+                    {% if user.is_superuser %}
+                    <!-- Status Badge -->
+                    <p>
+                        {% if society.status == "approved" %}
+                            <span class="badge bg-success">Approved</span>
+                        {% elif society.status == "rejected" %}
+                            <span class="badge bg-danger">Rejected</span>
+                        {% elif society.status == "pending" %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        {% elif society.status == "request_delete" %}
+                            <span class="badge bg-warning text-dark">Request to Delete</span>
+                            <a href="{% url 'admin_confirm_delete' society.id %}" class="btn btn-danger mt-2">Handle Delete Request</a>
+                            
+                        {% else %}
+                            <span class="badge bg-secondary">Deleted</span>
+                        {% endif %}
+                    </p>
+                    <td>{{ soc.manager }}</td>
+                    <div>
+                    {%if society.status == "pending" %}
+                    <td>
+                        <!-- Approve button -->
+                        <a href="{% url 'admin_confirm_society_decision' society.id 'approve' %}" 
+                           class="btn btn-success btn-sm">
+                           Approve
+                        </a>
+                        
+                        <!-- Reject button -->
+                        <a href="{% url 'admin_confirm_society_decision' society.id 'reject' %}" 
+                           class="btn btn-danger btn-sm">
+                           Reject
+                        </a>
+                      </td>
+                    {% endif %}
+                    </div>
+                    {% endif %}
+
                     <p class="card-text">{{ society.description|truncatewords:15 }}</p>
                     <a href="{% url 'society_page' society.id %}" class="btn btn-primary">View Details</a>
                 </div>

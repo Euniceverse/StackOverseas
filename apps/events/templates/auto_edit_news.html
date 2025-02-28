@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Edit Auto-Created News for Event "{{ event.name }}"
+{% endblock %}
+
+{% block content %}
+<h2>News Items for "{{ event.name }}"</h2>
+
+<p>These news articles were automatically created when you added the event. 
+You can edit and publish them now:</p>
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ formset.management_form }}
+  
+  {% for form in formset %}
+    <div class="card mb-3 p-2">
+      <h4>News #{{ forloop.counter }}</h4>
+      {{ form.as_p }}
+    </div>
+  {% endfor %}
+
+  <button type="submit" class="btn btn-primary">Publish / Save News</button>
+</form>
+{% endblock %}

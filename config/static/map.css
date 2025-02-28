@@ -1,0 +1,9 @@
+#mapContainer {
+    display: block;
+    width: 800px;
+    background: #fff;
+    border-radius: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    height: 650px;
+}

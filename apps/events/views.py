@@ -17,6 +17,11 @@ from apps.news.models import News
 from django.forms import modelformset_factory
 from django.utils import timezone
 from config.filters import EventFilter
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
+from .models import Event
+from django.utils.timezone import make_aware
+from datetime import datetime
 
 def eventspage(request):
     """Events page view"""
@@ -57,7 +62,73 @@ class UpcomingEventsAPIView(generics.ListAPIView):
     serializer_class = EventSerializer
     pagination_class = StandardResultsSetPagination
 
+def create_event(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        city = request.POST.get("city")
+        location = request.POST.get("location")
+        latitude = request.POST.get("latitude")
+        longitude = request.POST.get("longitude")
+        date_str = request.POST.get("date")
 
+        # Validation
+        missing = []
+        if not name: missing.append("Event Name")
+        if not city: missing.append("City")
+        if not location: missing.append("Address")
+        if not latitude or not longitude: missing.append("Valid Address Selection")
+        if not date_str: missing.append("Event Date")
+
+        if missing:
+            return render(request, "event_form.html", {
+                "error": f"Missing required fields: {', '.join(missing)}",
+                "preserved_name": name,
+                "preserved_city": city,
+                "preserved_location": location
+            })
+
+        try:
+            # Convert date and coordinates
+            date = make_aware(datetime.strptime(date_str, "%Y-%m-%dT%H:%M"))
+            latitude = float(latitude)
+            longitude = float(longitude)
+        except (ValueError, TypeError) as e:
+            return render(request, "event_form.html", {
+                "error": f"Invalid data format: {str(e)}",
+                "preserved_name": name,
+                "preserved_city": city,
+                "preserved_location": location
+            })
+
+        # Create event
+        Event.objects.create(
+            name=name,
+            city=city,
+            location=location,
+            latitude=latitude,
+            longitude=longitude,
+            date=date
+        )
+        return redirect("event_map")
+
+    return render(request, "event_form.html")
+
+def event_list(request):
+    events = Event.objects.all()
+    data = [{
+        "name": e.name,
+        "address": e.location,
+        "latitude": e.latitude,
+        "longitude": e.longitude
+    } for e in events]
+    return JsonResponse(data, safe=False)
+
+from django.shortcuts import render
+
+def event_map(request):
+    return render(request, "event_map.html")
+
+  
 @login_required
 def create_event(request, society_id):
     """

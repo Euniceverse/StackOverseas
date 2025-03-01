@@ -1,32 +1,52 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load static %}
 
-{% block title %}
-Events
-{% endblock %}
+{% block title %}Events{% endblock %}
 
-{% block content %}
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
+{% block fullpage %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'events.css' %}">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js" defer></script>
-    <script src="{% static 'js/events.js' %}" defer></script>
+    <script src="{% static 'js/view-switcher.js' %}" defer></script>
 
-    <div class="header">
-        <div class="title">
-            <h>🗓️ Event Calendar</h>
+    <div class="event-header">
+        <div class="event-title">All Events</div>
+    
+        <div class="event-search">
+            {% include "components/search.html" %}
         </div>
-        <div class="search">
-            <p>search</p>
+
+        <div class="event-filter">
+            {% include "components/filter.html" %}
         </div>
     </div>
-    <hr>
 
-    <!-- Add this next to the map button -->
+    <!-- Inserted from third-map-view: Map button container -->
     <div class="map-button-container">
         <a href="{% url 'create_event' %}" class="create-button">➕ Create New Event</a>
         <a href="{% url 'event_map' %}" class="map-button">🗺️ View Map</a>
     </div>
 
+    <div class="event-body">
+        <!-- Inserted from new-merge-feel: View switcher bar -->
+        <div class="event-api-view-bar">
+            <span id="list-button">LIST</span>
+            <span id="calendar-button">CALENDAR</span>
+            <span id="map-button">MAP</span>
+        </div>
+        <div class="event-api-views">
+            <div class="event-view-list">
+                {% include "components/list.html" %}
+            </div>
+            <div class="event-view-calendar">
+                {% include "components/calendar.html" %}
+            </div>
+            <div class="event-view-map">
+                {% include "components/map.html" %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Optional: Inserted from third-map-view: Event detail panel (if needed) -->
     <div class="event-calendar">
         <div class="container-calendar">
             <div id="calendar"></div>
@@ -38,8 +58,7 @@ Events
                         <strong>></strong>
                     </div>
                 </span>
-                <span class="empty">
-                </span>
+                <span class="empty"></span>
                 <span class="event-detail-title">
                     <strong>Event Details</strong>
                 </span>
@@ -55,9 +74,5 @@ Events
             </div>
         </div>
     </div>
-
 {% endblock %}
 
-{% block news_panel %}
-    {% include 'news-panel.html' %}
-{% endblock %}

@@ -1,0 +1,11 @@
+{% load static %} 
+
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'calendar.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js" defer></script>
+    <script src="{% static 'js/calendar.js' %}" defer></script>
+ 
+</head>
+
+<div id="calendarContainer"></div>

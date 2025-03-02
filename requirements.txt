@@ -12,12 +12,5 @@ requests==2.32.3
 sqlparse==0.5.3
 stripe==11.5.0
 typing_extensions==4.12.2
-sentence-transformers==2.5.1
-openai==1.29.0
-faiss-cpu==1.7.4
-python-dotenv==1.0.0
-symspellpy==1.0.0
-textblob==0.15.3
-requests==2.31.0
 tzdata==2025.1
 urllib3==2.3.0

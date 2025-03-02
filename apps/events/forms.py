@@ -1,5 +1,5 @@
 from config.constants import (
-    MAX_NAME, MAX_DESCRIPTION, MAX_LOCATION,
+    MAX_NAME, MAX_DESCRIPTION, MAX_LOCATION, 
     EVENT_TYPE_CHOICES
 )
 from apps.societies.models import Society
@@ -37,7 +37,7 @@ class NewEventForm(forms.Form):
 
     keyword = forms.CharField(
         max_length=50,
-        required=False,
+        required=False, 
     )
 
     location = forms.CharField(
@@ -52,7 +52,7 @@ class NewEventForm(forms.Form):
     )
 
     member_only = forms.BooleanField(
-        initial=False,
+        initial=False, 
         required=False,
     )
 
@@ -75,9 +75,6 @@ class NewEventForm(forms.Form):
         help_text="Select one or more societies hosting the event."
     )
 
-    latitude = forms.FloatField(required=False, widget=forms.HiddenInput())
-    longitude = forms.FloatField(required=False, widget=forms.HiddenInput())
-
     def clean_fee(self):
         fee = self.cleaned_data.get("fee", Decimal("0.00"))
 
@@ -94,3 +91,5 @@ class NewEventForm(forms.Form):
             cleaned_data["is_free"] = False
 
         return cleaned_data
+    
+

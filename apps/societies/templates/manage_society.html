@@ -25,6 +25,7 @@ Manage {{ society.name }}
       <th>Member Email</th>
       <th>Role</th>
       <th>Status</th>
+      <th>Society</th>
       <th>Actions</th>
     </tr>
   </thead>
@@ -32,12 +33,13 @@ Manage {{ society.name }}
     {% for membership in memberships %}
     <tr>
       <td>{{ membership.user.email }}</td>
-      <td>{{ membership.get_role_display }}</td>
-      <td>{{ membership.get_status_display }}</td>
+      <td>{{ membership.role }}</td>
+      <td>{{ membership.status }}</td>
+      <td>{{ membership.society.name }}</td>
       <td>
         <!-- Only show Approve if they are pending -->
         {% if membership.status == 'pending' %}
-        <form action="{% url 'update_membership' society.id membership.user.id %}" 
+        <form action="{% url 'update_membership' society.id user.id %}" 
               method="post"
               onsubmit="return confirm('Are you sure you want to APPROVE this user?');"
               style="display:inline;">
@@ -47,7 +49,7 @@ Manage {{ society.name }}
         {% endif %}
         
         <!-- Remove button: confirm again -->
-        <form action="{% url 'update_membership' society.id membership.user.id %}" 
+        <form action="{% url 'update_membership' society.id user.id %}" 
               method="post" 
               onsubmit="return confirm('Are you sure you want to REMOVE this user?');"
               style="display:inline;">
@@ -56,7 +58,7 @@ Manage {{ society.name }}
         </form>
 
         <!-- Promote to Co-Manager -->
-        <form action="{% url 'update_membership' society.id membership.user.id %}" 
+        <form action="{% url 'update_membership' society.id user.id %}" 
               method="post" 
               onsubmit="return confirm('Promote this user to CO-MANAGER?');"
               style="display:inline;">
@@ -65,7 +67,7 @@ Manage {{ society.name }}
         </form>
 
         <!-- Promote to Editor -->
-        <form action="{% url 'update_membership' society.id membership.user.id %}" 
+        <form action="{% url 'update_membership' society.id user.id %}" 
               method="post" 
               onsubmit="return confirm('Promote this user to EDITOR?');"
               style="display:inline;">

@@ -15,7 +15,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
 from apps.users.models import CustomUser
-from apps.societies.models import Society
+from apps.societies.models import Society, Membership, MembershipRole, MembershipStatus
 from apps.events.models import Event, EventRegistration
 
 
@@ -143,6 +143,23 @@ def create_dummy_event_registrations(users, events, n=20):
             status=random.choice(["accepted", "waitlisted", "rejected"]),
         )
 
+def create_dummy_memberships(users, societies):
+    """Creates Membership records for users in societies."""
+    memberships = []
+    for society in societies:
+        members = random.sample(users, random.randint(1, min(10, len(users))))  # Assign 1-10 random members
+        for user in members:
+            membership = Membership(
+                user=user,
+                society=society,
+                role=random.choice([MembershipRole.MEMBER, MembershipRole.CO_MANAGER]),
+                status=MembershipStatus.APPROVED,  # Ensure they are approved members
+            )
+            memberships.append(membership)
+    
+    Membership.objects.bulk_create(memberships)  # Bulk insert for efficiency
+    print(f"Created {len(memberships)} memberships.")
+
 if __name__ == "__main__":
     print("Generating dummy data...")
 
@@ -156,6 +173,10 @@ if __name__ == "__main__":
     # Generate societies
     societies = create_dummy_societies(users, 50)
     print(f"Created {len(societies)} societies.")
+
+    #  Generate Members 
+    create_dummy_memberships(users, societies)
+    print("Dummy memberships registrations created.")
 
     # Generate events
     events = create_dummy_events(societies, 30)

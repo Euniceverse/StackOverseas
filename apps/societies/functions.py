@@ -43,7 +43,9 @@ def manage_societies():
 
 def get_all_users():
     # return CustomUser.objects.filter(is_superuser = False)
-    return Membership.objects.all()
+    # return Membership.objects.all()
+    return CustomUser.objects.filter(user_memberships__isnull=False).distinct()
+
 
 
 register = template.Library()

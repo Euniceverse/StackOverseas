@@ -161,8 +161,9 @@ def manage_society(request, society_id):
 
 def view_all_members(request):
     if request.user.is_superuser:
-        all_members = get_all_users()
+        # all_members = get_all_users()
         society = get_object_or_404(Society, id=1)
+        all_members = Membership.objects.select_related("user", "society").all()
         return render(request, 'manage_society.html', {
         'society': society,
         'memberships': all_members,

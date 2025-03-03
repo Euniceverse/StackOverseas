@@ -31,7 +31,8 @@ def get_societies(user):
 
     if managing_societies.exists():
         # The union (|) operator combines two QuerySets and removes duplicates
-        return managing_societies | member_societies
+        return (managing_societies | member_societies).distinct()
+
     
     return member_societies
 

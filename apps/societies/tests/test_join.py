@@ -367,3 +367,44 @@ class ManageButtonVisibilityTest(TestCase):
         self.client.login(email='norm@uni.ac.uk', password='normpass')
         response = self.client.get(self.detail_url)
         self.assertNotContains(response, 'Manage This Society')
+
+
+User = get_user_model()
+
+class JoinSocietyTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(
+            email='user@university.ac.uk',
+            password='password123'
+        )
+        self.society = Society.objects.create(
+            name='Test Society',
+            description='A test society',
+            society_type='academic',
+            status='approved'
+        )
+
+    def test_user_can_request_to_join_society(self):
+        self.client.login(email='user@university.ac.uk', password='password123')
+        response = self.client.post(reverse('society-join', args=[self.society.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(Membership.objects.filter(user=self.user, society=self.society).exists())
+
+    def test_user_cannot_join_twice(self):
+        Membership.objects.create(user=self.user, society=self.society, status=MembershipStatus.PENDING)
+        response = self.client.post(reverse('society-join', args=[self.society.id]))
+        self.assertEqual(response.status_code, 400)
+        memberships = Membership.objects.filter(user=self.user, society=self.society)
+        self.assertEqual(memberships.count(), 1)  # Ensure only one request exists
+
+    def test_admin_can_approve_join_request(self):
+        membership = Membership.objects.create(user=self.user, society=self.society, status=MembershipStatus.PENDING)
+        response = self.client.post(reverse('approve-membership', args=[membership.id]))
+        membership.refresh_from_db()
+        self.assertEqual(membership.status, MembershipStatus.APPROVED)
+
+    def test_unauthorized_user_cannot_approve_membership(self):
+        membership = Membership.objects.create(user=self.user, society=self.society, status=MembershipStatus.PENDING)
+        response = self.client.post(reverse('approve-membership', args=[membership.id]))
+        self.assertNotEqual(response.status_code, 200)  # Should be forbidden

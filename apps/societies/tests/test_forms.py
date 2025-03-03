@@ -2,6 +2,7 @@ from django.test import TestCase
 from apps.societies.forms import NewSocietyForm
 from apps.societies.models import SocietyRegistration 
 from apps.users.models import CustomUser
+from config.constants import SOCIETY_TYPE_CHOICES
 
 
 class NewSocietyFormTest(TestCase):
@@ -86,3 +87,37 @@ class NewSocietyFormTest(TestCase):
                  
         self.assertTrue(form.is_valid())
         self.assertEqual(form.clean_tags(), ['arts', 'ceramics', 'painting'])
+
+    def test_invalid_form_exceeding_max_length(self):
+        form_data = {
+            'name': 'A' * 300,  # Exceeding max length
+            'description': 'Valid Description',
+            'society_type': 'technology',
+            'visibility': 'Public',
+        }
+        form = NewSocietyForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn('name', form.errors)
+
+    def test_invalid_form_invalid_choice(self):
+        form_data = {
+            'name': 'Test Club',
+            'description': 'Valid Description',
+            'society_type': 'InvalidChoice',  # Invalid choice
+            'visibility': 'Public',
+        }
+        form = NewSocietyForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn('society_type', form.errors)
+
+    def test_empty_strings(self):
+        form_data = {
+            'name': '',
+            'description': '',
+            'society_type': '',
+            'visibility': '',
+        }
+        form = NewSocietyForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn('name', form.errors)
+        self.assertIn('description', form.errors)

@@ -17,18 +17,25 @@ class SocietiesViewsTest(TestCase):
             last_name='User',
             preferred_name='Tester'
         )
+        self.client.login(email='test@example.ac.uk', password='password123')
 
         self.society = Society.objects.create(
             name="Tech Club",
             description="A club for tech enthusiasts",
             society_type="academic",
-            manager=self.user
-        )
+            status = "pending",
+            manager=self.user)
 
     def test_societies_page_status_code(self):
         """Test if /societies/ page loads correctly"""
         response = self.client.get(reverse('societiespage'))
         self.assertEqual(response.status_code, 200)  # Should return HTTP 200 OK
+
+    def test_fetch_societies_list(self):
+        response = self.client.get(reverse('society-list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Tech Club", response.content.decode())
+
 
     def test_template_used(self):
         """Test if the correct template is used"""
@@ -40,6 +47,33 @@ class SocietiesViewsTest(TestCase):
         response = self.client.get(reverse('societiespage'))
         self.assertEqual(len(response.context['societies']), 1)  # Expecting 1 test society
         self.assertIn(self.society, response.context['societies'])
+
+    def test_create_society(self):
+        response = self.client.post(reverse('society-create'), {
+            "name": "Art Club",
+            "description": "A club for artists",
+            "society_type": "arts"
+        })
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(Society.objects.filter(name="Art Club").exists())
+
+    def test_update_society(self):
+        response = self.client.post(reverse('society-update', args=[self.society.id]), {
+            "name": "Updated Tech Club",
+        })
+        self.society.refresh_from_db()
+        self.assertEqual(self.society.name, "Updated Tech Club")
+
+    def test_delete_society(self):
+        response = self.client.post(reverse('society-delete', args=[self.society.id]))
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(Society.objects.filter(id=self.society.id).exists())
+
+    def test_join_society(self):
+        response = self.client.post(reverse('society-join', args=[self.society.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(self.user, self.society.members.all())
+
 
 class TopSocietiesViewTest(TestCase):
     #create society test cases for the database

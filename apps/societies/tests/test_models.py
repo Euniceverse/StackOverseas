@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from apps.societies.models import Society
+from django.db.utils import IntegrityError
 
 class SocietyModelTest(TestCase):
 
@@ -54,3 +55,27 @@ class SocietyModelTest(TestCase):
                 society_type="Technology",
                 manager=self.user
             )
+
+    def test_default_status(self):
+        new_society = Society.objects.create(
+            name="Art Club",
+            description="A society for artists.",
+            society_type="Art"
+        )
+        self.assertEqual(new_society.status, "pending")
+
+    def test_add_member_to_society(self):
+        self.society.members.add(self.user)
+        self.assertIn(self.user, self.society.members.all())
+
+    def test_update_society(self):
+        self.society.name = "Updated Tech Club"
+        self.society.save()
+        updated_society = Society.objects.get(id=self.society.id)
+        self.assertEqual(updated_society.name, "Updated Tech Club")
+
+    def test_delete_society(self):
+        society_id = self.society.id
+        self.society.delete()
+        with self.assertRaises(Society.DoesNotExist):
+            Society.objects.get(id=society_id)

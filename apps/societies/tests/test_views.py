@@ -3,8 +3,10 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.contrib import messages
 from django.contrib.auth.models import User
+from unittest.mock import patch
+import json
 
-from apps.societies.models import Society, SocietyRegistration, Membership, MembershipRole, MembershipStatus
+from apps.societies.models import Society, SocietyRegistration, Membership, MembershipRole, MembershipStatus, MembershipApplication, Widget
 from apps.news.models import News
 from apps.societies.functions import get_societies, manage_societies, get_all_users
 
@@ -143,6 +145,39 @@ class SocietiesViewsTest(TestCase):
         self.assertRedirects(response, reverse('manage_society', args=[self.society.id]))
 
 
+    def test_societiespage_loads_successfully(self):
+        response = self.client.get(reverse("societiespage"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "societies.html")
+    
+    def test_my_societies_authenticated_user(self):
+        Membership.objects.create(user=self.user, society=self.society)
+        
+        response = self.client.get(reverse("my_societies"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "societies.html")
+        societies = list(response.context["societies"].values_list("name", flat=True))
+        self.assertEqual(set(societies), {"Tech Club"})
+    
+    def test_my_societies_no_memberships(self):
+        Membership.objects.filter(user=self.user).delete()
+        response = self.client.get(reverse("my_societies"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "societies.html")
+        self.assertEqual(len(response.context["societies"]), 0)
+    
+    @patch("apps.news.models.News.objects.filter")
+    def test_my_societies_news_list(self, mock_news_filter):
+        Membership.objects.create(user=self.user, society=self.society)
+        
+        mock_news_filter.return_value.order_by.return_value[:10] = [News(title="Test News")]
+        response = self.client.get(reverse("my_societies"))
+        self.assertIn("news_list", response.context)
+        self.assertEqual(len(response.context["news_list"]), 1)
+        self.assertEqual(response.context["news_list"][0].title, "Test News")
+
+
+
 
 class TopSocietiesViewTest(TestCase):
     #create society test cases for the database
@@ -262,6 +297,59 @@ class CreateSocietyViewTest(TestCase):
         self.assertRedirects(response, reverse('societiespage'))
         self.assertFalse(SocietyRegistration.objects.filter(name='Society4').exists()) 
 
+class ApplicationManagementTest(TestCase):
+    def setUp(self):
+        """Set up a test user and client."""
+        self.client = Client()
+        self.user = get_user_model().objects.create_user(
+            email="test@university.ac.uk",
+            first_name="John",
+            last_name="Doe",
+            preferred_name="Johnny",
+            password="Password123"
+        )
+        self.manager = get_user_model().objects.create_user(
+            email="manager@university.ac.uk",
+            password="ManagerPass"
+        )
+        self.society = Society.objects.create(
+            name="AI Club",
+            description="A club for AI enthusiasts",
+            society_type="academic",
+            status="approved",
+            manager=self.manager
+        )
+        self.application = MembershipApplication.objects.create(
+            user=self.user, society=self.society, is_approved=False, is_rejected=False
+        )
+        self.client.login(email="manager@university.ac.uk", password="ManagerPass")
+    
+    def test_view_applications_as_manager(self):
+        response = self.client.get(reverse("view_applications", args=[self.society.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "societies/view_applications.html")
+        self.assertIn("applications", response.context)
+    
+    def test_view_applications_no_permission(self):
+        self.client.login(email="test@university.ac.uk", password="Password123")
+        response = self.client.get(reverse("view_applications", args=[self.society.id]))
+        self.assertEqual(response.status_code, 302)
+    
+    def test_decide_application_approve(self):
+        response = self.client.post(reverse("decide_application", args=[self.society.id, self.application.id, "approve"]))
+        self.application.refresh_from_db()
+        self.assertTrue(self.application.is_approved)
+        self.assertRedirects(response, reverse("view_applications", args=[self.society.id]))
+    
+    def test_decide_application_reject(self):
+        response = self.client.post(reverse("decide_application", args=[self.society.id, self.application.id, "reject"]))
+        self.application.refresh_from_db()
+        self.assertTrue(self.application.is_rejected)
+        self.assertRedirects(response, reverse("view_applications", args=[self.society.id]))
+    
+    def test_decide_application_invalid_action(self):
+        response = self.client.post(reverse("decide_application", args=[self.society.id, self.application.id, "invalid"]))
+        self.assertRedirects(response, reverse("view_applications", args=[self.society.id]))
 
 class RequestDeleteSocietyTest(TestCase):
     def setUp(self):
@@ -319,3 +407,205 @@ class RequestDeleteSocietyTest(TestCase):
         self.small_society.refresh_from_db()
         self.assertEqual(self.small_society.status, "approved") 
         self.assertEqual(response.status_code, 403)
+
+
+class ManageSocietiesAndMembersTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = get_user_model().objects.create_user(
+            email='test@example.ac.uk',
+            password='password123',
+            first_name='Test',
+            last_name='User',
+            preferred_name='Tester'
+        )
+        self.admin_user = get_user_model().objects.create_superuser(
+            email='admin@example.ac.uk',
+            password='adminpass'
+        )
+        self.client.login(email='test@example.ac.uk', password='password123')
+
+        self.society = Society.objects.create(
+            name="Tech Club",
+            description="A club for tech enthusiasts",
+            society_type="academic",
+            status="pending",
+            manager=self.user
+        )
+    
+    def test_view_manage_societies_authenticated(self):
+        response = self.client.get(reverse("view_manage_societies"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "societies.html")
+        self.assertIn("societies", response.context)
+    
+    @patch("apps.news.models.News.objects.filter")
+    def test_view_manage_societies_with_news(self, mock_news_filter):
+        mock_news_filter.return_value.order_by.return_value[:10] = [News(title="Tech News")]
+        response = self.client.get(reverse("view_manage_societies"))
+        self.assertEqual(len(response.context["news_list"]), 1)
+        self.assertEqual(response.context["news_list"][0].title, "Tech News")
+    
+    def test_view_all_members_superuser(self):
+        self.client.login(email='admin@example.ac.uk', password='adminpass')
+        response = self.client.get(reverse("view_all_members"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "manage_society.html")
+    
+    def test_view_all_members_non_admin(self):
+        response = self.client.get(reverse("view_all_members"))
+        self.assertEqual(response.status_code, 302)  # Redirect due to permission error
+
+
+class MembershipAndSocietyTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = get_user_model().objects.create_user(
+            email='test@example.ac.uk',
+            password='password123',
+            first_name='Test',
+            last_name='User',
+            preferred_name='Tester'
+        )
+        self.manager = get_user_model().objects.create_user(
+            email='manager@example.ac.uk',
+            password='managerpass'
+        )
+        self.society = Society.objects.create(
+            name="Tech Club",
+            description="A club for tech enthusiasts",
+            society_type="academic",
+            status="approved",
+            manager=self.manager
+        )
+        self.membership = Membership.objects.create(
+            society=self.society, user=self.user, status=MembershipStatus.PENDING
+        )
+        self.client.login(email='manager@example.ac.uk', password='managerpass')
+
+    def test_update_membership_approve(self):
+        response = self.client.post(reverse("update_membership", args=[self.society.id, self.user.id]), {"action": "approve"})
+        self.membership.refresh_from_db()
+        self.assertEqual(self.membership.status, MembershipStatus.APPROVED)
+        self.assertRedirects(response, reverse("manage_society", args=[self.society.id]))
+    
+    def test_update_membership_remove(self):
+        response = self.client.post(reverse("update_membership", args=[self.society.id, self.user.id]), {"action": "remove"})
+        self.assertFalse(Membership.objects.filter(id=self.membership.id).exists())
+        self.assertRedirects(response, reverse("manage_society", args=[self.society.id]))
+    
+    def test_update_membership_no_permission(self):
+        self.client.login(email='test@example.ac.uk', password='password123')
+        response = self.client.post(reverse("update_membership", args=[self.society.id, self.user.id]), {"action": "approve"})
+        self.assertEqual(response.status_code, 302)
+    
+    def test_society_detail(self):
+        response = self.client.get(reverse("society_detail", args=[self.society.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "society_detail.html")
+        self.assertIn("society", response.context)
+    
+    def test_join_society_already_member(self):
+        self.membership.status = MembershipStatus.APPROVED
+        self.membership.save()
+        response = self.client.get(reverse("join_society", args=[self.society.id]))
+        self.assertRedirects(response, reverse("society_detail", args=[self.society.id]))
+    
+    def test_join_society_new_application(self):
+        self.client.login(email='test@example.ac.uk', password='password123')
+        response = self.client.post(reverse("join_society", args=[self.society.id]), {})
+        self.assertRedirects(response, reverse("society_detail", args=[self.society.id]))
+
+
+
+class SocietyDeletionAndWidgetsTest(TestCase):
+    def setUp(self):
+        """Set up a test user and client."""
+        self.client = Client()
+        self.user = get_user_model().objects.create_user(
+            email="test@university.ac.uk",
+            first_name="John",
+            last_name="Doe",
+            preferred_name="Johnny",
+            password="Password123"
+        )
+        self.admin_user = get_user_model().objects.create_superuser(
+            email="admin@university.ac.uk",
+            password="AdminPass"
+        )
+        self.society = Society.objects.create(
+            name="AI Club",
+            description="A club for AI enthusiasts",
+            society_type="academic",
+            status="approved",
+            manager=self.user,
+            members_count=50
+        )
+        self.widget = Widget.objects.create(society=self.society, widget_type="events", position=1)
+        self.client.login(email="test@university.ac.uk", password="Password123")
+    
+    def test_request_delete_society_auto_delete(self):
+        self.society.members_count = 50  # Less than 100 for auto-delete
+        self.society.save()
+        response = self.client.post(reverse("request_delete_society", args=[self.society.id]))
+        self.society.refresh_from_db()
+        self.assertEqual(self.society.status, "deleted")
+        self.assertRedirects(response, reverse("societiespage"))
+    
+    def test_request_delete_society_admin_approval(self):
+        self.society.members_count = 150  # More than 100 for admin approval
+        self.society.save()
+        response = self.client.post(reverse("request_delete_society", args=[self.society.id]))
+        self.society.refresh_from_db()
+        self.assertEqual(self.society.status, "request_delete")
+        self.assertRedirects(response, reverse("societiespage"))
+    
+    def test_admin_confirm_delete_approve(self):
+        self.client.login(email="admin@university.ac.uk", password="AdminPass")
+        self.society.status = "request_delete"
+        self.society.save()
+        response = self.client.post(reverse("admin_confirm_delete", args=[self.society.id]), {"action": "approve"})
+        self.society.refresh_from_db()
+        self.assertEqual(self.society.status, "deleted")
+        self.assertRedirects(response, reverse("societiespage"))
+    
+    def test_admin_confirm_delete_reject(self):
+        self.client.login(email="admin@university.ac.uk", password="AdminPass")
+        self.society.status = "request_delete"
+        self.society.save()
+        response = self.client.post(reverse("admin_confirm_delete", args=[self.society.id]), {"action": "reject"})
+        self.society.refresh_from_db()
+        self.assertEqual(self.society.status, "approved")
+        self.assertRedirects(response, reverse("societiespage"))
+    
+    def test_society_admin_view_permission(self):
+        response = self.client.get(reverse("society_admin_view", args=[self.society.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "society_admin.html")
+    
+    def test_society_admin_view_no_permission(self):
+        another_user = get_user_model().objects.create_user(email="another@uni.ac.uk", password="pass")
+        self.client.login(email="another@uni.ac.uk", password="pass")
+        response = self.client.get(reverse("society_admin_view", args=[self.society.id]))
+        self.assertEqual(response.status_code, 302)  # Redirect due to permission error
+    
+    def test_remove_widget_success(self):
+        response = self.client.post(reverse("remove_widget", args=[self.society.id, self.widget.id]))
+        self.assertFalse(Widget.objects.filter(id=self.widget.id).exists())
+        self.assertRedirects(response, reverse("society_admin_view", args=[self.society.id]))
+    
+    def test_remove_widget_no_permission(self):
+        another_user = get_user_model().objects.create_user(email="another@uni.ac.uk", password="pass")
+        self.client.login(email="another@uni.ac.uk", password="pass")
+        response = self.client.post(reverse("remove_widget", args=[self.society.id, self.widget.id]))
+        self.assertEqual(response.status_code, 302)  # Redirect due to permission error
+    
+    def test_society_page_view(self):
+        response = self.client.get(reverse("society_page", args=[self.society.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "societies/society_page.html")
+    
+    def test_update_widget_order_success(self):
+        self.client.post(reverse("update_widget_order", args=[self.society.id]), data=json.dumps({"widget_order": [self.widget.id]}), content_type="application/json")
+        self.widget.refresh_from_db()
+        self.assertEqual(self.widget.position, 0)

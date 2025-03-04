@@ -172,6 +172,98 @@ class NewSocietyFormTest(TestCase):
         self.assertIn('name', form.errors)
         self.assertIn('description', form.errors)
 
+    def test_clean_name_duplicate(self):
+        # Create form data with a duplicate name
+        form_data = {
+            "name": "Existing Society",
+            "description": "A duplicate society",
+            "society_type": "type1",
+            "visibility": "public",
+            "extra_form_needed": False,
+        }
+        form = NewSocietyForm(data=form_data)
+        
+        # Form should be invalid due to duplicate name
+        self.assertFalse(form.is_valid())
+        self.assertIn("name", form.errors)
+        self.assertEqual(
+            form.errors["name"], ["A society with this name already exists. Please choose another."]
+        )
+    
+    def test_clean_name_unique(self):
+        # Create form data with a unique name
+        form_data = {
+            "name": "Unique Society",
+            "description": "A new unique society",
+            "society_type": "type1",
+            "visibility": "public",
+            "extra_form_needed": False,
+        }
+        form = NewSocietyForm(data=form_data)
+        
+        # Form should be valid
+        self.assertTrue(form.is_valid())
+
+    def test_clean_tags_valid(self):
+        # Create form data with valid comma-separated tags
+        form_data = {
+            "name": "Another Society",
+            "description": "A society with tags",
+            "society_type": "type1",
+            "visibility": "public",
+            "extra_form_needed": False,
+            "tags": "music, live events, culture"
+        }
+        form = NewSocietyForm(data=form_data)
+        
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data["tags"], ["music", "live events", "culture"])
+    
+    def test_clean_tags_empty(self):
+        # Create form data with empty tags
+        form_data = {
+            "name": "Tagless Society",
+            "description": "A society without tags",
+            "society_type": "type1",
+            "visibility": "public",
+            "extra_form_needed": False,
+            "tags": ""
+        }
+        form = NewSocietyForm(data=form_data)
+        
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data["tags"], [])
+    
+    def test_clean_tags_with_spaces(self):
+        # Create form data with extra spaces in tags
+        form_data = {
+            "name": "Spaced Tags Society",
+            "description": "A society with extra spaces in tags",
+            "society_type": "type1",
+            "visibility": "public",
+            "extra_form_needed": False,
+            "tags": "  music  ,  live events ,  culture  "
+        }
+        form = NewSocietyForm(data=form_data)
+        
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data["tags"], ["music", "live events", "culture"])
+    
+    def test_clean_tags_list_input(self):
+        # Simulate form data with list input instead of string
+        form_data = {
+            "name": "List Tags Society",
+            "description": "A society with list tags",
+            "society_type": "type1",
+            "visibility": "public",
+            "extra_form_needed": False,
+            "tags": ["music", "live events", "culture"]
+        }
+        form = NewSocietyForm(data=form_data)
+        
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data["tags"], ["music", "live events", "culture"])
+
 
 class SocietyFormTests(TestCase):
     def setUp(self):
@@ -183,25 +275,6 @@ class SocietyFormTests(TestCase):
         self.assertEqual(form.society, self.society)
         self.assertEqual(form.user, self.user)
 
-    def test_clean_method_manual_requirement(self):
-        requirement = SocietyRequirement.objects.create(society=self.society, requirement_type=RequirementType.MANUAL, requires_essay=True, requires_portfolio=True)
-        form_data = {
-            'essay_text': '',  # Missing required essay
-            'portfolio_file': None,  # Missing required portfolio
-        }
-        form = NewSocietyForm(society=self.society, user=self.user, data=form_data)
-        self.assertFalse(form.is_valid())
-        self.assertIn('essay_text', form.errors)
-        self.assertIn('portfolio_file', form.errors)
-
-    def test_clean_method_quiz_requirement(self):
-        requirement = SocietyRequirement.objects.create(society=self.society, requirement_type=RequirementType.QUIZ)
-        question = Question.objects.create(requirement=requirement, question_text="Is this a test?", correct_answer=True)
-        form_data = {
-            f'question_{question.id}': 'yes',  # Correct answer
-        }
-        form = NewSocietyForm(society=self.society, user=self.user, data=form_data)
-        self.assertTrue(form.is_valid())
 
     def test_create_membership_and_application_auto_approve(self):
         form = NewSocietyForm(society=self.society, user=self.user)
@@ -241,17 +314,28 @@ class SocietyFormTests(TestCase):
 class JoinSocietyFormTest(TestCase):
     """Testing for JoinSocietyForm."""
 
-    def setUp(self):
-        self.user = CustomUser.objects.create_user(username="testuser")
-        self.society = Society.objects.create(name="Test Society")
-        self.requirement = SocietyRequirement.objects.create(society=self.society, requirement_type=RequirementType.QUIZ)
-        self.question = Question.objects.create(requirement=self.requirement, question_text="Is this a test?", correct_answer=True)
+    # def setUp(self):
+    #     self.user = CustomUser.objects.create_user(username="testuser")
+    #     self.society = Society.objects.create(name="Test Society")
+    #     self.requirement = SocietyRequirement.objects.create(society=self.society, requirement_type=RequirementType.QUIZ)
+    #     self.question = Question.objects.create(requirement=self.requirement, question_text="Is this a test?", correct_answer=True)
 
-    def test_form_initialization(self):
-        """Ensure form initializes with correct fields."""
-        form = JoinSocietyForm(society=self.society, user=self.user)
-        self.assertEqual(form.society, self.society)
-        self.assertEqual(form.user, self.user)
+    def setUp(self):
+        # Create a user
+        self.user = CustomUser.objects.create(username="testuser")
+        
+        # Create a society
+        self.society = Society.objects.create(name="Test Society")
+        
+        # Create different types of requirements
+        self.no_requirement = None
+        self.quiz_requirement = SocietyRequirement.objects.create(
+            society=self.society, requirement_type=RequirementType.QUIZ
+        )
+        self.manual_requirement = SocietyRequirement.objects.create(
+            society=self.society, requirement_type=RequirementType.MANUAL,
+            requires_essay=True, requires_portfolio=True
+        )
 
     def test_clean_method_quiz_requirement(self):
         """Ensure correct validation for quiz-based requirements."""
@@ -275,3 +359,162 @@ class JoinSocietyFormTest(TestCase):
         application = form.create_membership_and_application()
         self.assertEqual(application.society, self.society)
         self.assertEqual(application.user, self.user)
+
+    def test_init_no_requirement(self):
+        # Initialize form with no requirement
+        form = JoinSocietyForm(society=self.society, user=self.user)
+        self.assertEqual(form.req, None)
+        self.assertTrue("essay_text" in form.fields and isinstance(form.fields["essay_text"].widget, forms.HiddenInput))
+        self.assertTrue("portfolio_file" in form.fields and isinstance(form.fields["portfolio_file"].widget, forms.HiddenInput))
+    
+    def test_init_quiz_requirement(self):
+        # Assign quiz requirement to society
+        self.society.requirement = self.quiz_requirement
+        
+        # Initialize form
+        form = JoinSocietyForm(society=self.society, user=self.user)
+        self.assertEqual(form.req, self.quiz_requirement)
+        
+        # Ensure quiz-related fields exist
+        for question in self.quiz_requirement.questions.all():
+            field_name = f"question_{question.id}"
+            self.assertIn(field_name, form.fields)
+            self.assertEqual(form.fields[field_name].widget.__class__.__name__, "RadioSelect")
+    
+    def test_init_manual_requirement(self):
+        # Assign manual requirement to society
+        self.society.requirement = self.manual_requirement
+        
+        # Initialize form
+        form = JoinSocietyForm(society=self.society, user=self.user)
+        self.assertEqual(form.req, self.manual_requirement)
+        
+        # Ensure essay and portfolio fields are visible
+        self.assertNotIsInstance(form.fields["essay_text"].widget, forms.HiddenInput)
+        self.assertNotIsInstance(form.fields["portfolio_file"].widget, forms.HiddenInput)
+
+    def test_clean_quiz_requirement_missing_answers(self):
+        # Assign quiz requirement
+        self.society.requirement = self.quiz_requirement
+        
+        # Initialize form with missing answers
+        form = JoinSocietyForm(society=self.society, user=self.user, data={})
+        self.assertFalse(form.is_valid())
+        for question in self.quiz_requirement.questions.all():
+            field_name = f"question_{question.id}"
+            self.assertIn(field_name, form.errors)
+    
+    def test_clean_manual_requirement_missing_essay(self):
+        # Assign manual requirement
+        self.society.requirement = self.manual_requirement
+        
+        # Initialize form with missing essay
+        form = JoinSocietyForm(society=self.society, user=self.user, data={})
+        self.assertFalse(form.is_valid())
+        self.assertIn("essay_text", form.errors)
+    
+    def test_clean_manual_requirement_missing_portfolio(self):
+        # Assign manual requirement
+        self.society.requirement = self.manual_requirement
+        
+        # Initialize form with missing portfolio
+        form_data = {"essay_text": "This is my essay."}
+        form = JoinSocietyForm(society=self.society, user=self.user, data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn("portfolio_file", form.errors)
+    
+    def test_clean_manual_requirement_valid_submission(self):
+        # Assign manual requirement
+        self.society.requirement = self.manual_requirement
+        
+        # Initialize form with valid essay and portfolio
+        form_data = {"essay_text": "This is my essay."}
+        file_data = {"portfolio_file": SimpleUploadedFile("portfolio.pdf", b"dummy data")}
+        form = JoinSocietyForm(society=self.society, user=self.user, data=form_data, files=file_data)
+        
+        self.assertTrue(form.is_valid())
+
+
+    def setUp(self):
+        # Create a user
+        self.user = CustomUser.objects.create(username="testuser")
+        
+        # Create a society
+        self.society = Society.objects.create(name="Test Society")
+        
+        # Create different types of requirements
+        self.no_requirement = None
+        self.quiz_requirement = SocietyRequirement.objects.create(
+            society=self.society, requirement_type=RequirementType.QUIZ, threshold=2
+        )
+        self.manual_requirement = SocietyRequirement.objects.create(
+            society=self.society, requirement_type=RequirementType.MANUAL,
+            requires_essay=True, requires_portfolio=True
+        )
+
+    def test_create_membership_auto_approve(self):
+        # Initialize form with no requirement (auto-approve case)
+        form = JoinSocietyForm(society=self.society, user=self.user, data={})
+        self.assertTrue(form.is_valid())
+        application = form.create_membership_and_application()
+        
+        self.assertTrue(application.is_approved)
+        self.assertFalse(application.is_rejected)
+        
+        membership = Membership.objects.get(user=self.user, society=self.society)
+        self.assertEqual(membership.status, "approved")
+
+    def test_create_membership_quiz_pass(self):
+        # Assign quiz requirement to society
+        self.society.requirement = self.quiz_requirement
+        
+        # Simulate passing quiz answers
+        quiz_data = {}
+        correct_answers = {q.id: "yes" for q in self.quiz_requirement.questions.all()[:2]}
+        for q in self.quiz_requirement.questions.all():
+            quiz_data[f"question_{q.id}"] = "yes" if q.id in correct_answers else "no"
+        
+        form = JoinSocietyForm(society=self.society, user=self.user, data=quiz_data)
+        self.assertTrue(form.is_valid())
+        application = form.create_membership_and_application()
+        
+        self.assertTrue(application.is_approved)
+        
+        membership = Membership.objects.get(user=self.user, society=self.society)
+        self.assertEqual(membership.status, "approved")
+
+    def test_create_membership_quiz_fail(self):
+        # Assign quiz requirement to society
+        self.society.requirement = self.quiz_requirement
+        
+        # Simulate failing quiz answers
+        quiz_data = {}
+        for q in self.quiz_requirement.questions.all():
+            quiz_data[f"question_{q.id}"] = "no"
+        
+        form = JoinSocietyForm(society=self.society, user=self.user, data=quiz_data)
+        self.assertTrue(form.is_valid())
+        application = form.create_membership_and_application()
+        
+        self.assertTrue(application.is_rejected)
+        
+        with self.assertRaises(Membership.DoesNotExist):
+            Membership.objects.get(user=self.user, society=self.society)
+
+    def test_create_membership_manual_pending(self):
+        # Assign manual requirement to society
+        self.society.requirement = self.manual_requirement
+        
+        # Simulate valid manual submission
+        form_data = {"essay_text": "This is my essay."}
+        file_data = {"portfolio_file": SimpleUploadedFile("portfolio.pdf", b"dummy data")}
+        form = JoinSocietyForm(society=self.society, user=self.user, data=form_data, files=file_data)
+        
+        self.assertTrue(form.is_valid())
+        application = form.create_membership_and_application()
+        
+        self.assertFalse(application.is_approved)
+        self.assertFalse(application.is_rejected)
+        
+        membership = Membership.objects.get(user=self.user, society=self.society)
+        self.assertEqual(membership.status, "pending")

@@ -65,6 +65,7 @@ class Society(models.Model):
         return f"{self.name} ({self.get_status_display()})"
 
 
+# should be in constants
 class MembershipRole(models.TextChoices):
     MANAGER = 'manager', 'Manager'
     CO_MANAGER = 'co_manager', 'Co-Manager'

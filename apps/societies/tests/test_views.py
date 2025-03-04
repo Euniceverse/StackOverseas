@@ -4,8 +4,9 @@ from django.contrib.auth import get_user_model
 from django.contrib import messages
 from django.contrib.auth.models import User
 
-from apps.societies.models import Society, SocietyRegistration
-
+from apps.societies.models import Society, SocietyRegistration, Membership, MembershipRole, MembershipStatus
+from apps.news.models import News
+from apps.societies.functions import get_societies, manage_societies, get_all_users
 
 class SocietiesViewsTest(TestCase):
     def setUp(self):
@@ -73,6 +74,74 @@ class SocietiesViewsTest(TestCase):
         response = self.client.post(reverse('society-join', args=[self.society.id]))
         self.assertEqual(response.status_code, 200)
         self.assertIn(self.user, self.society.members.all())
+
+
+    def test_update_membership_approve(self):
+        """Test approving a membership."""
+        other_user = get_user_model().objects.create_user(
+            email='member@example.ac.uk', password='password123')
+        membership = Membership.objects.create(
+            society=self.society, user=other_user, role=MembershipRole.MEMBER, status=MembershipStatus.PENDING)
+
+        response = self.client.post(reverse('update_membership', args=[self.society.id, other_user.id]), {
+            'action': 'approve'
+        })
+        
+        membership.refresh_from_db()
+        self.assertEqual(membership.status, MembershipStatus.APPROVED)
+        self.assertRedirects(response, reverse('manage_society', args=[self.society.id]))
+    
+    def test_update_membership_remove(self):
+        """Test removing a membership."""
+        other_user = get_user_model().objects.create_user(
+            email='member@example.ac.uk', password='password123')
+        membership = Membership.objects.create(
+            society=self.society, user=other_user, role=MembershipRole.MEMBER, status=MembershipStatus.APPROVED)
+        
+        response = self.client.post(reverse('update_membership', args=[self.society.id, other_user.id]), {
+            'action': 'remove'
+        })
+        
+        self.assertFalse(Membership.objects.filter(society=self.society, user=other_user).exists())
+        self.assertRedirects(response, reverse('manage_society', args=[self.society.id]))
+
+    def test_update_membership_promote_co_manager(self):
+        """Test promoting a user to Co-Manager."""
+        other_user = get_user_model().objects.create_user(
+            email='co_manager@example.ac.uk', password='password123')
+        membership = Membership.objects.create(
+            society=self.society, user=other_user, role=MembershipRole.MEMBER, status=MembershipStatus.APPROVED)
+        
+        response = self.client.post(reverse('update_membership', args=[self.society.id, other_user.id]), {
+            'action': 'promote_co_manager'
+        })
+        
+        membership.refresh_from_db()
+        self.assertEqual(membership.role, MembershipRole.CO_MANAGER)
+        self.assertEqual(membership.status, MembershipStatus.APPROVED)
+        self.assertRedirects(response, reverse('manage_society', args=[self.society.id]))
+
+    def test_update_membership_promote_editor(self):
+        """Test promoting a user to Editor."""
+        other_user = get_user_model().objects.create_user(
+            email='editor@example.ac.uk', password='password123')
+        membership = Membership.objects.create(
+            society=self.society, user=other_user, role=MembershipRole.MEMBER, status=MembershipStatus.APPROVED)
+        
+        response = self.client.post(reverse('update_membership', args=[self.society.id, other_user.id]), {
+            'action': 'promote_editor'
+        })
+        
+        membership.refresh_from_db()
+        self.assertEqual(membership.role, MembershipRole.EDITOR)
+        self.assertEqual(membership.status, MembershipStatus.APPROVED)
+        self.assertRedirects(response, reverse('manage_society', args=[self.society.id]))
+
+    def test_return_redirect_on_invalid_request(self):
+        """Test that non-POST requests redirect properly."""
+        response = self.client.get(reverse('update_membership', args=[self.society.id, self.user.id]))
+        self.assertRedirects(response, reverse('manage_society', args=[self.society.id]))
+
 
 
 class TopSocietiesViewTest(TestCase):

@@ -71,6 +71,21 @@ class LogInFormTest(TestCase):
         self.assertIn('email', form.errors)
         self.assertIn('password', form.errors)
 
+    def test_clean_method_invalid(self):
+        form = LogInForm(data={
+            'email': 'test@example.ac.uk',
+            'password': 'WrongPassword'
+        })
+        self.assertFalse(form.is_valid())
+
+    def test_get_user_method(self):
+        form = LogInForm(data={
+            'email': 'test@example.ac.uk',
+            'password': 'ValidPassword123'
+        })
+        form.is_valid()
+        self.assertEqual(form.get_user(), self.user)
+
 
 class NewPasswordMixinTest(TestCase):
     def setUp(self):
@@ -119,6 +134,23 @@ class NewPasswordMixinTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('password_confirmation', form.errors)
 
+    def test_clean_method(self):
+        class TestForm(NewPasswordMixin):
+            pass
+        
+        form = TestForm(data={
+            'new_password': 'ValidPassword123',
+            'password_confirmation': 'ValidPassword123'
+        })
+        self.assertTrue(form.is_valid())
+        
+        form = TestForm(data={
+            'new_password': 'ValidPassword123',
+            'password_confirmation': 'WrongPassword'
+        })
+        self.assertFalse(form.is_valid())
+        self.assertIn('password_confirmation', form.errors)
+
 
 class PasswordFormTest(TestCase):
     def setUp(self):
@@ -157,6 +189,29 @@ class PasswordFormTest(TestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertIn('new_password', form.errors)
+
+    def test_init_method(self):
+        form = PasswordForm(user=self.user)
+        self.assertEqual(form.user, self.user)
+
+    def test_clean_method(self):
+        form = PasswordForm(user=self.user, data={
+            'password': 'OldPassword123',
+            'new_password': 'NewPassword123',
+            'password_confirmation': 'NewPassword123'
+        })
+        self.assertTrue(form.is_valid())
+
+    def test_save_method(self):
+        form = PasswordForm(user=self.user, data={
+            'password': 'OldPassword123',
+            'new_password': 'NewPassword123',
+            'password_confirmation': 'NewPassword123'
+        })
+        self.assertTrue(form.is_valid())
+        form.save()
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password('NewPassword123'))
 
 
 class SignUpFormTest(TestCase):
@@ -285,3 +340,50 @@ class SignUpFormTest(TestCase):
         self.assertTrue(form.is_valid())
         user = form.save()
         self.assertFalse(user.is_active)
+
+    def test_clean_email(self):
+        form = SignUpForm(data={
+            'email': 'valid@university.ac.uk',
+            'first_name': 'John',
+            'last_name': 'Doe',
+            'preferred_name': 'Johnny',
+            'new_password': 'ValidPassword123',
+            'password_confirmation': 'ValidPassword123'
+        })
+        self.assertTrue(form.is_valid())
+
+        form = SignUpForm(data={
+            'email': 'invalid@gmail.com',
+            'first_name': 'John',
+            'last_name': 'Doe',
+            'preferred_name': 'Johnny',
+            'new_password': 'ValidPassword123',
+            'password_confirmation': 'ValidPassword123'
+        })
+        self.assertFalse(form.is_valid())
+        self.assertIn('email', form.errors)
+
+    def test_clean_method(self):
+        form = SignUpForm(data={
+            'email': 'valid@university.ac.uk',
+            'first_name': 'John',
+            'last_name': 'Doe',
+            'preferred_name': 'Johnny',
+            'new_password': 'ValidPassword123',
+            'password_confirmation': 'ValidPassword123'
+        })
+        self.assertTrue(form.is_valid())
+
+    def test_save_method(self):
+        form = SignUpForm(data={
+            'email': 'newuser@university.ac.uk',
+            'first_name': 'Alice',
+            'last_name': 'Smith',
+            'preferred_name': 'Ally',
+            'new_password': 'SecurePassword123',
+            'password_confirmation': 'SecurePassword123'
+        })
+        self.assertTrue(form.is_valid())
+        user = form.save()
+        self.assertFalse(user.is_active)
+        self.assertTrue(user.check_password('SecurePassword123'))

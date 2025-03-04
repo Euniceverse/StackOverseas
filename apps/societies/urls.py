@@ -31,7 +31,7 @@ urlpatterns = [
 
     path('<int:society_id>/manage/', manage_society, name='manage_society'),
     path('<int:society_id>/membership/<int:user_id>/update/', update_membership, name='update_membership'),
-    path('<int:society_id>/', society_detail, name='society_detail'),
+    path('<int:society_id>/', society_page, name='society_page'),
     path('<int:society_id>/join/', join_society, name='join_society'),
     path('<int:society_id>/applications/', view_applications, name='view_applications'),
     path('<int:society_id>/applications/<int:application_id>/<str:decision>/', decide_application, name='decide_application'),

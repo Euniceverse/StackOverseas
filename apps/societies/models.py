@@ -31,9 +31,6 @@ class Society(models.Model):
    
     location = models.CharField(max_length=255, blank=True, null=True) # Nehir
 
-    # Define Many-to-Many field in the Society model instead of User
-    members = models.ManyToManyField(CustomUser, related_name="societies", blank=True)
-
     members_count = models.IntegerField(default=0)
     price_range = models.DecimalField(max_digits=7, decimal_places=2, default=0.00)
 

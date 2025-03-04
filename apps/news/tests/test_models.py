@@ -1,6 +1,9 @@
 from django.test import TestCase
 from django.utils import timezone
-from apps.news.models import News
+from apps.news.models import News, upload_to
+from apps.events.models import Event
+from apps.societies.models import Society
+import os
 
 class NewsModelTests(TestCase):
     """Tests for the News model"""
@@ -44,3 +47,42 @@ class NewsModelTests(TestCase):
         """Test the string representation of news model"""
         self.assertEqual(str(self.news1), "Published News")
 
+class NewsExtraModelTests(TestCase):
+    def setUp(self):
+        self.society = Society.objects.create(
+            name="Event Society",
+            description="desc",
+            society_type="sports",
+            manager_id=10,  # or create real user
+            status="approved"
+        )
+        self.event = Event.objects.create(
+            name="LinkedEvent",
+            date=timezone.now()
+        )
+        self.news_item = News.objects.create(
+            title="News With Event",
+            content="Testing event link",
+            society=self.society,
+            event=self.event,
+            is_published=False
+        )
+
+    def test_get_event_method(self):
+        """Test that get_event() retrieves the linked event."""
+        # your News model says: get_event() -> Event.objects.filter(news=self)
+        # but since we used event=... we can confirm if it appears:
+        linked_events = self.news_item.get_event()
+        self.assertEqual(len(linked_events), 1)
+        self.assertEqual(linked_events.first(), self.event)
+
+    def test_upload_to_function(self):
+        """Check the upload_to path structure."""
+        filename = "myimage.png"
+        path = upload_to(self.news_item, filename)
+        self.assertIn("news_images/", path)
+        self.assertTrue(path.endswith("_myimage.png"))
+        # e.g. news_images/20250101120000_myimage.png
+        # Just ensure it has the prefix and suffix:
+        self.assertTrue(path.startswith("news_images/"))
+        self.assertIn("_myimage.png", path)

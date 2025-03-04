@@ -26,6 +26,9 @@ class CreateEventViewTests(TestCase):
         # Create a Society
         self.society_owner = User.objects.create_user(
             email='owner@uni.ac.uk',
+            first_name='Owner',
+            last_name='Test',
+            preferred_name='OwnerPreferred',
             password='ownerpass'
         )
         self.society = Society.objects.create(
@@ -45,7 +48,11 @@ class CreateEventViewTests(TestCase):
 
         # Another co-manager user
         self.user_co = User.objects.create_user(
-            email='co@uni.ac.uk', password='copass'
+            email='co@uni.ac.uk',
+            first_name='Co',
+            last_name='Manager',
+            preferred_name='CoPreferred',
+            password='copass'
         )
         Membership.objects.create(
             society=self.society,
@@ -56,8 +63,13 @@ class CreateEventViewTests(TestCase):
 
         # An editor
         self.user_editor = User.objects.create_user(
-            email='editor@uni.ac.uk', password='editpass'
+            email='editor@uni.ac.uk',
+            first_name='Edit',
+            last_name='User',
+            preferred_name='EditPreferred',
+            password='editpass'
         )
+
         Membership.objects.create(
             society=self.society,
             user=self.user_editor,
@@ -68,6 +80,9 @@ class CreateEventViewTests(TestCase):
         # A normal user (no permission)
         self.user_normal = User.objects.create_user(
             email='normal@uni.ac.uk',
+            first_name='Norm',
+            last_name='User',
+            preferred_name='NormPreferred',
             password='normalpass'
         )
         # No membership for them in this society
@@ -200,6 +215,9 @@ class AutoEditNewsViewTests(TestCase):
         # Create user, event, news
         self.user_manager = User.objects.create_user(
             email='manager@uni.ac.uk',
+            first_name='MgrFirst',
+            last_name='MgrLast',
+            preferred_name='MgrPreferred',
             password='mgrpass'
         )
 

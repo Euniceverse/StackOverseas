@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.utils import timezone
-from apps.events.models import Event, EventRegistration
+from apps.events.models import Event, EventRegistration, Host
 from django.contrib.auth import get_user_model
 from apps.societies.models import Society
 
@@ -20,7 +20,7 @@ class EventModelTest(TestCase):
             event_type="sports",
             keyword="chess",
             is_free=True,
-            members_only=False,
+            member_only=False,
             capacity=100
         )
 
@@ -29,7 +29,7 @@ class EventModelTest(TestCase):
         self.assertEqual(self.event.name, "Chess Tournament")
         self.assertEqual(self.event.event_type, "sports")
         self.assertTrue(self.event.is_free)
-        self.assertFalse(self.event.members_only)
+        self.assertFalse(self.event.member_only)
         self.assertEqual(self.event.capacity, 100)
 
     def test_str_representation(self):
@@ -57,7 +57,7 @@ class EventRegistrationModelTest(TestCase):
             event_type="arts",
             keyword="painting",
             is_free=False,
-            members_only=True,
+            member_only=True,
             capacity=50
         )
 
@@ -87,3 +87,37 @@ class EventRegistrationModelTest(TestCase):
         """Test the __str__ method of the EventRegistration model."""
         expected_str = f"{self.registration.user} - {self.registration.event} - accepted"
         self.assertEqual(str(self.registration), expected_str)
+
+User = get_user_model()
+
+class HostModelTest(TestCase):
+    def setUp(self):
+        self.user_mgr = User.objects.create_user(
+            email='host@mgr.ac.uk',
+            first_name='HostMan',
+            last_name='Test',
+            preferred_name='HostPref',
+            password='pass'
+        )
+        self.soc = Society.objects.create(
+            name="HostingSoc",
+            description="desc",
+            society_type="sports",
+            manager=self.user_mgr,
+            status="approved"
+        )
+        self.event = Event.objects.create(
+            name="Hosted Event",
+            location="Lab",
+            date=timezone.now(),
+            event_type="academic",
+            keyword="study"
+        )
+        self.host = Host.objects.create(
+            event=self.event,
+            society=self.soc
+        )
+
+    def test_str_representation(self):
+        """Check Host model __str__"""
+        self.assertEqual(str(self.host), f"{self.soc.name} hosts {self.event.name}")

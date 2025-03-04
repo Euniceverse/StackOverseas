@@ -10,7 +10,17 @@ from django.test import TestCase
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from datetime import timedelta
-from apps.users.models import CustomUser
+from apps.users.models import *
+
+def test_validate_ac_uk_email(self):
+        """Test email validation for .ac.uk domain."""
+        with self.assertRaises(ValidationError):
+            validate_ac_uk_email("invalid@gmail.com")
+        
+        try:
+            validate_ac_uk_email("student@university.ac.uk")
+        except ValidationError:
+            self.fail("validate_ac_uk_email() raised ValidationError unexpectedly!")
 
 class CustomUserModelTest(TestCase):
 
@@ -38,6 +48,13 @@ class CustomUserModelTest(TestCase):
         self.assertEqual(self.user.preferred_name, "Johnny")
         self.assertFalse(self.user.is_staff)  # Regular users are not staff
         self.assertFalse(self.user.is_superuser)  # Regular users are not superusers
+
+    def test_create_user(self):
+        """Test user creation through CustomUserManager."""
+        manager = CustomUserManager()
+        user = manager.create_user("test@university.ac.uk", "Test", "User", "Testy", "Password123")
+        self.assertEqual(user.email, "test@university.ac.uk")
+        self.assertTrue(user.check_password("Password123"))
 
     def test_superuser_creation(self):
         """Test if a superuser is created properly."""
@@ -77,6 +94,16 @@ class CustomUserModelTest(TestCase):
             )
             invalid_user.full_clean()
 
+    def test_can_change_preferred_name(self):
+        """Test preferred name change conditions."""
+        self.user.last_verified_date = timezone.now() - timedelta(days=366)
+        self.user.save()
+        self.assertTrue(self.user.can_change_preferred_name())
+
+        self.user.last_verified_date = timezone.now()
+        self.user.save()
+        self.assertFalse(self.user.can_change_preferred_name())
+
     def test_preferred_name_change_requires_email_verification(self):
         """Test that users must verify their email before changing their preferred name."""
         self.user.last_verified_date = timezone.now() - timedelta(days=365)  # Make user eligible
@@ -112,6 +139,11 @@ class CustomUserModelTest(TestCase):
         self.assertNotEqual(self.user.last_verified_date, old_date)
         self.assertGreater(self.user.last_verified_date, old_date)
 
+    def test_request_email_verification(self):
+        """Test email verification request function (mocked)."""
+        self.user.request_email_verification()
+        self.assertTrue(True)  # Just ensuring function runs without error
+
     def test_cannot_change_preferred_name_without_waiting_a_year(self):
         """Test that users cannot change their preferred name again within a year."""
         self.user.last_verified_date = timezone.now()  # Just verified
@@ -122,11 +154,59 @@ class CustomUserModelTest(TestCase):
         with self.assertRaises(ValidationError):
             self.user.update_preferred_name("NewNameTooSoon")
 
+    def test_verify_email(self):
+        """Test email verification updates last_verified_date."""
+        old_date = timezone.now() - timedelta(days=365)
+        self.user.last_verified_date = old_date
+        self.user.save()
+        self.user.verify_email()
+        self.assertGreater(self.user.last_verified_date, old_date)
+
+    def test_update_preferred_name(self):
+        """Test updating preferred name requires verification."""
+        self.user.last_verified_date = timezone.now() - timedelta(days=366)
+        self.user.save()
+        self.assertFalse(self.user.update_preferred_name("NewJohnny"))
+
     def test_can_change_preferred_name_after_one_year(self):
         """Test that users can change their preferred name after a year has passed."""
         self.user.last_verified_date = timezone.now() - timedelta(days=366)
         self.user.save()
 
+        self.assertTrue(self.user.can_change_preferred_name())
+        self.user.confirm_preferred_name_change("NewJohnny")
+        self.assertEqual(self.user.preferred_name, "NewJohnny")
+
+
+    def test_confirm_preferred_name_change(self):
+        """Test confirmation of preferred name change."""
+        self.user.last_verified_date = timezone.now() - timedelta(days=366)
+        self.user.save()
+        self.user.confirm_preferred_name_change("NewJohnny")
+        self.assertEqual(self.user.preferred_name, "NewJohnny")
+
+    def test_str_method(self):
+        """Test __str__ method representation."""
+        self.assertEqual(str(self.user), "John Doe")
+
+    def test_create_user_without_email(self):
+        """Test that creating a user without an email raises an error."""
+        manager = CustomUserManager()
+        with self.assertRaises(ValueError):
+            manager.create_user(None, "Test", "User", "Testy", "Password123")
+
+    def test_cannot_change_preferred_name_without_waiting_a_year(self):
+        """Test that users cannot change their preferred name again within a year."""
+        self.user.last_verified_date = timezone.now()
+        self.user.save()
+        self.assertFalse(self.user.can_change_preferred_name())
+        with self.assertRaises(ValidationError):
+            self.user.update_preferred_name("NewNameTooSoon")
+
+    def test_can_change_preferred_name_after_one_year(self):
+        """Test that users can change their preferred name after a year has passed."""
+        self.user.last_verified_date = timezone.now() - timedelta(days=366)
+        self.user.save()
         self.assertTrue(self.user.can_change_preferred_name())
         self.user.confirm_preferred_name_change("NewJohnny")
         self.assertEqual(self.user.preferred_name, "NewJohnny")

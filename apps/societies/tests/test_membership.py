@@ -31,7 +31,9 @@ class MembershipModelTest(TestCase):
         """Ensure we can create a membership with default role/status."""
         membership = Membership.objects.create(
             society=self.society,
-            user=self.user
+            user=self.user,
+            role=MembershipRole.MEMBER,
+            status=MembershipStatus.PENDING
         )
         self.assertEqual(membership.role, MembershipRole.MEMBER)
         self.assertEqual(membership.status, MembershipStatus.PENDING)

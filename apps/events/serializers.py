@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from apps.events.models import Event
+from apps.societies.models import Society
 
 class EventSerializer(serializers.ModelSerializer):
     """Serializer for the Event model"""
@@ -7,6 +8,13 @@ class EventSerializer(serializers.ModelSerializer):
     start_datetime = serializers.SerializerMethodField()
     end_datetime = serializers.SerializerMethodField()
     event_type = serializers.SerializerMethodField()  # ✅ Fix event_type formatting
+
+    society = serializers.PrimaryKeyRelatedField(
+        queryset=Society.objects.all(),
+        many=True,
+        required=False,
+        allow_empty=True   # <--- let it be []
+    )
 
     class Meta:
         model = Event

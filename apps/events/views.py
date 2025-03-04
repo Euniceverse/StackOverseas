@@ -77,7 +77,7 @@ def create_event(request, society_id):
     allowed_roles = [MembershipRole.MANAGER, MembershipRole.CO_MANAGER, MembershipRole.EDITOR]
     if not membership or membership.role not in allowed_roles:
         messages.error(request, "You do not have permission to create an event for this society.")
-        return redirect('society_detail', society_id=society.id)
+        return redirect('society_page', society_id=society.id)
 
     if request.method == 'POST':
         form = NewEventForm(request.POST)

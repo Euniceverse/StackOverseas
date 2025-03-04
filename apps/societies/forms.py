@@ -120,6 +120,7 @@ class JoinSocietyForm(forms.Form):
         2) If quiz => check correctness, possibly auto-approve or reject
         3) If manual => membership is pending, manager will decide
         """
+        from .models import MembershipApplication, Membership, RequirementType
         application = MembershipApplication.objects.create(
             user=self.user,
             society=self.society
@@ -189,8 +190,3 @@ class JoinSocietyForm(forms.Form):
             Membership.objects.filter(society=self.society, user=self.user).delete()
 
         return application
-
-        
-
-    
-

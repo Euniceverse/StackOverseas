@@ -18,6 +18,10 @@ Join {{ society.name }}
 <form method="post" enctype="multipart/form-data">
   {% csrf_token %}
   {{ form.as_p }}
+
   <button type="submit" class="btn btn-primary">Submit</button>
+
+  <a href="{% url 'society_page' society.id %}" class="btn btn-secondary">Cancel</a>
+</form>
 </form>
 {% endblock %}

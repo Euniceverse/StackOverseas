@@ -3,6 +3,7 @@ from django.utils import timezone
 from apps.news.models import News, upload_to
 from apps.events.models import Event
 from apps.societies.models import Society
+from apps.users.models import CustomUser
 import os
 
 class NewsModelTests(TestCase):
@@ -10,10 +11,52 @@ class NewsModelTests(TestCase):
 
     def setUp(self):
         """Set up test news objects"""
+        # create a valid manager 
+        self.manager = CustomUser.objects.create_user(
+            email="manager@ac.uk",
+            first_name="Manager",
+            last_name="User",
+            preferred_name="Manager",
+            password="password123"
+        )
+        
+        # create Society instances.
+        self.society1 = Society.objects.create(
+            name="Tech Society",
+            description="A society for tech enthusiasts",
+            society_type="Technology",
+            manager=self.manager,  
+            location="Campus",
+            members_count=0,
+            price_range=0.00,
+            membership_request_required=False,
+            visibility="Private"  
+        )
+        
+        self.society2 = Society.objects.create(
+            name="Hidden Society",
+            description="A hidden society for testing.",
+            society_type="Technology",
+            manager=self.manager,
+            location="Campus",
+            members_count=0,
+            price_range=0.00,
+            membership_request_required=False,
+            visibility="Private"
+        )
+        
+        # create Event instance
+        self.event = Event.objects.create(
+            name="LinkedEvent",
+            date=timezone.now()
+        )
+        
+        # create News instances
         self.news1 = News.objects.create(
             title="Published News",
             content="This is a test news article.",
-            society="Tech Society",
+            society=self.society1,
+            event=self.event,
             date_posted=timezone.now(),
             is_published=True
         )
@@ -21,10 +64,11 @@ class NewsModelTests(TestCase):
         self.news2 = News.objects.create(
             title="Unpublished News",
             content="This news should not be publicly visible.",
-            society="Hidden Society",
+            society=self.society2,
             date_posted=timezone.now(),
             is_published=False
         )
+        
 
     def test_news_creation(self):
         """Test that news objects are created correctly"""
@@ -46,43 +90,19 @@ class NewsModelTests(TestCase):
     def test_news_str_method(self):
         """Test the string representation of news model"""
         self.assertEqual(str(self.news1), "Published News")
-
-class NewsExtraModelTests(TestCase):
-    def setUp(self):
-        self.society = Society.objects.create(
-            name="Event Society",
-            description="desc",
-            society_type="sports",
-            manager_id=10,  # or create real user
-            status="approved"
-        )
-        self.event = Event.objects.create(
-            name="LinkedEvent",
-            date=timezone.now()
-        )
-        self.news_item = News.objects.create(
-            title="News With Event",
-            content="Testing event link",
-            society=self.society,
-            event=self.event,
-            is_published=False
-        )
-
+        
     def test_get_event_method(self):
         """Test that get_event() retrieves the linked event."""
-        # your News model says: get_event() -> Event.objects.filter(news=self)
-        # but since we used event=... we can confirm if it appears:
-        linked_events = self.news_item.get_event()
+        linked_events = self.news1.get_event()
         self.assertEqual(len(linked_events), 1)
         self.assertEqual(linked_events.first(), self.event)
-
+        
     def test_upload_to_function(self):
         """Check the upload_to path structure."""
         filename = "myimage.png"
-        path = upload_to(self.news_item, filename)
+        path = upload_to(self.news1, filename)
         self.assertIn("news_images/", path)
         self.assertTrue(path.endswith("_myimage.png"))
-        # e.g. news_images/20250101120000_myimage.png
-        # Just ensure it has the prefix and suffix:
+        # example: news_images/20250101120000_myimage.png
         self.assertTrue(path.startswith("news_images/"))
         self.assertIn("_myimage.png", path)

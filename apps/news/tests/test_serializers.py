@@ -1,4 +1,3 @@
-
 from django.test import TestCase
 from django.utils import timezone
 from rest_framework import serializers
@@ -12,6 +11,7 @@ class DummyNewsSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class NewsSerializerTests(TestCase):
+    """Tests for News serializer."""
     def setUp(self):
         """Set up test data."""
         # create valid manager
@@ -66,3 +66,4 @@ class NewsSerializerTests(TestCase):
         self.assertEqual(obj.title, "New Title")
         self.assertTrue(obj.is_published)
         self.assertEqual(obj.views, 99)
+        

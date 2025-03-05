@@ -1,4 +1,3 @@
-"""Tests for the NewsForm."""
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now

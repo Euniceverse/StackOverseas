@@ -273,3 +273,4 @@ class NewsDetailViewTests(TestCase):
         updated = News.objects.get(id=self.news_item.id)
         self.assertEqual(updated.views, 6)
         self.assertContains(response, "Detail News")
+        

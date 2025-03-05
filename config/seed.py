@@ -15,7 +15,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
 from apps.users.models import CustomUser
-from apps.societies.models import Society
+from apps.societies.models import Society, Membership, MembershipRole, MembershipStatus
 from apps.events.models import Event, EventRegistration
 
 
@@ -25,13 +25,33 @@ def random_location():
         city = random.choice(list(constants.UNI_CHOICES.keys()))
     return city
 
+def create_superuser():
+    """Creates a default superuser if one doesn't exist."""
+    User = CustomUser  # Your custom user model
+    
+    superuser_email = "admin@example.ac.uk"
+    
+    if not User.objects.filter(email=superuser_email).exists():
+        User.objects.create_superuser(
+            email=superuser_email,
+            first_name="Admin",
+            last_name="User",
+            preferred_name="Admin",
+            password="password123"  # Change this to a secure password
+        )
+        print("Superuser created successfully!")
+    else:
+        print("Superuser already exists, skipping creation.")
+
+
+
 # Initialize Faker
 fake = Faker()
 
 def generate_unique_email(first_name, last_name):
     first_name = first_name.lower()
     last_name = last_name.lower()
-    
+
     # Choose a random uni
     city = random_location()
     university = random.choice(constants.UNI_CHOICES[city])
@@ -44,7 +64,7 @@ def generate_unique_email(first_name, last_name):
     while CustomUser.objects.filter(email=email).exists():
         email = f"{first_name}.{last_name}{counter}@{city}.ac.uk"
         counter += 1
-    
+
     return email
 
 def create_dummy_users(n=100):
@@ -72,15 +92,15 @@ def create_dummy_societies(users, n=50):
     societies = []
     for _ in range(n):
         society = Society.objects.create(
-            name=fake.company(),
+            name=fake.unique.company(),
             description=fake.text(),
             society_type = random.choice([key for key, _ in constants.SOCIETY_TYPE_CHOICES]),
-            status=random.choice(["pending", "approved", "rejected"]),
+            status=random.choice([key for key, _ in constants.SOCIETY_STATUS_CHOICES]),
             manager=random.choice(users),
             # members_count=random.randint(1, 10)  # Assign random members count
         )
         if society.status == "approved":
-            society.members.set(random.sample(users, random.randint(1, 10)))  # Assign random members
+            society.members.set(random.sample(users, random.randint(1, len(users))))  # Assign random members
         societies.append(society)
     return societies
 
@@ -123,23 +143,88 @@ def create_dummy_event_registrations(users, events, n=20):
             status=random.choice(["accepted", "waitlisted", "rejected"]),
         )
 
+def create_dummy_memberships(users, societies):
+    """Creates Membership records for users in societies."""
+    memberships = []
+    for society in societies:
+        members = random.sample(users, random.randint(1, min(10, len(users))))  # Assign 1-10 random members
+        for user in members:
+            membership = Membership(
+                user=user,
+                society=society,
+                role=random.choice([MembershipRole.MEMBER, MembershipRole.CO_MANAGER]),
+                status=MembershipStatus.APPROVED,  # Ensure they are approved members
+            )
+            memberships.append(membership)
+    
+    Membership.objects.bulk_create(memberships)  # Bulk insert for efficiency
+    print(f"Created {len(memberships)} memberships.")
+
 if __name__ == "__main__":
     print("Generating dummy data...")
 
+    # Generate superuser
+    create_superuser()
+
     # Generate users
-    users = create_dummy_users(10)
+    users = create_dummy_users(50)
     print(f"Created {len(users)} users.")
 
     # Generate societies
-    societies = create_dummy_societies(users, 10)
+    societies = create_dummy_societies(users, 50)
     print(f"Created {len(societies)} societies.")
 
+    #  Generate Members 
+    create_dummy_memberships(users, societies)
+    print("Dummy memberships registrations created.")
+
     # Generate events
-    events = create_dummy_events(societies, 15)
+    events = create_dummy_events(societies, 30)
     print(f"Created {len(events)} events.")
 
     # Generate event registrations
-    create_dummy_event_registrations(users, events, 20)
+    create_dummy_event_registrations(users, events, 40)
     print("Dummy event registrations created.")
 
     print("Seeding complete!")
+
+
+from django.utils.timezone import now
+import random
+from datetime import timedelta
+from apps.news.models import News
+from apps.societies.models import Society
+
+def create_fake_news():
+    # Fetch only approved societies from the seed data
+    approved_societies = list(Society.objects.filter(status="approved"))
+
+    if not approved_societies:
+        print("No approved societies found. Fake news will not be created.")
+        return
+
+    # Clear old fake news before seeding new ones
+    News.objects.all().delete()
+
+    # Generate 20 fake news articles linked to seeded societies
+    fake_news_entries = []
+    for i in range(20):  # Creating 20 fake news entries
+        society = random.choice(approved_societies)  # Ensure news belongs to a seeded society
+
+        fake_news_entries.append(
+            News(
+                title=f"Test News {i+1}",
+                content="This is a test news content for filtering and sorting.",
+                date_posted=now() - timedelta(days=random.randint(1, 30)),
+                views=random.randint(0, 100),  # Randomized views for popularity sorting
+                society=society,  # Properly linking to an approved seeded society
+            )
+        )
+
+    # Bulk create for efficiency
+    News.objects.bulk_create(fake_news_entries)
+
+    print(f"Successfully created {len(fake_news_entries)} fake news articles!")
+
+# Call the function when seeding
+create_fake_news()

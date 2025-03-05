@@ -59,7 +59,7 @@ function initializeList() {
 
 
     window.list = new FullCalendar.Calendar(listEl, {
-        initialView: "dayGridMonth",
+        initialView: "listWeek",
         headerToolbar: {
             left: "prev,next today",
             center: "title",
@@ -135,5 +135,5 @@ function initializeList() {
 }
 
 // 🚀 `window` 객체에 함수 등록하여 `viewSwitcher.js`에서 호출 가능하도록 설정
-window.initialize = initializeList;
+window.initializeList = initializeList;
 

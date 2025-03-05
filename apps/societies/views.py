@@ -9,6 +9,7 @@ from django.http import JsonResponse, HttpResponseNotFound
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 from .models import Society, SocietyRegistration, Widget
 from .forms import NewSocietyForm
@@ -476,9 +477,28 @@ def society_page(request, society_id):
     society = get_object_or_404(Society, id=society_id)
     widgets = Widget.objects.filter(society=society).order_by("position")
 
-    # determine user access level
-    is_member = society.members.filter(id=request.user.id).exists() if request.user.is_authenticated else False
-    is_manager = request.user == society.manager if request.user.is_authenticated else False
+    membership = None
+    is_member = False
+    is_manager = False
+
+    if request.user.is_authenticated:
+        membership = Membership.objects.filter(society=society, user=request.user).first()
+        if membership and membership.status == MembershipStatus.APPROVED:
+            is_member = True
+        if society.manager == request.user:
+            is_manager = True
+    
+    if not is_member:
+        widgets = widgets.exclude(widget_type__in=["discussion", "members"])
+
+    context = {
+        "society": society,
+        "widgets": widgets,
+        "membership": membership,
+        "is_member": is_member,
+        "is_manager": is_manager,
+    }
+    return render(request, "society_page.html", context)
     
     # remove member-only widgets for non-members
     if not is_member:
@@ -521,3 +541,24 @@ def update_widget_order(request, society_id):
             return JsonResponse({"error": str(e)}, status=400)
 
     return JsonResponse({"error": "Invalid request"}, status=400)
+
+@login_required
+def leave_society(request, society_id):
+    society = get_object_or_404(Society, id=society_id)
+    membership = Membership.objects.filter(
+        society=society, 
+        user=request.user,
+        status=MembershipStatus.APPROVED
+    ).first()
+
+    if not membership:
+        messages.error(request, "You are not an approved member of this society.")
+        return redirect('society_page', society_id=society.id)
+
+    if request.method == "POST":
+        # user confirmed
+        membership.delete()
+        messages.success(request, f"You have left '{society.name}'.")
+        return redirect('society_page', society_id=society.id)
+
+    return render(request, "confirm_leave.html", {"society": society})

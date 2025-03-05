@@ -12,13 +12,24 @@
 <p>Members: {{ society.members_count }}</p>
 
 {% if user.is_authenticated %}
-  
-  {% if user_membership %}
-    {% if user_membership.status == 'approved' %}
-      <p>You are a member of this society (Role: {{ user_membership.get_role_display }}).</p>
-    {% elif user_membership.status == 'pending' %}
-      <p>Your membership application is pending.</p>
-    {% endif %}
+    {% if membership %}
+        {% if membership.status == 'approved' %}
+            <form action="{% url 'leave_society' society.id %}" method="POST" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">
+                Leave Society
+              </button>
+            </form>
+            <p>You are a member of this society (Role: {{ membership.get_role_display }}).</p>
+
+        {% elif membership.status == 'pending' %}
+            <p class="text-muted">Your membership application is pending.</p>
+
+        {% elif membership.status == 'rejected' %}
+          
+            <p class="text-danger">Your application was rejected.</p>
+
+        {% endif %}
     {% else %}
         <p>You are not a member of this society.</p>
         <a href="{% url 'join_society' society.id %}" class="btn btn-primary">
@@ -26,8 +37,9 @@
         </a>
     {% endif %}
 {% else %}
-    <p>You are not logged in. <a href="{% url 'log_in' %}?next={% url 'society_page' society.id %}">
-       Log in</a> to join this society.
+    <p>
+      You are not logged in. 
+      <a href="{% url 'log_in' %}?next={% url 'society_page' society.id %}">Log in</a> to join or leave this society.
     </p>
 {% endif %}
 

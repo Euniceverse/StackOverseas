@@ -3,34 +3,71 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.timezone import now
-from apps.news.models import News, F
+from apps.news.models import News
+from apps.users.models import CustomUser
 from apps.societies.models import Society
 from apps.news.forms import NewsForm
-from django.shortcuts import reverse
+
+User = get_user_model()
 
 class NewsViewTests(TestCase):
     """Testing for the News View"""
 
     def setUp(self):
         """Set up test data"""
+        # create manager instance
+        self.manager = CustomUser.objects.create_user(
+            email="manager@ac.uk",
+            first_name="Manager",
+            last_name="User",
+            preferred_name="Manager",
+            password="password123"
+        )
+        
+        # create society instances
+        self.society1 = Society.objects.create(
+            name="Tech Society",
+            description="A society for tech enthusiasts",
+            society_type="Technology",
+            manager=self.manager,
+            status="approved"
+        )
+        
+        self.society2 = Society.objects.create(
+            name="Science Society",
+            description="A society for science enthusiasts",
+            society_type="Science",
+            manager=self.manager,
+            status="approved"
+        )
+        
+        self.society3 = Society.objects.create(
+            name="Hidden Society",
+            description="A hidden society for testing",
+            society_type="Hidden",
+            manager=self.manager,
+            status="approved"
+        )
+        
+        # create news instances
         self.news1 = News.objects.create(
             title="Published News 1",
             content="Content for news 1",
-            society="Tech Society",
+            society=self.society1,
             date_posted=timezone.now(),
             is_published=True
         )
         self.news2 = News.objects.create(
             title="Published News 2",
             content="Content for news 2",
-            society="Science Society",
+            society=self.society2,
             date_posted=timezone.now(),
             is_published=True
         )
         self.news3 = News.objects.create(
             title="Unpublished News",
             content="This news should not appear",
-            society="Hidden Society",
+            society=self.society3,
             date_posted=timezone.now(),
             is_published=False
         )
@@ -50,19 +87,15 @@ class NewsViewTests(TestCase):
         self.assertContains(response, "Published News 1") 
         self.assertContains(response, "Published News 2") 
         self.assertNotContains(response, "Unpublished News") 
-
-
-User = get_user_model()
-
+        
 
 class NewsViewTests(TestCase):
     """Tests for the news creation view."""
-
     def setUp(self):
         """Set up test data."""
         self.client = Client()
         self.user = User.objects.create_user(
-            email="manager@example.ac.uk",
+            email="manager1@example.ac.uk",
             first_name="Test",
             last_name="Manager",
             preferred_name="Manager",
@@ -86,21 +119,21 @@ class NewsViewTests(TestCase):
 
     def test_access_form_as_manager(self):
         """Test that a society manager can access the news form."""
-        self.client.login(email="manager@example.ac.uk", password="password123")
+        self.client.login(email="manager1@example.ac.uk", password="password123")
         response = self.client.get(self.news_url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Create a News Article")
 
     def test_create_news_post_success(self):
         """Test that a society manager can successfully submit news."""
-        self.client.login(email="manager@example.ac.uk", password="password123")
+        self.client.login(email="manager1@example.ac.uk", password="password123")
 
         response = self.client.post(self.news_url, {
             "title": "New Tech Event",
             "content": "Join us for an exciting event!",
-            "society": str(self.society.id), 
+            "society": self.society.id, 
             "date_posted": now().strftime("%Y-%m-%dT%H:%M"), 
-            "post": "1"
+            "is_posted": True,
         }, follow=True)
 
         self.assertEqual(response.status_code, 200)
@@ -127,8 +160,10 @@ class NewsViewTests(TestCase):
 
         self.assertEqual(response.status_code, 302) 
         self.assertFalse(News.objects.filter(title="Unauthorized News").exists())
+  
     
 class EditNewsViewTests(TestCase):
+    """Test for EditNewsView."""
     def setUp(self):
         self.client = Client()
         # Create a manager user
@@ -158,9 +193,8 @@ class EditNewsViewTests(TestCase):
 
     def test_edit_news_requires_login(self):
         response = self.client.get(self.edit_url)
-        # Should redirect to login
         self.assertNotEqual(response.status_code, 200)
-        self.assertRedirects(response, f'/accounts/login/?next={self.edit_url}')
+        self.assertRedirects(response, f'{reverse("log_in")}?next={self.edit_url}')
 
     def test_edit_news_get_as_manager(self):
         self.client.login(email="manager2@example.ac.uk", password="password123")
@@ -171,12 +205,12 @@ class EditNewsViewTests(TestCase):
 
     def test_edit_news_post_valid(self):
         self.client.login(email="manager2@example.ac.uk", password="password123")
-        # Provide updated data
         post_data = {
             "title": "Updated Title",
             "content": "Updated Content",
-            "society": str(self.society.id),
+            "society": self.society.id,
             "date_posted": self.news_item.date_posted.strftime("%Y-%m-%dT%H:%M"),
+            "is_published": self.news_item.is_published,
         }
         response = self.client.post(self.edit_url, post_data, follow=True)
         self.assertEqual(response.status_code, 200)
@@ -192,7 +226,7 @@ class EditNewsViewTests(TestCase):
         post_data = {
             "title": "",  # invalid
             "content": "",
-            "society": str(self.society.id),
+            "society": self.society.id,
             "date_posted": self.news_item.date_posted.strftime("%Y-%m-%dT%H:%M"),
         }
         response = self.client.post(self.edit_url, post_data)
@@ -202,6 +236,7 @@ class EditNewsViewTests(TestCase):
 
 
 class NewsDetailViewTests(TestCase):
+    """Test for NewsDetail view."""
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(

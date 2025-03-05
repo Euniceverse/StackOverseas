@@ -44,17 +44,17 @@ class GlobalFilterSetTest(TestCase):
     def test_filter_by_date(self):
         """Test filtering by date categories"""
         for key, value in DATE_FILTER_CHOICES.items():
-            filtered = EventFilter({'date': key}, queryset=Event.objects.all()).qs
+            filtered = EventFilter({}, queryset=Event.objects.all()).filter_by_date(Event.objects.all(), 'date', key)
             self.assertTrue(all(event.date_updated >= value for event in filtered), f"Failed for {key}")
     
     def test_filter_by_invalid_date(self):
         """Test filtering with an invalid date category"""
-        filtered = EventFilter({'date': 'invalid_date'}, queryset=Event.objects.all()).qs
+        filtered = EventFilter({}, queryset=Event.objects.all()).filter_by_date(Event.objects.all(), 'date', 'invalid_date')
         self.assertEqual(filtered.count(), Event.objects.count())  # Should return all events
 
     def test_filter_has_space(self):
         """Test filtering events that have available space"""
-        filtered = EventFilter({'has_space': True}, queryset=Event.objects.all()).qs
+        filtered = EventFilter({}, queryset=Event.objects.all()).filter_has_space(Event.objects.all(), 'has_space', True)
         self.assertIn(self.event1, filtered)
         self.assertIn(self.event3, filtered)
         self.assertIn(self.event4, filtered)
@@ -62,7 +62,7 @@ class GlobalFilterSetTest(TestCase):
 
     def test_filter_is_free(self):
         """Test filtering free events"""
-        filtered = EventFilter({'is_free': True}, queryset=Event.objects.all()).qs
+        filtered = EventFilter({}, queryset=Event.objects.all()).filter_is_free(Event.objects.all(), 'is_free', True)
         self.assertIn(self.event1, filtered)
         self.assertNotIn(self.event2, filtered)
         self.assertNotIn(self.event3, filtered)
@@ -70,7 +70,7 @@ class GlobalFilterSetTest(TestCase):
     
     def test_filter_missing_price(self):
         """Test filtering events where price is missing"""
-        filtered = EventFilter({'is_free': True}, queryset=Event.objects.all()).qs
+        filtered = EventFilter({}, queryset=Event.objects.all()).filter_is_free(Event.objects.all(), 'is_free', True)
         self.assertNotIn(self.event4, filtered)  # Ensure missing price does not count as free
 
 
@@ -97,23 +97,23 @@ class NewsFilterTest(TestCase):
     
     def test_filter_by_society_type(self):
         """Test filtering news by society type"""
-        filtered = NewsFilter({'society_type': "Tech"}, queryset=News.objects.all()).qs
+        filtered = NewsFilter({}, queryset=News.objects.all()).filter_by_society_type(News.objects.all(), 'society_type', "Tech")
         self.assertIn(self.news1, filtered)
         self.assertIn(self.news2, filtered)
         self.assertNotIn(self.news3, filtered)
     
     def test_filter_by_invalid_society_type(self):
         """Test filtering news by an invalid society type"""
-        filtered = NewsFilter({'society_type': "Science"}, queryset=News.objects.all()).qs
+        filtered = NewsFilter({}, queryset=News.objects.all()).filter_by_society_type(News.objects.all(), 'society_type', "Science")
         self.assertEqual(filtered.count(), 0)  # No news should match
     
     def test_filter_by_date(self):
         """Test filtering news by date categories"""
         for key, value in DATE_FILTER_CHOICES.items():
-            filtered = NewsFilter({'date': key}, queryset=News.objects.all()).qs
+            filtered = NewsFilter({}, queryset=News.objects.all()).filter_by_date(News.objects.all(), 'date', key)
             self.assertTrue(all(news.date_posted >= value for news in filtered), f"Failed for {key}")
     
     def test_filter_by_invalid_date(self):
         """Test filtering news with an invalid date category"""
-        filtered = NewsFilter({'date': 'invalid_date'}, queryset=News.objects.all()).qs
+        filtered = NewsFilter({}, queryset=News.objects.all()).filter_by_date(News.objects.all(), 'date', 'invalid_date')
         self.assertEqual(filtered.count(), News.objects.count())  # Should return all news

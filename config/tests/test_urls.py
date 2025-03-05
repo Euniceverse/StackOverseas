@@ -67,6 +67,20 @@ class MediaServingTest(TestCase):
         else:
             self.assertEqual(response.status_code, 404)  # Should not be served in production
 
+    def test_media_file_serving_debug_true(self):
+        """Ensure the media file is accessible when DEBUG is True."""
+        with self.settings(DEBUG=True):
+            media_url = f"{settings.MEDIA_URL}{self.news.image.name}"
+            response = self.client.get(media_url)
+            self.assertEqual(response.status_code, 200)
+    
+    def test_media_file_serving_debug_false(self):
+        """Ensure the media file is NOT accessible when DEBUG is False."""
+        with self.settings(DEBUG=False):
+            media_url = f"{settings.MEDIA_URL}{self.news.image.name}"
+            response = self.client.get(media_url)
+            self.assertEqual(response.status_code, 404)
+
     def tearDown(self):
         """Clean up test media files."""
         if os.path.exists(MEDIA_ROOT_TEST):

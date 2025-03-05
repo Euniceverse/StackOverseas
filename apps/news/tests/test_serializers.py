@@ -4,6 +4,7 @@ from django.utils import timezone
 from rest_framework import serializers
 from apps.news.models import News
 from apps.societies.models import Society
+from apps.users.models import CustomUser
 
 class DummyNewsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,13 +13,26 @@ class DummyNewsSerializer(serializers.ModelSerializer):
 
 class NewsSerializerTests(TestCase):
     def setUp(self):
+        """Set up test data."""
+        # create valid manager
+        self.manager = CustomUser.objects.create_user(
+            email="serialize_manager@ac.uk",
+            first_name="Serialize",
+            last_name="Manager",
+            preferred_name="Serialize",
+            password="password123"
+        )
+        
+        # create society instance
         self.society = Society.objects.create(
             name="Serialization Society",
             description="Testing serializer coverage",
             society_type="academic",
-            manager_id=999,  # or create a real User if needed
+            manager=self.manager,
             status="approved"
         )
+        
+        # create news instance
         self.news_item = News.objects.create(
             title="Serialize This",
             content="Testing the serializer.",

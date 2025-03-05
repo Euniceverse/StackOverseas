@@ -1,0 +1,50 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'detail.css' %}">
+
+<!-- 🎯 이벤트 상세 모달 -->
+<div id="event-detail-modal" class="event-modal hidden">
+    <div class="event-modal-content">
+        
+        <!-- ❌ 닫기 버튼 -->
+        <button id="event-detail-close" class="modal-close">&times;</button>
+
+        <!-- 📌 이벤트 제목 -->
+        <h2 id="event-name" class="event-title">Event Name</h2>
+        <p id="event-type" class="event-subtitle">Event Type</p>
+
+        <!-- 📅 날짜 및 시간 -->
+        <div class="event-info">
+            <p id="event-date">📅 Date: YYYY-MM-DD</p>
+            <p id="event-time">⏰ Time: HH:MM AM/PM</p>
+        </div>
+
+        <!-- 📍 장소 -->
+        <div class="event-info">
+            <p id="event-location">📍 Location: TBD</p>
+        </div>
+
+        <!-- 📖 설명 -->
+        <div class="event-section">
+            <h3>📖 Description</h3>
+            <p id="event-description">Event details will appear here...</p>
+        </div>
+
+        <!-- 🏫 주최 동아리 -->
+        <div class="event-section">
+            <h3>🏫 Hosted By</h3>
+            <p id="event-hosts">Society Name</p>
+        </div>
+
+        <!-- 👥 참여 정보 -->
+        <div class="event-info">
+            <p id="event-capacity">👥 Capacity: Unlimited</p>
+            <p id="event-fee">💰 Fee: Free</p>
+            <p id="event-member-only" class="hidden">🔒 Members Only</p>
+        </div>
+
+        <!-- 📝 참가 버튼 -->
+        <div class="event-action">
+            <button id="event-register" class="btn-register">Register Now</button>
+        </div>
+    </div>
+</div>

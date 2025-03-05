@@ -1,9 +1,14 @@
 {% load static %} 
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="stylesheet" href="{% static 'map.css' %}">
-    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
- 
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="{% static 'js/map.js' %}" defer></script>
 </head>
 
-<div id="mapContainer"></div>
+<div id="map" style="height: 650px; width: 800px; margin-left: auto; margin-right: auto; border-radius: 10px;"></div>
+
+</html>

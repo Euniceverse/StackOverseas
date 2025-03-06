@@ -1,10 +1,11 @@
+import ast
 from django import forms
 from config.constants import VISIBILITY_CHOICES, SOCIETY_TYPE_CHOICES
 from .models import (
     Society,
     Membership,
 )
-from .models import SocietyRegistration
+from .models import SocietyRegistration, RequirementType
 
 
 class NewSocietyForm(forms.ModelForm):
@@ -30,20 +31,34 @@ class NewSocietyForm(forms.ModelForm):
     class Meta:
         model = SocietyRegistration
         fields = ["name", "description", "society_type", "visibility", "extra_form_needed"]
+        
+    def __init__(self, *args, society=None, user=None, **kwargs):
+        self.society = society
+        self.user = user
+        super().__init__(*args, **kwargs)
 
     def clean_name(self):
         """Ensure society name is unique"""
         name = self.cleaned_data.get("name")
-        if SocietyRegistration.objects.filter(name=name).exists():
+        if SocietyRegistration.objects.filter(name__iexact=name).exists():
             raise forms.ValidationError("A society with this name already exists. Please choose another.")
         return name
 
     def clean_tags(self):
         """Clean tags input"""
-        tags = self.cleaned_data.get("tags", "")
-        if isinstance(tags, list): 
-            return tags
-        return [tag.strip() for tag in tags.split(",") if tag.strip()]
+        tags = self.cleaned_data.get('tags', '')
+        if isinstance(tags, list):
+            return [str(tag).strip() for tag in tags if str(tag).strip()]
+        if isinstance(tags, str):
+            if tags.startswith('[') and tags.endswith(']'):
+                try:
+                    tags_list = ast.literal_eval(tags)
+                    if isinstance(tags_list, list):
+                        return [str(tag).strip() for tag in tags_list if str(tag).strip()]
+                except Exception:
+                    pass
+            return [t.strip() for t in tags.split(',') if t.strip()]
+        return []
 
 class JoinSocietyForm(forms.Form):
     """

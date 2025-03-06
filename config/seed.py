@@ -96,11 +96,12 @@ def create_dummy_societies(users, n=50):
             description=fake.text(),
             society_type = random.choice([key for key, _ in constants.SOCIETY_TYPE_CHOICES]),
             status=random.choice([key for key, _ in constants.SOCIETY_STATUS_CHOICES]),
-            manager=random.choice(users),
+            manager=random.choice(users)
             # members_count=random.randint(1, 10)  # Assign random members count
         )
         if society.status == "approved":
             society.members.set(random.sample(users, random.randint(1, len(users))))  # Assign random members
+            society.visibility = "Public"
         societies.append(society)
     return societies
 

@@ -14,7 +14,7 @@ def staff_required(user):
 def approved_societies(user):
     if user.is_superuser:
         return Society.objects.all()
-    return Society.objects.filter(status="approved")
+    return Society.objects.filter(status="approved", visibility = "Public")
 
 def get_societies(user):
     """Get all approved societies where the given user is a member."""
@@ -24,10 +24,10 @@ def get_societies(user):
         return approved_societies()  # Fallback if user doesn't exist
 
     # Query societies managed by the user
-    managing_societies = Society.objects.filter(manager_id=user.id)
+    managing_societies = Society.objects.filter(manager_id=user.id).exclude(status="deleted")
     
     # Query approved societies where the user is a member
-    member_societies = Society.objects.filter(status="approved", members=user)
+    member_societies = Society.objects.filter(status="approved", members=user, visibility = "Public")
 
     if managing_societies.exists():
         # The union (|) operator combines two QuerySets and removes duplicates
@@ -72,7 +72,7 @@ def top_societies(user):
             all_approved.filter(society_type=society_type).order_by('-members_count')[:5]
         )
 
-    top_overall_societies = Society.objects.order_by('-members_count')[:5]
+    top_overall_societies = all_approved.order_by('-members_count')[:5]
 
     return {
         'top_overall_societies': top_overall_societies,
@@ -94,5 +94,5 @@ def approve_society(request, registration_id):
         visibility=registration.visibility
     )
     
-    messages.success(request, f"Society '{society.name}' has been approved and created!")
+    messages.success(request, f"Society '{new_society.name}' has been approved and created!")
     return redirect("admin_society_list")

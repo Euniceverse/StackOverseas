@@ -201,11 +201,15 @@ def update_membership(request, society_id, user_id):
         if action == 'approve':
             membership.status = MembershipStatus.APPROVED
             membership.save()
+            society.members_count = Membership.objects.filter(society=society, status=MembershipStatus.APPROVED).count()
+            society.save()
             messages.success(request, f"{membership.user.email} has been approved!")
         
         elif action == 'remove':
             # Remove the membership entirely
             membership.delete()
+            society.members_count = Membership.objects.filter(society=society, status=MembershipStatus.APPROVED).count()
+            society.save()
             messages.success(request, f"{membership.user.email} has been removed from {society.name}.")
         
         elif action == 'promote_co_manager':
@@ -220,7 +224,8 @@ def update_membership(request, society_id, user_id):
             membership.save()
             messages.success(request, f"{membership.user.email} is now an Editor.")
         
-        return redirect('manage_society', society_id=society_id)
+        #return redirect('manage_society', society_id=society_id)
+        return redirect('society_page', society_id=society_id)
     
     # If it's not POST, just redirect back
     return redirect('manage_society', society_id=society_id)
@@ -477,7 +482,10 @@ def society_page(request, society_id):
     society = get_object_or_404(Society, id=society_id)
     widgets = Widget.objects.filter(society=society).order_by("position")
 
-    membership = None
+    # get all members for this society
+    memberships = Membership.objects.filter(society=society).select_related("user")
+
+    #membership = None
     is_member = False
     is_manager = False
 
@@ -494,7 +502,7 @@ def society_page(request, society_id):
     context = {
         "society": society,
         "widgets": widgets,
-        "membership": membership,
+        "memberships": memberships,
         "is_member": is_member,
         "is_manager": is_manager,
     }

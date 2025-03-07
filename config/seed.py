@@ -5,7 +5,7 @@ import random
 from faker import Faker
 from django.conf import settings
 import constants
-# from ai_seed import generate_society_description, generate_society_name 
+from ai_seed import generate_society_description, generate_society_name 
 from ai_seed import generate_event_location
 
 # Set up the project base directory
@@ -105,14 +105,16 @@ def create_dummy_societies(users, n=50):
         
         # Ensure unique society names
         # while True:
-            # generated_name = generate_society_name(society_type)
-            # if generated_name not in existing_names:
-                # existing_names.add(generated_name)
-                # break
+        #     generated_name = generate_society_name(society_type)
+        #     if generated_name not in existing_names:
+        #         existing_names.add(generated_name)
+        #         break
+
+        generated_name = generate_society_name(society_type, existing_names)
+        existing_names.add(generated_name)
 
 
-        generated_name = fake.unique.company()
-        generated_description = fake.text()
+        generated_description = generate_society_description(generated_name, society_type,)
 
         society = Society.objects.create(
             name=generated_name,
@@ -134,7 +136,8 @@ def create_dummy_societies(users, n=50):
     return societies
 
 
-
+        # generated_name = fake.unique.company()
+        # generated_description = fake.text()
 
 def create_dummy_events(societies, n=70):
     """Creates n dummy events linked to random societies with updated attributes."""

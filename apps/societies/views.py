@@ -476,6 +476,9 @@ def society_page(request, society_id):
     society = get_object_or_404(Society, id=society_id)
     widgets = Widget.objects.filter(society=society).order_by("position")
 
+    # get all member for this society
+    memberships = Membership.objects.filter(society=society).select_related("user")
+
     # determine user access level
     is_member = society.members.filter(id=request.user.id).exists() if request.user.is_authenticated else False
     is_manager = request.user == society.manager if request.user.is_authenticated else False
@@ -492,6 +495,7 @@ def society_page(request, society_id):
             "widgets": widgets,
             "is_member": is_member,
             "is_manager": is_manager,
+            "memberships" : memberships,
         },
     )
     

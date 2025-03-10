@@ -18,7 +18,6 @@ from .views import *
 # )
 from .functions import top_societies
 
-
 urlpatterns = [
     path('societiespage/', societiespage, name='societiespage'),
     path('my_societies/', my_societies, name='my_societies'),

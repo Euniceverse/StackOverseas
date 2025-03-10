@@ -31,16 +31,15 @@ urlpatterns = [
 
     path('<int:society_id>/manage/', manage_society, name='manage_society'),
     path('<int:society_id>/membership/<int:user_id>/update/', update_membership, name='update_membership'),
-    path('<int:society_id>/', society_page, name='society_page'),
     path('<int:society_id>/join/', join_society, name='join_society'),
     path('<int:society_id>/applications/', view_applications, name='view_applications'),
     path('<int:society_id>/applications/<int:application_id>/<str:decision>/', decide_application, name='decide_application'),
-
     path('societies/society/<int:society_id>/admin-delete/', admin_confirm_delete, name='admin_confirm_delete'),
-    path("<int:society_id>/", society_page, name="society_page"),
-    path("<int:society_id>/admin/", society_admin_view, name="society_admin_view"),
-    path("<int:society_id>/remove-widget/<int:widget_id>/", remove_widget, name="remove_widget"),
-    path("<int:society_id>/update-order/", update_widget_order, name="update_widget_order"),
-
-    path("<int:society_id>/leave/", leave_society, name="leave_society"),
+    path('<int:society_id>/admin/', society_admin_view, name='society_admin_view'),
+    path('<int:society_id>/remove-widget/<int:widget_id>/', remove_widget, name='remove_widget'),
+    path('<int:society_id>/update-order/', update_widget_order, name='update_widget_order'),
+    path('<int:society_id>/leave/', leave_society, name='leave_society'),
+    
+    # Catch-all: society public page – must be last!
+    path('<int:society_id>/', society_page, name='society_page'),
 ]

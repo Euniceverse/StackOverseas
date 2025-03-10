@@ -135,17 +135,21 @@ def manage_society(request, society_id):
     society = get_object_or_404(Society, id=society_id)
 
     # Check if request.user is the manager (the one who created the society):
-    if society.manager == request.user:
+    if request.user.is_superuser:
         is_authorized = True
-    else:
-        # Or check if they are a co_manager of this society
-        co_manager_membership = Membership.objects.filter(
-            society=society,
-            user=request.user,
-            role=MembershipRole.CO_MANAGER,
-            status=MembershipStatus.APPROVED
-        ).first()
-        is_authorized = bool(co_manager_membership)
+        
+    else:  
+        if society.manager == request.user:
+            is_authorized = True
+        else:
+            # Or check if they are a co_manager of this society
+            co_manager_membership = Membership.objects.filter(
+                society=society,
+                user=request.user,
+                role=MembershipRole.CO_MANAGER,
+                status=MembershipStatus.APPROVED
+            ).first()
+            is_authorized = bool(co_manager_membership)
 
     if not is_authorized:
         messages.error(request, "You do not have permission to manage this society.")
@@ -497,6 +501,7 @@ def society_page(request, society_id):
         "membership": membership,
         "is_member": is_member,
         "is_manager": is_manager,
+        "user_membership": membership,
     }
     return render(request, "society_page.html", context)
     

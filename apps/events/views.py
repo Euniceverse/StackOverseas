@@ -80,9 +80,10 @@ def create_event(request, society_id):
         user=request.user,
         status=MembershipStatus.APPROVED
     ).first()
+
     allowed_roles = [MembershipRole.MANAGER, MembershipRole.CO_MANAGER, MembershipRole.EDITOR]
-    if not membership or membership.role not in allowed_roles:
-        messages.error(request, "You do not have permission to create an event for this society.")
+    if not (request.user.is_superuser or (membership and membership.role in allowed_roles)):
+        messages.error(request, "You do not have permission to create an event.")
         return redirect('society_page', society_id=society.id)
 
     if request.method == 'POST':

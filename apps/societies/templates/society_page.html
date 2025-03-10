@@ -47,15 +47,14 @@
 {% endif %}
 
 <!-- If user is manager/co_manager/editor + approved, show "Manage Society" and "Create Event" -->
-{% if user_membership.role in 'manager co_manager editor' and user_membership.status == 'approved'%}
+{% if user_membership and user_membership.role == "manager" or user_membership and user_membership.role == "co_manager" or user_membership and user_membership.role == "editor" or user.is_superuser %}
 
        <a href="{% url 'manage_society' society.id %}" class="btn btn-warning">
             Manage This Society
         </a>
 
         <a href="#"
-            id="createEventLink"
-            class="btn btn-primary"
+            class="btn btn-primary create-event-link"
             data-create-event-url="{% url 'event_create' society.id %}">
             Create Event
         </a>
@@ -89,6 +88,7 @@
             </ul>
         </div>
         <button id="save-order">Save Order</button>
+
     
 {% else %}
         <!-- Normal or not logged in => show widgets, but no drag & drop -->
@@ -191,4 +191,7 @@ $(document).ready(function() {
     }
 });
 </script>
+
+<script src="{% static 'js/society_page.js' %}" defer></script>
+
 {% endblock %}

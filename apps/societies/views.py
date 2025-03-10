@@ -219,8 +219,15 @@ def update_membership(request, society_id, user_id):
             membership.status = MembershipStatus.APPROVED
             membership.save()
             messages.success(request, f"{membership.user.email} is now an Editor.")
+
+        society.members_count = Membership.objects.filter(
+            society=society, status=MembershipStatus.APPROVED
+        ).count()
+        society.save()
+
         
-        return redirect('manage_society', society_id=society_id)
+        #return redirect('manage_society', society_id=society_id)
+        return redirect('society_page', society_id=society_id)
     
     # If it's not POST, just redirect back
     return redirect('manage_society', society_id=society_id)
@@ -477,6 +484,11 @@ def society_page(request, society_id):
     society = get_object_or_404(Society, id=society_id)
     widgets = Widget.objects.filter(society=society).order_by("position")
 
+    members_count = Membership.objects.filter(
+        society=society, 
+        status=MembershipStatus.APPROVED
+    ).count()
+
     memberships = Membership.objects.filter(society=society).select_related("user")
 
     membership = None
@@ -509,6 +521,7 @@ def society_page(request, society_id):
         "is_member": is_member,
         "is_manager": is_manager,
         "memberships": memberships,
+        "members_count": members_count,
     }
     return render(request, "society_page.html", context)
     

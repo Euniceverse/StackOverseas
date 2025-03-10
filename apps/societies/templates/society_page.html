@@ -11,9 +11,12 @@
 <p>Type: {{ society.society_type }}</p>
 <p>Members: {{ society.members_count }}</p>
 
+{# 1) If user is authenticated, show membership options #}
 {% if user.is_authenticated %}
+
     {% if membership %}
         {% if membership.status == 'approved' %}
+            <!-- The user is approved and can leave the society -->
             <form action="{% url 'leave_society' society.id %}" method="POST" style="display:inline;">
               {% csrf_token %}
               <button type="submit" class="btn btn-danger">
@@ -21,34 +24,38 @@
               </button>
             </form>
             <p>You are a member of this society (Role: {{ membership.get_role_display }}).</p>
+
         {% elif membership.status == 'pending' %}
             <p class="text-muted">Your membership application is pending.</p>
+
         {% elif membership.status == 'rejected' %}
             <p class="text-danger">Your application was rejected.</p>
         {% endif %}
+
     {% else %}
+        <!-- The user is logged in but not a member yet -->
         <p>You are not a member of this society.</p>
-        <a href="{% url 'join_society' society.id %}" class="btn btn-primary">
-            Join Society
-        </a>
+        <a href="{% url 'join_society' society.id %}" class="btn btn-primary">Join Society</a>
     {% endif %}
+
 {% else %}
-    <p>
-      You are not logged in.
-      <a href="{% url 'log_in' %}?next={% url 'society_page' society.id %}">Log in</a> to join or leave this society.
+    <!-- The user is not logged in at all -->
+    <p>You are not logged in.
+       <a href="{% url 'log_in' %}?next={% url 'society_page' society.id %}">Log in</a>
+       to join or leave this society.
     </p>
 {% endif %}
 
 
-<!-- Manager/Editor Check -->
-{% if membership and membership.status == 'approved' and
-      (membership.role == 'manager' or membership.role == 'co_manager' or membership.role == 'editor')
+{# 2) Manager / Editor / Superuser area #}
+{% if membership and membership.status == 'approved'
+      and (membership.role == 'manager' or membership.role == 'co_manager' or membership.role == 'editor')
       or user.is_superuser %}
 
+    <!-- Buttons for managing society and creating events -->
     <a href="{% url 'manage_society' society.id %}" class="btn btn-warning">
         Manage This Society
     </a>
-
     <a href="#"
        id="createEventLink"
        class="btn btn-primary"
@@ -57,6 +64,7 @@
     </a>
 
     <p>Drag & drop widgets to rearrange them.</p>
+
     <div id="widgets-container">
         <ul id="sortable-widgets">
             {% for widget in widgets %}
@@ -83,39 +91,39 @@
             {% endfor %}
         </ul>
     </div>
-    <button id="save-order"></button>
+    <button id="save-order" class="btn btn-success">Save Order</button>
 
 {% else %}
-    <!-- Normal or not logged in => show widgets, but no drag & drop -->
+    <!-- Normal or not logged in => show widgets, but NO drag & drop -->
     <div id="widgets-container">
         <ul id="sortable-widgets">
-        {% for widget in widgets %}
-            <li class="widget ui-state-default" data-widget-id="{{ widget.id }}">
-                <h3>{{ widget.get_widget_type_display }}</h3>
-                <div class="widget-content">
-                    {% if widget.widget_type == "announcements" %}
-                        <p>Latest announcements will appear here.</p>
-                    {% elif widget.widget_type == "events" %}
-                        <p>Upcoming events will be displayed here.</p>
-                    {% elif widget.widget_type == "gallery" %}
-                        <p>Photo gallery will be displayed here.</p>
-                    {% elif widget.widget_type == "contacts" %}
-                        <p>Contact information for the society will be displayed here.</p>
-                    {% elif widget.widget_type == "featured" %}
-                        <p>Featured members (president, vice, etc.) will be displayed here.</p>
-                    {% elif widget.widget_type == "leaderboard" %}
-                        <p>Leaderboard will be displayed here.</p>
-                    {% elif widget.widget_type == "news" %}
-                        <p>News will be displayed here.</p>
-                    {% endif %}
-                </div>
-            </li>
-        {% endfor %}
+            {% for widget in widgets %}
+                <li class="widget ui-state-default" data-widget-id="{{ widget.id }}">
+                    <h3>{{ widget.get_widget_type_display }}</h3>
+                    <div class="widget-content">
+                        {% if widget.widget_type == "announcements" %}
+                            <p>Latest announcements will appear here.</p>
+                        {% elif widget.widget_type == "events" %}
+                            <p>Upcoming events will be displayed here.</p>
+                        {% elif widget.widget_type == "gallery" %}
+                            <p>Photo gallery will be displayed here.</p>
+                        {% elif widget.widget_type == "contacts" %}
+                            <p>Contact information for the society will be displayed here.</p>
+                        {% elif widget.widget_type == "featured" %}
+                            <p>Featured members (president, vice, etc.) will be displayed here.</p>
+                        {% elif widget.widget_type == "leaderboard" %}
+                            <p>Leaderboard will be displayed here.</p>
+                        {% elif widget.widget_type == "news" %}
+                            <p>News will be displayed here.</p>
+                        {% endif %}
+                    </div>
+                </li>
+            {% endfor %}
         </ul>
     </div>
 {% endif %}
 
-{% endblock %}  <!-- Only one endblock for "content" -->
+{% endblock %}  <!-- closes block content -->
 
 {% block extra_scripts %}
 <!-- Include jQuery & jQuery UI -->
@@ -129,14 +137,16 @@
     $(document).ready(function() {
         console.log("society_page loaded");
 
+        // If the user can manage the society, we have #save-order
         if ($("#save-order").length) {
-            console.log("User is a manager. Initialising drag-and-drop...");
+            console.log("User is a manager. Initializing drag-and-drop...");
 
             if (!$.ui) {
                 console.error("jQuery UI is not loaded! Check script includes.");
                 return;
             }
 
+            // Enable drag-and-drop sorting
             $("#sortable-widgets").sortable({
                 placeholder: "ui-state-highlight",
                 update: function(event, ui) {
@@ -145,11 +155,13 @@
                     $(".widget").each(function() {
                         order.push($(this).data("widget-id"));
                     });
+                    // Store the new order temporarily on the button
                     $("#save-order").data("order", order);
                     console.log("New order:", order);
                 }
             }).disableSelection();
 
+            // Save the new widget order
             $("#save-order").click(function() {
                 let order = $(this).data("order") || [];
                 if (order.length === 0) {
@@ -174,11 +186,10 @@
                     }
                 });
             });
-        } else {
+        }
+        else {
             console.log("User is NOT a manager. Drag-and-drop disabled.");
         }
     });
 </script>
-
-<script src="{% static 'js/society_page.js' %}" defer></script>
 {% endblock %}

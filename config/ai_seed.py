@@ -2,7 +2,7 @@ from sentence_transformers import SentenceTransformer
 import random
 import requests
 import string
-import openai
+
 # from constants improt UNI_CHOICES
 # from faker import Faker 
 
@@ -11,35 +11,46 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 # fake = Faker("en_GB")  # Set Faker to UK region
 
 # List of predefined society types
+# VALID_SOCIETY_TYPES = ["sports", "academic", "arts", "cultural", "social"]
+
+import random
+import string
+
 VALID_SOCIETY_TYPES = ["sports", "academic", "arts", "cultural", "social"]
+
+# Predefined words for society name generation
+ADJECTIVES = ["Elite", "Dynamic", "Innovative", "Brilliant", "Visionary", "Prestigious", "Lively", "Energetic"]
+NOUNS = {
+    "sports": ["Athletes", "Champions", "Runners", "Strikers", "Warriors", "Sportsmen"],
+    "academic": ["Scholars", "Thinkers", "Innovators", "Researchers", "Geniuses"],
+    "arts": ["Artists", "Creators", "Visionaries", "Designers", "Performers"],
+    "cultural": ["Tradition", "Heritage", "Folklore", "Community", "Culturalists"],
+    "social": ["Network", "Gathering", "Alliance", "Connectors", "Enthusiasts"],
+}
 
 def generate_society_name(society_type, existing_names):
     """
-    Generates a unique society name using OpenAI's GPT.
+    Generates a unique society name by combining an adjective with a category-specific noun.
     """
+    if society_type not in NOUNS:
+        society_type = random.choice(list(NOUNS.keys()))  # Fallback if unknown type
 
-    prompt = f"Generate a unique and creative name for a {society_type} society."
+    # Generate a name
+    while True:
+        name = f"{random.choice(ADJECTIVES)} {random.choice(NOUNS[society_type])}"
+        
+        if name not in existing_names:
+            existing_names.add(name)
+            return name
 
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # or another GPT model you have access to
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=10,  # Short response for a name
-            temperature=0.8  # Higher randomness for creativity
-        )
+    # Fallback if everything fails (should rarely happen)
+    return f"{society_type.capitalize()} Club " + ''.join(random.choices(string.ascii_uppercase + string.digits, k=3))
 
-        generated_name = response['choices'][0]['message']['content'].strip()
-
-        if generated_name and generated_name not in existing_names:
-            existing_names.add(generated_name)
-            return generated_name
-
-    except Exception as e:
-        print(f"Error generating name: {e}")
-
-    # Fallback in case of duplicate or API failure
-    unique_fallback = f"{society_type.capitalize()} Club " + ''.join(random.choices(string.ascii_uppercase + string.digits, k=3))
-    return unique_fallback
+def generate_society_description(society_name, society_type):
+    """
+    Generates a society description based on its name and type.
+    """
+    return f"{society_name} is a vibrant society dedicated to {society_type} activities. Join us to learn, grow, and connect with others who share the same passion!"
 
 
 # def generate_society_name(society_type, existing_names):
@@ -99,20 +110,20 @@ def generate_society_name(society_type, existing_names):
 #     return generated_name
 
 
-def generate_society_description(society_name, society_type):
-    """
-    Generates a society description based on its name and type.
-    """
-    prompts = [
-        f"Describe a society called {society_name} that focuses on {society_type}.",
-        f"Write a short, engaging description for the {society_name} society which specializes in {society_type}.",
-        f"The {society_name} is a society known for its {society_type} activities. Write a description.",
-    ]
+# def generate_society_description(society_name, society_type):
+#     """
+#     Generates a society description based on its name and type.
+#     """
+#     prompts = [
+#         f"Describe a society called {society_name} that focuses on {society_type}.",
+#         f"Write a short, engaging description for the {society_name} society which specializes in {society_type}.",
+#         f"The {society_name} is a society known for its {society_type} activities. Write a description.",
+#     ]
 
-    query_embedding = model.encode(prompts, convert_to_tensor=True)
-    generated_description = f"{society_name} is a community for those passionate about {society_type}. Join us to explore new opportunities and connect with like-minded individuals."
+#     query_embedding = model.encode(prompts, convert_to_tensor=True)
+#     generated_description = f"{society_name} is a community for those passionate about {society_type}. Join us to explore new opportunities and connect with like-minded individuals."
     
-    return generated_description
+#     return generated_description
     
 
 # def generate_event_location(city):

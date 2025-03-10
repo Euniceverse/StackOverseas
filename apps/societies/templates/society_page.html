@@ -21,14 +21,10 @@
               </button>
             </form>
             <p>You are a member of this society (Role: {{ membership.get_role_display }}).</p>
-
         {% elif membership.status == 'pending' %}
             <p class="text-muted">Your membership application is pending.</p>
-
         {% elif membership.status == 'rejected' %}
-          
             <p class="text-danger">Your application was rejected.</p>
-
         {% endif %}
     {% else %}
         <p>You are not a member of this society.</p>
@@ -38,34 +34,29 @@
     {% endif %}
 {% else %}
     <p>
-      You are not logged in. 
+      You are not logged in.
       <a href="{% url 'log_in' %}?next={% url 'society_page' society.id %}">Log in</a> to join or leave this society.
     </p>
 {% endif %}
 
-{% endblock %}
 
+<!-- Manager/Editor Check -->
 {% if membership and membership.status == 'approved' and
-    (membership.role == 'manager' or membership.role == 'co_manager' or membership.role == 'editor')
-    or user.is_superuser %}
-
+      (membership.role == 'manager' or membership.role == 'co_manager' or membership.role == 'editor')
+      or user.is_superuser %}
 
     <a href="{% url 'manage_society' society.id %}" class="btn btn-warning">
         Manage This Society
     </a>
 
-
-    <a href="#" 
-    id="createEventLink" 
-    class="btn btn-primary"
-    data-create-event-url="{% url 'event_create' society.id %}">
-    Create Event
+    <a href="#"
+       id="createEventLink"
+       class="btn btn-primary"
+       data-create-event-url="{% url 'event_create' society.id %}">
+       Create Event
     </a>
 
-
-
     <p>Drag & drop widgets to rearrange them.</p>
-
     <div id="widgets-container">
         <ul id="sortable-widgets">
             {% for widget in widgets %}
@@ -100,32 +91,31 @@
         <ul id="sortable-widgets">
         {% for widget in widgets %}
             <li class="widget ui-state-default" data-widget-id="{{ widget.id }}">
-            <h3>{{ widget.get_widget_type_display }}</h3>
-            <div class="widget-content">
-                {% if widget.widget_type == "announcements" %}
-                <p>Latest announcements will appear here.</p>
-                {% elif widget.widget_type == "events" %}
-                <p>Upcoming events will be displayed here.</p>
-                {% elif widget.widget_type == "gallery" %}
-                <p>Photo gallery will be displayed here.</p>
-                {% elif widget.widget_type == "contacts" %}
-                <p>Contact information for the society will be displayed here.</p>
-                {% elif widget.widget_type == "featured" %}
-                <p>Featured members (president, vice, etc.) will be displayed here.</p>
-                {% elif widget.widget_type == "leaderboard" %}
-                <p>Leaderboard will be displayed here.</p>
-                {% elif widget.widget_type == "news" %}
-                <p>News will be displayed here.</p>
-                {% endif %}
-            </div>
+                <h3>{{ widget.get_widget_type_display }}</h3>
+                <div class="widget-content">
+                    {% if widget.widget_type == "announcements" %}
+                        <p>Latest announcements will appear here.</p>
+                    {% elif widget.widget_type == "events" %}
+                        <p>Upcoming events will be displayed here.</p>
+                    {% elif widget.widget_type == "gallery" %}
+                        <p>Photo gallery will be displayed here.</p>
+                    {% elif widget.widget_type == "contacts" %}
+                        <p>Contact information for the society will be displayed here.</p>
+                    {% elif widget.widget_type == "featured" %}
+                        <p>Featured members (president, vice, etc.) will be displayed here.</p>
+                    {% elif widget.widget_type == "leaderboard" %}
+                        <p>Leaderboard will be displayed here.</p>
+                    {% elif widget.widget_type == "news" %}
+                        <p>News will be displayed here.</p>
+                    {% endif %}
+                </div>
             </li>
         {% endfor %}
         </ul>
     </div>
-
 {% endif %}
 
-{% endblock %}
+{% endblock %}  <!-- Only one endblock for "content" -->
 
 {% block extra_scripts %}
 <!-- Include jQuery & jQuery UI -->
@@ -135,68 +125,60 @@
 <script>
     console.log("jQuery version:", $.fn.jquery);
     console.log("jQuery UI loaded:", $.ui);
-</script>
 
-<script>
-$(document).ready(function() {
-    console.log("society_page loaded");
+    $(document).ready(function() {
+        console.log("society_page loaded");
 
-    if ($("#save-order").length) {
-        console.log("User is a manager. Initialising drag-and-drop...");
+        if ($("#save-order").length) {
+            console.log("User is a manager. Initialising drag-and-drop...");
 
-        // Check if jQuery UI is working
-        if (!$.ui) {
-            console.error("jQuery UI is not loaded! Check script includes.");
-            return;
-        }
-
-        // Enable drag-and-drop sorting
-        $("#sortable-widgets").sortable({
-            placeholder: "ui-state-highlight",
-            update: function(event, ui) {
-                console.log("Widgets rearranged!");
-                let order = [];
-                $(".widget").each(function() {
-                    order.push($(this).data("widget-id"));
-                });
-                $("#save-order").data("order", order);
-                console.log("New order:", order);
-            }
-        }).disableSelection(); // Prevents text selection while dragging
-
-        // Save new widget order
-        $("#save-order").click(function() {
-            let order = $(this).data("order") || [];
-            if (order.length === 0) {
-                alert("Nothing to save!");
+            if (!$.ui) {
+                console.error("jQuery UI is not loaded! Check script includes.");
                 return;
             }
 
-            console.log("Saving new widget order...", order);
-
-            $.ajax({
-                url: "{% url 'update_widget_order' society.id %}",
-                method: "POST",
-                contentType: "application/json",
-                headers: { "X-CSRFToken": "{{ csrf_token }}" },
-                data: JSON.stringify({ widget_order: order }),
-                success: function(response) {
-                    alert("Widget order saved!");
-                    console.log("Server response:", response);
-                },
-                error: function(xhr) {
-                    alert("Error saving order: " + xhr.responseText);
-                    console.error("AJAX error:", xhr.responseText);
+            $("#sortable-widgets").sortable({
+                placeholder: "ui-state-highlight",
+                update: function(event, ui) {
+                    console.log("Widgets rearranged!");
+                    let order = [];
+                    $(".widget").each(function() {
+                        order.push($(this).data("widget-id"));
+                    });
+                    $("#save-order").data("order", order);
+                    console.log("New order:", order);
                 }
+            }).disableSelection();
+
+            $("#save-order").click(function() {
+                let order = $(this).data("order") || [];
+                if (order.length === 0) {
+                    alert("Nothing to save!");
+                    return;
+                }
+                console.log("Saving new widget order...", order);
+
+                $.ajax({
+                    url: "{% url 'update_widget_order' society.id %}",
+                    method: "POST",
+                    contentType: "application/json",
+                    headers: { "X-CSRFToken": "{{ csrf_token }}" },
+                    data: JSON.stringify({ widget_order: order }),
+                    success: function(response) {
+                        alert("Widget order saved!");
+                        console.log("Server response:", response);
+                    },
+                    error: function(xhr) {
+                        alert("Error saving order: " + xhr.responseText);
+                        console.error("AJAX error:", xhr.responseText);
+                    }
+                });
             });
-        });
-    }
-    else {
-        console.log("User is NOT a manager. Drag-and-drop disabled.");
-    }
-});
+        } else {
+            console.log("User is NOT a manager. Drag-and-drop disabled.");
+        }
+    });
 </script>
 
 <script src="{% static 'js/society_page.js' %}" defer></script>
-
 {% endblock %}

@@ -56,6 +56,9 @@ class Event(models.Model):
         max_length=MAX_LOCATION
     )
 
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
+
     capacity = models.PositiveIntegerField(
         blank=True,
         null=True,

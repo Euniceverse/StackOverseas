@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
         { label: "Audience", options: ["General", "Members only"] },
         { label: "Location", options: ["London", "Manchester", "Birmingham", "Liverpool", "Online"] },
         { label: "Availability", options: ["Available", "Full", "Waiting List"] },
-        { label: "Fee", options: ["Free", "Under £10", "£10 - £50", "£50 - £100", "£100+"] }
+        // { label: "Fee", options: ["Free", "Under £10", "£10 - £50", "£50 - £100", "£100+"] }
     ];
 
     const filterValueMapping = {
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
         "£100+": "fee_min=100"
     };
     
-    
+
 
     function createDropdown(label, options) {
         const container = document.createElement("div");

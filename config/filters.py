@@ -1,9 +1,11 @@
 import django_filters
+from django.db.models import Q, Count, F, ExpressionWrapper, IntegerField
 from django.utils.timezone import now, timedelta
 from django.db import models
 from apps.societies.models import Society
-from apps.events.models import Event, EVENT_TYPE_CHOICES  # 🔹 추가: 이벤트 타입 필터 적용
+from apps.events.models import Event, EVENT_TYPE_CHOICES 
 from apps.news.models import News
+
 
 DATE_FILTER_CHOICES = {
     "today": now().date(),
@@ -38,7 +40,7 @@ class GlobalFilterSet(django_filters.FilterSet):
 
     def filter_is_free(self, queryset, name, value):
         if value:
-            return queryset.filter(fee=0)  # ✅ 가격이 0인 경우 무료 이벤트로 간주
+            return queryset.filter(fee=0) 
         return queryset
 
     class Meta:
@@ -47,13 +49,46 @@ class GlobalFilterSet(django_filters.FilterSet):
 
 class EventFilter(GlobalFilterSet):
     """Event-specific filtering with additional fields for event type and pricing."""
-    event_type = django_filters.ChoiceFilter(choices=EVENT_TYPE_CHOICES, field_name="event_type", lookup_expr="exact")
-    fee_min = django_filters.NumberFilter(field_name="fee", lookup_expr="gte")  # ✅ 최소 가격 필터
-    fee_max = django_filters.NumberFilter(field_name="fee", lookup_expr="lte")  # ✅ 최대 가격 필터
+    event_type = django_filters.CharFilter(field_name="event_type", lookup_expr="contains")
+    price_range = django_filters.RangeFilter(method='filter_by_price')
+    available_slots = django_filters.BooleanFilter(method='filter_available_slots')
 
+    def filter_by_price(self, queryset, name, value):
+        if value.start and value.stop:
+            return queryset.filter(
+                Q(fee__gte=value.start, fee__lte=value.stop) |
+                Q(fee_member__gte=value.start, fee_member__lte=value.stop) |
+                Q(fee_general__gte=value.start, fee_general__lte=value.stop)
+            )
+        elif value.start: 
+            queryset = queryset.filter(
+                Q(fee__gte=value.start) |
+                Q(fee_member__gte=value.start) |
+                Q(fee_general__gte=value.start)
+            )
+        elif value.stop:  
+            queryset = queryset.filter(
+                Q(fee__lte=value.stop) |
+                Q(fee_member__lte=value.stop) |
+                Q(fee_general__lte=value.stop)
+            )
+        return queryset
+    
+    def filter_available_slots(self, queryset, name, value):
+        queryset = queryset.annotate(
+            available_slots=ExpressionWrapper(
+                F('capacity') - Count('registrations'),
+                output_field=IntegerField()  # 결과를 정수(Integer)로 변환
+            )
+        )
+        
+        if value:
+            return queryset.filter(available_slots__gt=0)
+        return queryset.filter(available_slots__lte=0)
+    
     class Meta:
         model = Event
-        fields = ['event_type', 'has_space', 'date', 'location', 'society', 'society_type', 'member_only', 'fee_min', 'fee_max', 'is_free']
+        fields = ['event_type', 'location', 'capacity', 'member_only', 'fee', 'fee_general', 'fee_member']
 
 
 class SocietyFilter(GlobalFilterSet):
@@ -85,3 +120,4 @@ class NewsFilter(django_filters.FilterSet):
     class Meta:
         model = News
         fields = ['society', 'society_type', 'date']
+

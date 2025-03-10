@@ -28,6 +28,16 @@ You can edit and publish them now:</p>
     </div>
   {% endfor %}
 
-  <button type="submit" class="btn btn-primary">Publish / Save News</button>
+  <button type="submit" class="btn btn-primary" id="publishNewsBtn">
+    Publish / Save News
+  </button>
+  <button type="button" class="btn btn-danger" id="cancelNewsBtn">
+    Cancel
+  </button>
 </form>
+{% endblock %}
+
+{% block extra_scripts %}
+
+<script src="{% static 'js/auto_edit_news.js' %}" defer></script>
 {% endblock %}

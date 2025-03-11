@@ -128,7 +128,7 @@ def admin_confirm_society_decision(request, society_id, action):
     })
 
 def view_manage_societies(request):
-    to_manage = manage_societies()
+    to_manage = manage_societies(request.user)
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
     return render(request, "societies.html", {'societies': to_manage, "news_list": news_list, 'page':'Manange'})
 

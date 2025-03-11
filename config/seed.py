@@ -130,8 +130,12 @@ def create_dummy_societies(users, n=50):
     return societies
 
 
-        # generated_name = fake.unique.company()
-        # generated_description = fake.text()
+LAT_MIN, LAT_MAX = 49.9, 60.9
+LON_MIN, LON_MAX = -8.6, 1.8
+
+def random_location_cord():
+    """영국 내 랜덤 위도, 경도 반환"""
+    return round(random.uniform(LAT_MIN, LAT_MAX), 6), round(random.uniform(LON_MIN, LON_MAX), 6)
 
 def create_dummy_events(societies, n=70):
     """Creates n dummy events linked to random societies with updated attributes."""
@@ -139,6 +143,8 @@ def create_dummy_events(societies, n=70):
     for _ in range(n):
         city = random.choice(list(constants.UNI_CHOICES.keys()))
         location = generate_event_location(city)
+        latitude, longitude = random_location_cord()
+
         event = Event.objects.create(
             event_type=random.choice([key for key in constants.EVENT_TYPE_CHOICES]),
             name=fake.sentence(nb_words=5),
@@ -149,7 +155,9 @@ def create_dummy_events(societies, n=70):
             member_only=random.choice([True, False]),
             capacity=random.randint(10, 500),
             start_time=fake.time_object(),
-            end_time=fake.time_object()
+            end_time=fake.time_object(),
+            latitude=latitude,  # 랜덤 위도 값
+            longitude=longitude,  # 랜덤 경도 값
         )
 
         approved_societies = [s for s in societies if s.status == "approved"]

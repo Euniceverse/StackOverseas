@@ -22,14 +22,88 @@
                     </div>
 
                     <!-- Search Bar -->
-                    <div class="col-md-5">
+                    <div class="col-md-5 position-relative">
                         <form action="/search" method="GET" class="d-flex">
-                            <input type="text" name="q" placeholder="Search for societies..." class="form-control me-2">
+                            <input type="text" name="q" id="searchInput" placeholder="Search..." class="form-control me-2" autocomplete="off">
+                            <input type="hidden" name="search_type" id="searchType" value="societies">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fa fa-search"></i>
                             </button>
                         </form>
+                        <!-- Search suggestions dropdown -->
+                        <div id="searchSuggestions" class="position-absolute w-100 mt-1 d-none" style="z-index: 1000;">
+                            <div class="card">
+                                <div class="list-group list-group-flush">
+                                    <div class="list-group-item search-category" data-type="societies">
+                                        <i class="fas fa-users me-2"></i>
+                                        Search for societies: <span class="search-term"></span>
+                                    </div>
+                                    <div class="list-group-item search-category" data-type="events">
+                                        <i class="fas fa-calendar me-2"></i>
+                                        Search for events: <span class="search-term"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
+                    <style>
+                        .search-category {
+                            cursor: pointer;
+                            transition: background-color 0.2s;
+                        }
+                        .search-category:hover {
+                            background-color: #f8f9fa;
+                        }
+                    </style>
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const searchInput = document.getElementById('searchInput');
+                            const searchSuggestions = document.getElementById('searchSuggestions');
+                            const searchType = document.getElementById('searchType');
+                            const searchTermSpans = document.querySelectorAll('.search-term');
+                            const searchForm = searchInput.closest('form');
+
+                            searchInput.addEventListener('input', function() {
+                                const query = this.value.trim();
+
+                                // Update search terms in suggestions
+                                searchTermSpans.forEach(span => {
+                                    span.textContent = query;
+                                });
+
+                                // Show/hide suggestions based on input
+                                if (query.length > 0) {
+                                    searchSuggestions.classList.remove('d-none');
+                                } else {
+                                    searchSuggestions.classList.add('d-none');
+                                }
+                            });
+
+                            // Handle category selection
+                            document.querySelectorAll('.search-category').forEach(category => {
+                                category.addEventListener('click', function() {
+                                    searchType.value = this.dataset.type;
+                                    searchForm.submit();
+                                });
+                            });
+
+                            // Hide suggestions when clicking outside
+                            document.addEventListener('click', function(e) {
+                                if (!searchInput.contains(e.target) && !searchSuggestions.contains(e.target)) {
+                                    searchSuggestions.classList.add('d-none');
+                                }
+                            });
+
+                            // Show suggestions when focusing on input
+                            searchInput.addEventListener('focus', function() {
+                                if (this.value.trim().length > 0) {
+                                    searchSuggestions.classList.remove('d-none');
+                                }
+                            });
+                        });
+                    </script>
 
                 </div>
             </div>
@@ -64,7 +138,7 @@
                                 {% endif %}
                             </ul>
                         </li>
-                        
+
                         <!-- If user is logged in, show "Create New Society" button, if not, show "Log In" button -->
                              {% if user.is_authenticated %}
                              <li>
@@ -75,7 +149,7 @@
                                  <a href="{% url 'log_in' %}">LOG IN</a>
                              </li>
                          {% endif %}
- 
+
                          <!-- MY ACCOUNT DROPDOWN (only if logged in) -->
                          {% if user.is_authenticated %}
                              <li class="dropdown">
@@ -88,7 +162,7 @@
                                  </ul>
                              </li>
                          {% endif %}
- 
+
                          <!-- ADMIN: Pending Societies (admin only) -->
                          <!-- {% if user.is_staff or user.is_superuser %}
                              <li>

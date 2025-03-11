@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from .functions import search_societies
 from apps.societies.functions import top_societies
 
 def home(request):
@@ -11,4 +12,25 @@ def home(request):
         "top_overall_societies": disct_soc['top_overall_societies'],
         'user' : request.user
     })
-    # return render(request, 'home.html', {'user': request.user})
+
+def ai_search(request):
+    """Handle the AI-powered search request."""
+    query = request.GET.get('q', '')
+    search_type = request.GET.get('search_type', 'societies')
+
+    if search_type == 'events':
+        # Handle event search
+        from apps.events.models import Event
+        events = Event.objects.filter(name__icontains=query)
+        return render(request, 'events.html', {
+            'events': events,
+            'page': 'Search Results'
+        })
+    else:
+        # Handle society search (default)
+        results, suggestion = search_societies(query)
+        return render(request, 'societies.html', {
+            'societies': results,
+            'page': 'Search',
+            'suggestion': suggestion
+        })

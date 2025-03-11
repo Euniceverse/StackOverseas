@@ -2,7 +2,7 @@ from sentence_transformers import SentenceTransformer
 import random
 import requests
 # from constants improt UNI_CHOICES
-# from faker import Faker 
+# from faker import Faker
 
 # Load AI model for text generation and similarity
 model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -31,7 +31,7 @@ def generate_society_name(society_type):
 
     query_embedding = model.encode(prompts, convert_to_tensor=True)
     generated_name = f"{society_type.capitalize()} Enthusiasts" if society_type.lower() in VALID_SOCIETY_TYPES else "Visionary Club"
-    
+
     return generated_name
 
 
@@ -47,9 +47,9 @@ def generate_society_description(society_name, society_type):
 
     query_embedding = model.encode(prompts, convert_to_tensor=True)
     generated_description = f"{society_name} is a community for those passionate about {society_type}. Join us to explore new opportunities and connect with like-minded individuals."
-    
+
     return generated_description
-    
+
 
 # def generate_event_location(city):
 #     """

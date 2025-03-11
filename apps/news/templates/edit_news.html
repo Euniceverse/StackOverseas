@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Edit News: {{ news_item.title }}</h1>
+  {% if form.errors %}
+    <div class="error">{{ form.errors }}</div>
+  {% endif %}
+  {{ form.as_p }}
+{% endblock %}

@@ -3,13 +3,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-
-from ..models import (
-    Society, 
-    Membership, 
-    MembershipRole, 
-    MembershipStatus
-)
+from apps.societies.models import Society, Membership, MembershipStatus
 
 User = get_user_model()
 
@@ -108,8 +102,8 @@ class AdminApprovalTest(TestCase):
 
     def test_membership_approval(self):
         membership = Membership.objects.create(
-            society=self.society,
-            user=self.user,
+            society=self.pending_society,
+            user=self.regular_user,
             status=MembershipStatus.PENDING
         )
         membership.status = MembershipStatus.APPROVED
@@ -118,9 +112,9 @@ class AdminApprovalTest(TestCase):
 
     def test_unauthorized_membership_approval(self):
         membership = Membership.objects.create(
-            society=self.society,
-            user=self.user,
+            society=self.pending_society,
+            user=self.regular_user,
             status=MembershipStatus.PENDING
         )
-        response = self.client.post(reverse('approve-membership', args=[membership.id]))
+        response = self.client.post(reverse('update_membership', args=[membership.society.id, membership.user.id]))
         self.assertNotEqual(response.status_code, 200)  # Expect failure without admin rights

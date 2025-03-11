@@ -1,8 +1,10 @@
 from django.db import models
+from django.db.models import F
 from django.utils import timezone
 from django.apps import apps
 from apps.events.models import Event
-from apps.societies.models import Society  # Import Society model
+from apps.societies.models import Society 
+
 def upload_to(instance, filename):
     """Save images inside config/media/news_images/ with a unique timestamp."""
     return f"news_images/{timezone.now().strftime('%Y%m%d%H%M%S')}_{filename}"
@@ -28,7 +30,7 @@ class News(models.Model):
 
     def get_event(self):
         Event = apps.get_model("events", "Event")
-        return Event.objects.filter(news=self)
+        return Event.objects.filter(news_articles=self)
 
     def __str__(self):
         return self.title

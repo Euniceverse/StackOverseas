@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db.models import F
 from apps.societies.models import Society
 from .models import News
 from .forms import NewsForm
@@ -83,12 +84,12 @@ def edit_news(request, news_id):
     news_item = get_object_or_404(News, id=news_id)
 
     if request.method == "POST":
-        form = NewsForm(request.POST, request.FILES, instance=news_item)
+        form = NewsForm(request.POST, request.FILES, instance=news_item, user=request.user)
         if form.is_valid():
             form.save()
             return redirect("news_list")
     else:
-        form = NewsForm(instance=news_item)
+        form = NewsForm(instance=news_item, user=request.user)
     
     return render(request, "edit_news.html", {"form": form, "news_item": news_item})
 

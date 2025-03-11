@@ -12,9 +12,12 @@ def staff_required(user):
     return user.is_staff
 
 def approved_societies(user):
-    if user.is_superuser:
-        return Society.objects.all()
-    return Society.objects.filter(status="approved", visibility = "Public")
+    """Retrieve approved societies, filtering by visibility unless user is superuser."""
+    query = Society.objects.filter(status="approved")
+    if not user.is_superuser:
+        query = query.filter(visibility="Public")
+    return query
+
 
 def get_societies(user):
     """Get all approved societies where the given user is a member."""
@@ -73,7 +76,6 @@ def top_societies(user):
         )
 
     top_overall_societies = all_approved.order_by('-members_count')[:5]
-
     return {
         'top_overall_societies': top_overall_societies,
         'top_societies_per_type': top_societies_per_type

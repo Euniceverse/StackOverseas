@@ -103,12 +103,6 @@ def create_dummy_societies(users, n=50):
     for _ in range(n):
         society_type = random.choice([key for key, _ in constants.SOCIETY_TYPE_CHOICES])
         
-        # Ensure unique society names
-        # while True:
-        #     generated_name = generate_society_name(society_type)
-        #     if generated_name not in existing_names:
-        #         existing_names.add(generated_name)
-        #         break
 
         generated_name = generate_society_name(society_type, existing_names)
         existing_names.add(generated_name)
@@ -130,7 +124,7 @@ def create_dummy_societies(users, n=50):
             society.members.set(random.sample(users, random.randint(1, len(users))))
         if society.status == "approved":
             society.visibility = "Public"
-
+        society.save() 
         societies.append(society)
 
     return societies

@@ -5,6 +5,8 @@ import random
 from faker import Faker
 from django.conf import settings
 import constants
+from ai_seed import generate_society_description, generate_society_name 
+from ai_seed import generate_event_location
 
 # Set up the project base directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -85,36 +87,62 @@ def create_dummy_users(n=100):
         users.append(user)
     return users
 
-
+def get_location_from_email(email):
+    """Extracts university abbreviation from email and finds the corresponding city."""
+    abb = email.split("@")[-1].split(".")[0]  # Extract 'abb' from email
+    for city, universities in constants.UNI_CHOICES.items():
+        if abb in universities:
+            return city
+    return "Unknown"  # Default if no match is found
 
 def create_dummy_societies(users, n=50):
-    """Creates n dummy societies with random users as managers and members."""
+    """Creates n dummy societies with AI-generated names and descriptions."""
     societies = []
+    existing_names = set(Society.objects.values_list("name", flat=True))  # Track unique names
+
     for _ in range(n):
+        society_type = random.choice([key for key, _ in constants.SOCIETY_TYPE_CHOICES])
+        
+
+        generated_name = generate_society_name(society_type, existing_names)
+        existing_names.add(generated_name)
+
+
+        generated_description = generate_society_description(generated_name, society_type,)
+
         society = Society.objects.create(
-            name=fake.unique.company(),
-            description=fake.text(),
-            society_type = random.choice([key for key, _ in constants.SOCIETY_TYPE_CHOICES]),
+            name=generated_name,
+            description=generated_description,
+            society_type=society_type,
             status=random.choice([key for key, _ in constants.SOCIETY_STATUS_CHOICES]),
-            manager=random.choice(users),
-            # members_count=random.randint(1, 10)  # Assign random members count
+            manager=random.choice(users)
         )
+
+        society.location = get_location_from_email(society.manager.email)  # Get location from email
+
+        if society.status == "approved" or society.status == "request_delete" :
+            society.members.set(random.sample(users, random.randint(1, len(users))))
         if society.status == "approved":
-            society.members.set(random.sample(users, random.randint(1, len(users))))  # Assign random members
+            society.visibility = "Public"
+        society.save() 
         societies.append(society)
+
     return societies
 
 
-
+        # generated_name = fake.unique.company()
+        # generated_description = fake.text()
 
 def create_dummy_events(societies, n=70):
     """Creates n dummy events linked to random societies with updated attributes."""
     events = []
     for _ in range(n):
+        city = random.choice(list(constants.UNI_CHOICES.keys()))
+        location = generate_event_location(city)
         event = Event.objects.create(
             event_type=random.choice([key for key in constants.EVENT_TYPE_CHOICES]),
             name=fake.sentence(nb_words=5),
-            location= random_location,
+            location = location,
             date=fake.future_datetime(),
             keyword=fake.word(),
             is_free=random.choice([True, False]),

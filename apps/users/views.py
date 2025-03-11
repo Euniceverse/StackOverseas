@@ -18,9 +18,28 @@ from django.core.mail import EmailMessage
 from django.http import HttpResponse
 from django.core.cache import cache
 from django.utils.crypto import get_random_string
+from django.contrib.auth.decorators import login_required
+from apps.societies.models import Society, Membership
+from apps.societies.functions import get_societies
+from django.utils import timezone
 
+@login_required
 def accountpage(request):
-    return render(request, "account.html")
+    # Get user's societies (both member and manager)
+    user_societies = get_societies(request.user)
+
+    # Get societies where user is manager
+    managed_societies = Society.objects.filter(manager=request.user)
+
+    # Get all memberships for the user
+    memberships = Membership.objects.filter(user=request.user).select_related('society')
+
+    return render(request, "account.html", {
+        'user': request.user,
+        'societies': user_societies,
+        'managed_societies': managed_societies,
+        'memberships': memberships,
+    })
 
 class LoginProhibitedMixin:
     """Mixin that redirects when a user is logged in."""
@@ -61,12 +80,19 @@ class LogInView(View):
 
     def post(self, request):
         """Handle login attempt."""
-        form = LogInForm(request.POST)  # Pass POST data correctly
+        form = LogInForm(request.POST)
         if form.is_valid():
             user = form.get_user()
             if user:
+                # Check if verification is needed
+                needs_verification = user.check_annual_verification()
+                if needs_verification:
+                    user.send_annual_verification_email()
+                    messages.warning(request, "Please check your email to verify your account. Your account has been temporarily deactivated for security purposes.")
+                    return render(request, self.template_name, {"form": form})
+
                 login(request, user)
-                return redirect("home")  # Redirect to the homepage or another page
+                return redirect("home")
         messages.error(request, "Invalid email or password.")
         return render(request, self.template_name, {"form": form})
 
@@ -267,6 +293,7 @@ def activate(request, uidb64, token):
             password=user_data['password']
         )
         user.is_active = True
+        user.annual_verification_date = timezone.now()
         user.save()
 
         # Clear cached data
@@ -276,3 +303,32 @@ def activate(request, uidb64, token):
         return redirect("home")
     except Exception as e:
         return HttpResponse("Activation link is invalid!")
+
+def annual_verify(request, uidb64, token):
+    try:
+        cache_key = f"annual_verify_{token}"
+        email = cache.get(cache_key)
+
+        if not email:
+            return HttpResponse("Verification link is invalid or has expired!")
+
+        decoded_email = force_str(urlsafe_base64_decode(uidb64))
+        if email != decoded_email:
+            return HttpResponse("Verification link is invalid!")
+
+        user = CustomUser.objects.get(email=email)
+        user.is_active = True
+        user.annual_verification_date = timezone.now()
+        user.last_verified_date = timezone.now()
+        user.save()
+
+        # Clear cached data
+        cache.delete(cache_key)
+
+        # Log in the user after verification
+        login(request, user)
+
+        messages.success(request, "Account verified successfully!")
+        return redirect("home")
+    except Exception as e:
+        return HttpResponse("Verification link is invalid!")

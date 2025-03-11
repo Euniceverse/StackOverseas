@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     accountpage, LogInView, log_out, PasswordView, ProfileUpdateView,
-    SignUpView, activate, ForgotPasswordView, ResetPasswordView
+    SignUpView, activate, ForgotPasswordView, ResetPasswordView, annual_verify
 )
 
 urlpatterns = [
@@ -14,4 +14,5 @@ urlpatterns = [
     path('activate/<uidb64>/<token>/', activate, name='activate'),
     path('forgot-password/', ForgotPasswordView.as_view(), name='forgot_password'),
     path('reset-password/<token>/', ResetPasswordView.as_view(), name='reset_password'),
+    path('annual-verify/<uidb64>/<token>/', annual_verify, name='annual_verify'),
 ]

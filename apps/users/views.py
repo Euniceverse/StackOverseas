@@ -17,6 +17,7 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from django.http import HttpResponse
 from django.core.cache import cache
+from django.utils.crypto import get_random_string
 
 def accountpage(request):
     return render(request, "account.html")
@@ -75,31 +76,108 @@ def log_out(request):
     logout(request)
     return redirect('home')
 
-class PasswordView(LoginRequiredMixin, FormView):
+class PasswordView(LoginRequiredMixin, View):
     """Display password change screen and handle password change requests."""
 
-    template_name = 'password.html'
-    form_class = PasswordForm
+    def get(self, request):
+        """Instead of showing password form, send verification email."""
+        # Generate reset token
+        reset_token = get_random_string(50)
+        cache_key = f"pwd_reset_{reset_token}"
 
-    def get_form_kwargs(self, **kwargs):
-        """Pass the current user to the password change form."""
+        # Store email in cache with token
+        cache.set(cache_key, request.user.email, 3600)  # Store for 1 hour
 
-        kwargs = super().get_form_kwargs(**kwargs)
-        kwargs.update({'user': self.request.user})
-        return kwargs
+        # Send verification email
+        reset_link = f"http://{settings.DOMAIN_NAME}{reverse('reset_password', kwargs={'token': reset_token})}"
+        mail_subject = "Verify Password Change"
+        message = render_to_string("password_reset_email.html", {
+            "user": request.user,
+            "reset_link": reset_link,
+            "is_change": True  # To differentiate between forgot password and change password in template
+        })
+        email = EmailMessage(mail_subject, message, to=[request.user.email])
+        email.send()
 
-    def form_valid(self, form):
-        """Handle valid form by saving the new password."""
+        return render(request, 'password_confirmation.html')
 
-        form.save()
-        login(self.request, self.request.user)
-        return super().form_valid(form)
+class ForgotPasswordView(View):
+    template_name = 'forgot_password.html'
 
-    def get_success_url(self):
-        """Redirect the user after successful password change."""
+    def get(self, request):
+        return render(request, self.template_name)
 
-        messages.add_message(self.request, messages.SUCCESS, "Password updated!")
-        return reverse('home')
+    def post(self, request):
+        email = request.POST.get('email')
+        try:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            messages.error(request, "If an account exists with this email, you will receive a password reset link.")
+            return render(request, self.template_name)
+
+        # Generate reset token
+        reset_token = get_random_string(50)
+        cache_key = f"pwd_reset_{reset_token}"
+
+        # Store email in cache with token
+        cache.set(cache_key, email, 3600)  # Store for 1 hour
+
+        # Send reset email
+        reset_link = f"http://{settings.DOMAIN_NAME}{reverse('reset_password', kwargs={'token': reset_token})}"
+        mail_subject = "Reset your password"
+        message = render_to_string("password_reset_email.html", {
+            "user": user,
+            "reset_link": reset_link,
+            "is_change": False  # This is a forgot password request
+        })
+        email = EmailMessage(mail_subject, message, to=[user.email])
+        email.send()
+
+        messages.success(request, "If an account exists with this email, you will receive a password reset link.")
+        return render(request, self.template_name)
+
+class ResetPasswordView(View):
+    template_name = 'reset_password.html'
+
+    def get(self, request, token):
+        # Check if token is valid
+        cache_key = f"pwd_reset_{token}"
+        email = cache.get(cache_key)
+
+        if not email:
+            messages.error(request, "Password reset link is invalid or has expired.")
+            return redirect('log_in')
+
+        return render(request, self.template_name)
+
+    def post(self, request, token):
+        cache_key = f"pwd_reset_{token}"
+        email = cache.get(cache_key)
+
+        if not email:
+            messages.error(request, "Password reset link is invalid or has expired.")
+            return redirect('log_in')
+
+        password = request.POST.get('new_password')
+        password_confirmation = request.POST.get('password_confirmation')
+
+        if password != password_confirmation:
+            messages.error(request, "Passwords do not match.")
+            return render(request, self.template_name)
+
+        try:
+            user = CustomUser.objects.get(email=email)
+            user.set_password(password)
+            user.save()
+
+            # Clear the reset token
+            cache.delete(cache_key)
+
+            messages.success(request, "Password has been reset successfully. Please log in with your new password.")
+            return redirect('log_in')
+        except CustomUser.DoesNotExist:
+            messages.error(request, "Invalid request.")
+            return redirect('log_in')
 
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
@@ -119,8 +197,6 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
         messages.add_message(self.request, messages.SUCCESS, "Profile updated!")
         return reverse("home")
 
-
-from django.utils.crypto import get_random_string
 
 class SignUpView(LoginProhibitedMixin, FormView):
     # ... existing code ...

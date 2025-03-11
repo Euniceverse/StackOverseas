@@ -1,62 +1,71 @@
 :root {
-  --primary-dark: #190019 !important;
-  --secondary-dark: #2B124C !important;
-  --accent-purple: #522B5B !important;
-  --soft-purple: #854F6C !important;
-  --light-purple: #DFB6B2 !important;
-  --cream: #FBE4D8 !important;
-  --primary-yellow: #FFAF24 !important;
-  --soft-yellow: #FFE2B8 !important;
+  --primary-dark: #190019;
+  --secondary-dark: #2B124C;
+  --accent-purple: #522B5B;
+  --soft-purple: #854F6C;
+  --light-purple: #DFB6B2;
+  --cream: #FBE4D8;
+  --primary-yellow: #FFAF24;
+  --soft-yellow: #FFE2B8;
 }
 
-/* Apply Purple Background */
+
+/* Global Styles */
 body {
-  background-color: var(--cream) !important;
-  color: var(--cream) !important;
+  
+  background-color: var(--primary-dark) !important; /* Ensure dark background */
+  color: var(--cream) !important; /* Ensure light text */
+  
+  font-family: Arial, sans-serif;
 }
 
-/* Update Navbar */
-nav {
-  background-color: var(--secondary-dark) !important;
-  color: var(--cream) !important;
+/* Society Box Styling */
+.society-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
 }
 
-/* Update Society Boxes */
 .society-box {
-  background-color: var(--soft-purple) !important;
-  color: var(--cream) !important;
+  background-color: var(--secondary-dark);
+  border-radius: 15px;
+  padding: 20px;
+  text-align: center;
+  color: var(--cream);
+  width: 300px; /* Ensures all boxes are the same size */
+  height: 180px; /* Ensures equal height */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-/* Update Buttons */
+/* Buttons */
 .btn-primary {
-  background-color: var(--primary-yellow) !important;
-  border-color: var(--primary-yellow) !important;
-  color: #190019 !important;
+  background-color: var(--primary-yellow);
+  border-color: var(--primary-yellow);
+  color: #190019;
 }
 
 .btn-primary:hover {
-  background-color: var(--soft-yellow) !important;
-  border-color: var(--soft-yellow) !important;
+  background-color: var(--soft-yellow);
+  border-color: var(--soft-yellow);
 }
 
-/* Update Footer */
+/* Footer */
 footer {
-  background-color: var(--secondary-dark) !important;
-  color: var(--cream) !important;
+  background-color: var(--secondary-dark);
+  color: var(--cream);
+  padding: 20px;
+  text-align: center;
 }
 
-.container.mt-4 h1, h2, h3 {
-  color: var(--primary-dark) !important; /* Use the color you want */
+footer a {
+  color: var(--soft-yellow);
+  text-decoration: none;
 }
-
-/* Change paragraph text color */
-.container.mt-4 p {
-  color: var(--cream) !important;
-}
-
-p {
-  color: var(--soft-purple) !important; /* Use theme color */
-  font-size: 16px; /* Adjust size if needed */
+footer a:hover {
+  text-decoration: underline;
 }
 
 
@@ -74,7 +83,7 @@ p {
 }
 
   .bg-light{
-    background-color: #854F6C ;
+    background-color: #D6EEFF;
   }
 
 
@@ -82,7 +91,7 @@ p {
   /*-----header-----*/
   .header{
     min-height: auto;
-    background-color: #854F6C ;
+    background-color: #89b9da;
   }
 
   .header-short{
@@ -152,8 +161,8 @@ p {
   /*-----navigation bar-----*/
   nav{
     padding: 10px;
-    background-color: #133C55;
-    color: var(--soft-yellow);
+    background-color: var(--accent-purple);
+    color: white;
   }
 
   .nav-links ul{
@@ -227,7 +236,7 @@ p {
   /* News Panel */
 .news-panel {
   min-height: 100vh; 
-  background: #FFE2B8;
+  background: #DAE5FF;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -268,4 +277,3 @@ p {
   font-weight: bold;
   text-align: center;
 }
-

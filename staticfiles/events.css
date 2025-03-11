@@ -1,0 +1,147 @@
+/* General Fix for Content Overflow */
+html, body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+.event-header {
+    display: flex;
+    flex-direction: column;
+    background-color: #B7E3E4;
+    height: 25vh;
+    z-index: 10000;
+}
+
+.event-title {
+    display: flex;
+    flex-grow: 2;
+    color: #F03F35;
+    font-size: 25pt;
+    margin-left: auto;
+    margin-right: auto;
+    padding-bottom: 0;
+    padding-top: 10pt;
+}
+
+.event-search {
+    display: flex;
+    flex-grow: 1;
+    margin: auto;
+}
+
+.event-filter {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.event-body {
+    background-color: #F03F35;
+    height: 80vh;
+    overflow-y: hidden;
+}
+
+.event-api-view-bar {
+    display: flex;
+    justify-content: space-between;
+    width: 800px;
+    height: 30px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 60px;
+    cursor: pointer;
+}
+
+.event-view-calendar {
+    margin: 0%;
+    display: block;
+}
+
+.event-view-list {
+    margin: 0%;
+    display: block;
+}
+
+.event-view-map {
+    margin: 0%;
+    display: block;
+    height: 650pt;
+}
+
+.event-api-view-bar span {
+    padding: 8px 16px;
+    border-radius: 5px;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Default text color */
+.event-api-view-bar span {
+    color: black;
+}
+
+/* Active button (Changes text color and background) */
+.event-api-view-bar span.active {
+    color: #B7E3E4;
+}
+
+/* Hide all views initially */
+.event-api-views > div {
+    display: none;
+}
+
+.event-detail {
+    position: fixed; /* 화면에 고정 */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* 중앙 정렬 */
+    width: 50vw; /* 창 너비 */
+    max-width: 600px; /* 최대 너비 */
+    height: auto;
+    background: white; /* 배경색 */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2); /* 그림자 효과 */
+    z-index: 10001; /* 다른 요소 위에 표시 */
+    display: none; /* 기본적으로 숨김 */
+}
+
+/* ✅ 팝업창이 보일 때 활성화 */
+.event-detail.active {
+    display: block;
+}
+
+/* ✅ 팝업창 바깥쪽 배경 */
+.event-detail-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* 반투명 검정 배경 */
+    display: none; /* 기본적으로 숨김 */
+    z-index: 10000;
+}
+
+/* ✅ 팝업창 바깥쪽 배경 활성화 */
+.event-detail-overlay.active {
+    display: block;
+}
+
+/* 닫기 버튼 스타일 */
+.event-detail-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    color: #F03F35;
+}
+
+.event-detail-close:hover {
+    color: #B7E3E4;
+}

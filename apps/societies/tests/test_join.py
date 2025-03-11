@@ -19,9 +19,13 @@ class TestTemplateFilter(TestCase):
     def test_get_user_membership_filter(self):
         # Create a user, society, membership
         user = User.objects.create_user(
-            email='filteruser@uni.ac.uk',
-            password='testpass'
+            email='user@university.ac.uk',
+            first_name='Test',
+            last_name='User',
+            preferred_name='Tester',
+            password='password123'
         )
+
         soc = Society.objects.create(
             name='Filter Test Society',
             description='Filter test',
@@ -29,6 +33,7 @@ class TestTemplateFilter(TestCase):
             status='approved',
             society_type='academic'
         )
+        
         mem = Membership.objects.create(
             society=soc, user=user, role=MembershipRole.MEMBER, status=MembershipStatus.APPROVED
         )
@@ -53,8 +58,12 @@ class NoRequirementJoinTest(TestCase):
         self.client = Client()
         self.user = User.objects.create_user(
             email='noreq@uni.ac.uk',
+            first_name='Test',
+            last_name='User',
+            preferred_name='Tester',
             password='pass123'
         )
+
         self.society = Society.objects.create(
             name='NoReq Society',
             description='No requirements at all',
@@ -62,6 +71,7 @@ class NoRequirementJoinTest(TestCase):
             status='approved',
             society_type='academic'
         )
+        
         # By default, there's no SocietyRequirement => treat as none
         self.join_url = reverse('join_society', args=[self.society.id])
 
@@ -69,7 +79,7 @@ class NoRequirementJoinTest(TestCase):
         self.client.login(email='noreq@uni.ac.uk', password='pass123')
         response = self.client.post(self.join_url)
         # Should redirect to society_detail
-        detail_url = reverse('society_detail', args=[self.society.id])
+        detail_url = reverse('society_page', args=[self.society.id])
         self.assertRedirects(response, detail_url)
         membership = Membership.objects.get(society=self.society, user=self.user)
         self.assertEqual(membership.status, 'approved')
@@ -81,11 +91,17 @@ class QuizRequirementJoinTest(TestCase):
         # Create user, manager, society, requirement=quiz
         self.quiz_taker = User.objects.create_user(
             email='quiz@uni.ac.uk',
+            first_name='Test',
+            last_name='User',
+            preferred_name='Tester',
             password='quizpass'
         )
         self.quiz_manager = User.objects.create_user(
             email='quizmgr@uni.ac.uk',
-            password='mgrpass'
+            password='mgrpass',
+            first_name='Test',
+            last_name='User',
+            preferred_name='Tester',
         )
         self.quiz_soc = Society.objects.create(
             name='Quiz Society',
@@ -125,7 +141,7 @@ class QuizRequirementJoinTest(TestCase):
             f'question_{self.q3.id}': 'yes',  # incorrect (since correct_answer=False)
         }
         response = self.client.post(self.join_url, data)
-        self.assertRedirects(response, reverse('society_detail', args=[self.quiz_soc.id]))
+        self.assertRedirects(response, reverse('society_page', args=[self.quiz_soc.id]))
         # Should be approved, because 2 out of 3 are correct, threshold=2
         mem = Membership.objects.get(society=self.quiz_soc, user=self.quiz_taker)
         self.assertEqual(mem.status, MembershipStatus.APPROVED)
@@ -138,7 +154,7 @@ class QuizRequirementJoinTest(TestCase):
             f'question_{self.q3.id}': 'yes',  # also incorrect
         }
         response = self.client.post(self.join_url, data)
-        self.assertRedirects(response, reverse('society_detail', args=[self.quiz_soc.id]))
+        self.assertRedirects(response, reverse('society_page', args=[self.quiz_soc.id]))
         # membership should not exist or be removed
         self.assertFalse(Membership.objects.filter(society=self.quiz_soc, user=self.quiz_taker).exists())
         # Also check the application is marked is_rejected
@@ -152,10 +168,16 @@ class ManualRequirementJoinTest(TestCase):
         self.client = Client()
         self.user = User.objects.create_user(
             email='manual@uni.ac.uk',
+            first_name='Test',
+            last_name='User',
+            preferred_name='Tester',
             password='manualpass'
         )
         self.manager = User.objects.create_user(
             email='manager@uni.ac.uk',
+            first_name='Test',
+            last_name='User',
+            preferred_name='Tester',
             password='managerpass'
         )
         self.soc = Society.objects.create(
@@ -165,7 +187,6 @@ class ManualRequirementJoinTest(TestCase):
             status='approved',
             society_type='academic'
         )
-        from apps.societies.models import SocietyRequirement
         self.req = SocietyRequirement.objects.create(
             society=self.soc,
             requirement_type=RequirementType.MANUAL,
@@ -207,7 +228,7 @@ class ManualRequirementJoinTest(TestCase):
         }
         response = self.client.post(self.join_url, data)
         self.assertEqual(response.status_code, 200)
-        self.assertFormError(response, 'form', 'essay_text', 'An essay is required.')
+        self.assertFormError(response.context['form'], 'essay_text', 'An essay is required.')
         # membership won't exist
         self.assertFalse(Membership.objects.filter(society=self.soc, user=self.user).exists())
 
@@ -217,11 +238,17 @@ class ManagerApplicationDecisionTest(TestCase):
         self.client = Client()
         self.manager = User.objects.create_user(
             email='boss@uni.ac.uk',
-            password='bosspass'
+            password='bosspass',
+            first_name='Boss',
+            last_name='User',
+            preferred_name='Boss',
         )
         self.applicant = User.objects.create_user(
             email='applicant@uni.ac.uk',
-            password='apppass'
+            password='apppass',
+            first_name='App',
+            last_name='User',
+            preferred_name='App',
         )
         self.soc = Society.objects.create(
             name='ManualSoc',
@@ -230,7 +257,6 @@ class ManagerApplicationDecisionTest(TestCase):
             status='approved',
             society_type='academic'
         )
-        from apps.societies.models import SocietyRequirement
         self.req = SocietyRequirement.objects.create(
             society=self.soc,
             requirement_type=RequirementType.MANUAL,
@@ -296,13 +322,25 @@ class ManageButtonVisibilityTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.user_manager = User.objects.create_user(
-            email='mgr@uni.ac.uk', password='mgrpass'
+            email='mgr@uni.ac.uk',
+            password='mgrpass',
+            first_name='Manager',
+            last_name='User',
+            preferred_name='Manger',
         )
         self.user_normal = User.objects.create_user(
-            email='norm@uni.ac.uk', password='normpass'
+            email='norm@uni.ac.uk',
+            password='normpass',
+            first_name='Normal',
+            last_name='User',
+            preferred_name='Normal',
         )
         self.user_editor = User.objects.create_user(
-            email='editor@uni.ac.uk', password='editorpass'
+            email='editor@uni.ac.uk',
+            password='editorpass',
+            first_name='Editor',
+            last_name='User',
+            preferred_name='Editor',
         )
         self.soc = Society.objects.create(
             name='VisibilitySoc',
@@ -310,7 +348,7 @@ class ManageButtonVisibilityTest(TestCase):
             status='approved',
             society_type='academic'
         )
-        self.detail_url = reverse('society_detail', args=[self.soc.id])
+        self.detail_url = reverse('society_page', args=[self.soc.id])
 
     def test_manager_can_see_button(self):
         """
@@ -341,9 +379,7 @@ class ManageButtonVisibilityTest(TestCase):
         self.assertContains(response, 'Manage This Society')
 
     def test_pending_editor_cannot_see_button(self):
-        """
-        If role=editor but status is pending => do not show Manage button.
-        """
+        """ If role=editor but status is pending => do not show Manage button."""
         Membership.objects.create(
             society=self.soc,
             user=self.user_editor,
@@ -355,9 +391,7 @@ class ManageButtonVisibilityTest(TestCase):
         self.assertNotContains(response, 'Manage This Society')
 
     def test_normal_member_cannot_see_button(self):
-        """
-        role=member => no manage button
-        """
+        """ role=member => no manage button"""
         Membership.objects.create(
             society=self.soc,
             user=self.user_normal,
@@ -376,35 +410,50 @@ class JoinSocietyTest(TestCase):
         self.client = Client()
         self.user = User.objects.create_user(
             email='user@university.ac.uk',
-            password='password123'
+            password='password123',
+            first_name='User',
+            last_name='User',
+            preferred_name='User',
         )
+        manager = User.objects.create_user(
+            email='manager@example.com',
+            first_name='Manager',
+            last_name='User',
+            preferred_name='Manager',
+            password='pass123'
+        )
+
         self.society = Society.objects.create(
             name='Test Society',
-            description='A test society',
-            society_type='academic',
-            status='approved'
+            description='Some description',
+            manager=manager, 
+            status='approved',
+            society_type='academic'
         )
 
     def test_user_can_request_to_join_society(self):
         self.client.login(email='user@university.ac.uk', password='password123')
-        response = self.client.post(reverse('society-join', args=[self.society.id]))
-        self.assertEqual(response.status_code, 200)
+        response = self.client.post(reverse('join_society', args=[self.society.id]))
+        self.assertEqual(response.status_code, 302)
         self.assertTrue(Membership.objects.filter(user=self.user, society=self.society).exists())
 
     def test_user_cannot_join_twice(self):
         Membership.objects.create(user=self.user, society=self.society, status=MembershipStatus.PENDING)
-        response = self.client.post(reverse('society-join', args=[self.society.id]))
-        self.assertEqual(response.status_code, 400)
+        response = self.client.post(reverse('join_society', args=[self.society.id]))
+        self.assertEqual(response.status_code, 302)
         memberships = Membership.objects.filter(user=self.user, society=self.society)
         self.assertEqual(memberships.count(), 1)  # Ensure only one request exists
 
     def test_admin_can_approve_join_request(self):
+        self.client.login(email='manager@example.com', password='pass123')
         membership = Membership.objects.create(user=self.user, society=self.society, status=MembershipStatus.PENDING)
-        response = self.client.post(reverse('approve-membership', args=[membership.id]))
+        url = reverse('update_membership', args=[self.society.id, self.user.id])
+        response = self.client.post(url, {'action': 'approve'})
         membership.refresh_from_db()
         self.assertEqual(membership.status, MembershipStatus.APPROVED)
 
     def test_unauthorized_user_cannot_approve_membership(self):
         membership = Membership.objects.create(user=self.user, society=self.society, status=MembershipStatus.PENDING)
-        response = self.client.post(reverse('approve-membership', args=[membership.id]))
-        self.assertNotEqual(response.status_code, 200)  # Should be forbidden
+        url = reverse('update_membership', args=[self.society.id, self.user.id])
+        response = self.client.post(reverse('update_membership', args=[self.society.id, self.user.id]), {'action': 'approve'})
+        self.assertEqual(response.status_code, 302)

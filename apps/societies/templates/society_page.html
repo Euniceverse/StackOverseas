@@ -32,72 +32,71 @@
 {% endif %}
 
 <!-- If user is manager/co_manager/editor + approved, show "Manage Society" and "Create Event" -->
-{% if user_membership.role in 'manager co_manager editor' and user_membership.status == 'approved' %}
-        <a href="{% url 'manage_society' society.id %}" class="btn btn-warning">
-            Manage This Society
-        </a>
-        <a href="{% url 'event_create' society.id %}" class="btn btn-primary">
-            Create Event
-        </a>
+{% if user_membership and user_membership.status|lower == 'approved' and user_membership.role in manager_roles %}
+    <a href="{% url 'manage_society' society.id %}" class="btn btn-warning">
+        Manage This Society
+    </a>
+    <a href="{% url 'event_create' society.id %}" class="btn btn-primary">
+        Create Event
+    </a>
 
-        <p>Drag & drop widgets to rearrange them.</p>
+    <p>Drag & drop widgets to rearrange them.</p>
 
-        <div id="widgets-container">
-            <ul id="sortable-widgets">
-                {% for widget in widgets %}
-                    <li class="widget ui-state-default" data-widget-id="{{ widget.id }}">
-                        <h3>{{ widget.get_widget_type_display }}</h3>
-                        <div class="widget-content">
-                            {% if widget.widget_type == "announcements" %}
-                                <p>Latest announcements will appear here.</p>
-                            {% elif widget.widget_type == "events" %}
-                                <p>Upcoming events will be displayed here.</p>
-                            {% elif widget.widget_type == "gallery" %}
-                                <p>Photo gallery will be displayed here.</p>
-                            {% elif widget.widget_type == "contacts" %}
-                                <p>Contact information for the society will be displayed here.</p>
-                            {% elif widget.widget_type == "featured" %}
-                                <p>Featured members (president, vice, etc.) will be displayed here.</p>
-                            {% elif widget.widget_type == "leaderboard" %}
-                                <p>Leaderboard will be displayed here.</p>
-                            {% elif widget.widget_type == "news" %}
-                                <p>News will be displayed here.</p>
-                            {% endif %}
-                        </div>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
-        <button id="save-order">Save Order</button>
-    
-{% else %}
-        <!-- Normal or not logged in => show widgets, but no drag & drop -->
-        <div id="widgets-container">
-            <ul id="sortable-widgets">
+    <div id="widgets-container">
+        <ul id="sortable-widgets">
             {% for widget in widgets %}
                 <li class="widget ui-state-default" data-widget-id="{{ widget.id }}">
-                <h3>{{ widget.get_widget_type_display }}</h3>
-                <div class="widget-content">
-                    {% if widget.widget_type == "announcements" %}
-                    <p>Latest announcements will appear here.</p>
-                    {% elif widget.widget_type == "events" %}
-                    <p>Upcoming events will be displayed here.</p>
-                    {% elif widget.widget_type == "gallery" %}
-                    <p>Photo gallery will be displayed here.</p>
-                    {% elif widget.widget_type == "contacts" %}
-                    <p>Contact information for the society will be displayed here.</p>
-                    {% elif widget.widget_type == "featured" %}
-                    <p>Featured members (president, vice, etc.) will be displayed here.</p>
-                    {% elif widget.widget_type == "leaderboard" %}
-                    <p>Leaderboard will be displayed here.</p>
-                    {% elif widget.widget_type == "news" %}
-                    <p>News will be displayed here.</p>
-                    {% endif %}
-                </div>
+                    <h3>{{ widget.get_widget_type_display }}</h3>
+                    <div class="widget-content">
+                        {% if widget.widget_type == "announcements" %}
+                            <p>Latest announcements will appear here.</p>
+                        {% elif widget.widget_type == "events" %}
+                            <p>Upcoming events will be displayed here.</p>                            {% elif widget.widget_type == "gallery" %}
+                            <p>Photo gallery will be displayed here.</p>
+                        {% elif widget.widget_type == "contacts" %}
+                            <p>Contact information for the society will be displayed here.</p>
+                        {% elif widget.widget_type == "featured" %}
+                            <p>Featured members (president, vice, etc.) will be displayed here.</p>
+                        {% elif widget.widget_type == "leaderboard" %}
+                            <p>Leaderboard will be displayed here.</p>
+                        {% elif widget.widget_type == "news" %}
+                            <p>News will be displayed here.</p>
+                        {% endif %}
+                    </div>
                 </li>
             {% endfor %}
-            </ul>
-        </div>
+        </ul>
+    </div>
+    <button id="save-order">Save Order</button>
+    
+{% else %}
+    <!-- Normal or not logged in => show widgets, but no drag & drop -->
+    <div id="widgets-container">
+        <ul id="sortable-widgets">
+        {% for widget in widgets %}
+            <li class="widget ui-state-default" data-widget-id="{{ widget.id }}">
+            <h3>{{ widget.get_widget_type_display }}</h3>
+            <div class="widget-content">
+                {% if widget.widget_type == "announcements" %}
+                    <p>Latest announcements will appear here.</p>
+                {% elif widget.widget_type == "events" %}
+                    <p>Upcoming events will be displayed here.</p>
+                {% elif widget.widget_type == "gallery" %}
+                    <p>Photo gallery will be displayed here.</p>
+                {% elif widget.widget_type == "contacts" %}
+                    <p>Contact information for the society will be displayed here.</p>
+                {% elif widget.widget_type == "featured" %}
+                    <p>Featured members (president, vice, etc.) will be displayed here.</p>
+                {% elif widget.widget_type == "leaderboard" %}
+                    <p>Leaderboard will be displayed here.</p>
+                {% elif widget.widget_type == "news" %}
+                    <p>News will be displayed here.</p>
+                {% endif %}
+            </div>
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
 {% endif %}
 {% endblock %}
 

@@ -89,8 +89,9 @@ class Membership(models.Model):
 @receiver(m2m_changed, sender=Society.members.through)
 def update_members_count(sender, instance, action, **kwargs):
     if action in ["post_add", "post_remove", "post_clear"]:
-        instance.members_count = instance.members.count()
+        instance.members_count = instance.members.filter(is_active=True).count()
         instance.save()
+
 
 
 

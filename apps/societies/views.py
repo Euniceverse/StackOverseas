@@ -19,7 +19,7 @@ from config.constants import SOCIETY_TYPE_CHOICES
 import json
 
 def societiespage(request):
-    societies = Society.objects.all()
+    societies = approved_societies(request.user)
 
     # Apply filters
     filtered_societies = SocietyFilter(request.GET, queryset=societies).qs
@@ -65,7 +65,18 @@ def create_society(request):
             society_registration = form.save(commit=False)
             society_registration.applicant = request.user
             society_registration.status = 'pending'
-            society_registration.save()            
+            society_registration.save()     
+
+            # Create a Society instance for admin visibility
+            new_society = Society.objects.create(
+            name=society_registration.name,
+            description=society_registration.description,
+            society_type=society_registration.society_type,
+            status="pending",  # Ensure it's pending so admin can see it
+            manager=society_registration.applicant,
+            visibility="Private",  # Admin should still see private ones
+            )     
+            new_society.save()  
 
             messages.success(request, "Society application submitted. Awaiting approval.")
             return redirect('societiespage')
@@ -371,17 +382,6 @@ def decide_application(request, society_id, application_id, decision):
     return redirect('view_applications', society_id=society.id)
 
 
-    # top_overall_societies = all_approved_socities.order_by('-members_count')[:5]
-    # '''
-    # print("Top Overall Societies:", list(top_overall_societies))
-    # print("Top Societies Per Type:", top_societies_per_type)
-    # '''
-    # return({'top_overall_societies':top_overall_societies,'top_societies_per_type':top_societies_per_type})
-    # # return render(request, "home.html", {
-    # #     "top_societies_per_type": top_societies_per_type,
-    # #     "top_overall_societies": top_overall_societies,
-    # #     'user' : request.user
-    # # })
 
 # handle when manager wants to delete the society
 def request_delete_society(request, society_id):
@@ -427,23 +427,7 @@ def admin_confirm_delete(request, society_id):
         "society": society,
         "action": None
     })
-    # for society in SOCIETY_TYPE_CHOICES[0]:
-    #     top_societies_per_type[society] = (
-    #         Society.objects.filter(society_type=society)
-    #         .order_by('-members_count')[:5]
-    #     )
-
-    top_overall_societies = Society.objects.order_by('-members_count')[:5]
-    '''
-    print("Top Overall Societies:", list(top_overall_societies))
-    print("Top Societies Per Type:", top_societies_per_type)
-    '''
-    return({'top_overall_societies':top_overall_societies,'top_societies_per_type':top_societies_per_type})
-    # return render(request, "home.html", {
-    #     "top_societies_per_type": top_societies_per_type,
-    #     "top_overall_societies": top_overall_societies,
-    #     'user' : request.user
-    # })
+    
     
 @login_required
 def society_admin_view(request, society_id):

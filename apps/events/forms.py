@@ -47,7 +47,7 @@ class NewEventForm(forms.Form):
     )
 
     capacity = forms.IntegerField(
-        required=False,
+        required=True,
         validators=[MinValueValidator(1)]
     )
 

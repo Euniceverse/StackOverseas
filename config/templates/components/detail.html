@@ -37,7 +37,7 @@
 
         <!-- 👥 참여 정보 -->
         <div class="event-info">
-            <p id="event-capacity">👥 Capacity: Unlimited</p>
+            <p id="event-capacity">👥 Capacity: {{ event.capacity|default:"Unlimited" }}</p>
             <p id="event-fee">💰 Fee: Free</p>
             <p id="event-member-only" class="hidden">🔒 Members Only</p>
         </div>

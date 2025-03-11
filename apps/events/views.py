@@ -36,14 +36,32 @@ class EventListAPIView(generics.ListAPIView):
     ordering = ["date"]
 
     def get_queryset(self):
-        print("Filter-api-request:", self.request.GET) 
+        print("Filter-api-request:", self.request.GET)  # 🔥 디버깅 로그 추가
 
         queryset = Event.objects.filter(date__gte=make_aware(datetime.now())).order_by("date")
 
+        # ✅ 숫자로 변환하여 필터 적용
+        fee_min = self.request.GET.get("fee_min", None)
+        fee_max = self.request.GET.get("fee_max", None)
+
+        print(f"📌 Before Conversion: fee_min={fee_min}, fee_max={fee_max}")  # 🔥 변환 전 로그 추가
+
+        try:
+            fee_min = int(fee_min) if fee_min and fee_min.isdigit() else 0  # `None` 또는 `""`이면 기본값 0
+            fee_max = int(fee_max) if fee_max and fee_max.isdigit() else 999999  # `None` 또는 `""`이면 큰 값으로 처리
+        except ValueError:
+            fee_min, fee_max = 0, 999999  # 잘못된 값이면 기본값으로 설정
+
+        print(f"📌 After Conversion: fee_min={fee_min}, fee_max={fee_max}")  # 🔥 변환 후 로그 추가
+
+        queryset = queryset.filter(fee__gte=fee_min, fee__lte=fee_max)
+
         filtered_queryset = EventFilter(self.request.GET, queryset=queryset).qs
 
-        print(f"🎯Filtered-api-num : {filtered_queryset.count()}")
+        print(f"🎯 Filtered-api-num: {filtered_queryset.count()}")  # 🔥 필터링된 이벤트 개수 출력
+
         return filtered_queryset
+
 
 class EventDetailAPIView(generics.RetrieveAPIView):
     queryset = Event.objects.all()

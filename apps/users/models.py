@@ -48,7 +48,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=50)
     preferred_name = models.CharField(max_length=50)
     last_verified_date = models.DateTimeField(null=True, blank=True)
-    annual_verification_date = models.DateTimeField(null=True, blank=True)
+    # annual_verification_date = models.DateTimeField(null=True, blank=True)
 
     # By default, users are non-admins
     is_active = models.BooleanField(default=True)

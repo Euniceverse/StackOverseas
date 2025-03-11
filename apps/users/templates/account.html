@@ -1,10 +1,96 @@
-
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}
-    Account Page
+    My Account - {{ user.preferred_name }}
 {% endblock %}
 
 {% block content %}
-    <h1>My Account Page</h1>
+<div class="container mt-4">
+    <!-- User Profile Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>My Profile</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Name:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+                    <p><strong>Preferred Name:</strong> {{ user.preferred_name }}</p>
+                    <p><strong>Email:</strong> {{ user.email }}</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="{% url 'profile' %}" class="btn btn-primary">Update Profile</a>
+                    <a href="{% url 'password' %}" class="btn btn-secondary">Change Password</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Managed Societies Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>Societies I Manage</h3>
+        </div>
+        <div class="card-body">
+            {% if managed_societies %}
+                <div class="row">
+                    {% for society in managed_societies %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ society.name }}</h5>
+                                    <p class="card-text">{{ society.description|truncatewords:20 }}</p>
+                                    <p><span class="badge bg-primary">{{ society.society_type }}</span></p>
+                                    <p><strong>Members:</strong> {{ society.members_count }}</p>
+                                    <a href="{% url 'manage_society' society.id %}" class="btn btn-warning">Manage</a>
+                                    <a href="{% url 'society_page' society.id %}" class="btn btn-primary">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>You don't manage any societies yet.
+                   <a href="{% url 'create_society' %}" class="btn btn-primary btn-sm">Create a Society</a>
+                </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Member Societies Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>My Society Memberships</h3>
+        </div>
+        <div class="card-body">
+            {% if memberships %}
+                <div class="row">
+                    {% for membership in memberships %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ membership.society.name }}</h5>
+                                    <p class="card-text">{{ membership.society.description|truncatewords:20 }}</p>
+                                    <p>
+                                        <span class="badge bg-primary">{{ membership.society.society_type }}</span>
+                                        <span class="badge {% if membership.status == 'approved' %}bg-success{% else %}bg-warning{% endif %}">
+                                            {{ membership.get_status_display }}
+                                        </span>
+                                        <span class="badge bg-info">{{ membership.get_role_display }}</span>
+                                    </p>
+                                    <a href="{% url 'society_page' membership.society.id %}" class="btn btn-primary">View Society</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>You haven't joined any societies yet.
+                   <a href="{% url 'societiespage' %}" class="btn btn-primary btn-sm">Browse Societies</a>
+                </p>
+            {% endif %}
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -6,7 +6,7 @@ from django.contrib import messages
 from apps.users.models import CustomUser
 from django import template
 from config.constants import SOCIETY_TYPE_CHOICES
-
+from apps.societies.models import Society
 
 def staff_required(user):
     return user.is_staff
@@ -27,10 +27,10 @@ def get_societies(user):
         return approved_societies(user)  # Fallback if user doesn't exist
 
     # Query societies managed by the user
-    managing_societies = Society.objects.filter(manager_id=user.id).exclude(status="deleted")
-    
+    managing_societies = Society.objects.filter(manager_id=user.id)
+
     # Query approved societies where the user is a member
-    member_societies = Society.objects.filter(status="approved", members=user, visibility = "Public")
+    member_societies = Society.objects.filter(status="approved", members=user)
 
     if managing_societies.exists():
         # The union (|) operator combines two QuerySets and removes duplicates
@@ -95,16 +95,16 @@ def top_societies(user):
 def approve_society(request, registration_id):
     """Approve a society registration and create the actual Society."""
     registration = get_object_or_404(SocietyRegistration, id=registration_id, status='pending')
-    
+
     # create the society from the approved registration
     new_society = Society.objects.create(
         name=registration.name,
         description=registration.description,
         society_type=registration.society_type,
-        manager=registration.applicant, 
+        manager=registration.applicant,
         status='approved',
         visibility=registration.visibility
     )
-    
+
     messages.success(request, f"Society '{new_society.name}' has been approved and created!")
     return redirect("admin_society_list")

@@ -7,6 +7,7 @@ from django.conf import settings
 import constants
 from ai_seed import generate_society_description, generate_society_name 
 from ai_seed import generate_event_location
+from django.utils import timezone
 
 # Set up the project base directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -30,9 +31,9 @@ def random_location():
 def create_superuser():
     """Creates a default superuser if one doesn't exist."""
     User = CustomUser  # Your custom user model
-    
+
     superuser_email = "admin@example.ac.uk"
-    
+
     if not User.objects.filter(email=superuser_email).exists():
         User.objects.create_superuser(
             email=superuser_email,
@@ -145,11 +146,17 @@ def create_dummy_events(societies, n=70):
         location = generate_event_location(city)
         latitude, longitude = random_location_cord()
 
+
+        # Generate future datetime with timezone awareness
+        future_date = fake.future_datetime()
+        if timezone.is_naive(future_date):
+            future_date = timezone.make_aware(future_date)
+
         event = Event.objects.create(
             event_type=random.choice([key for key in constants.EVENT_TYPE_CHOICES]),
             name=fake.sentence(nb_words=5),
-            location = location,
-            date=fake.future_datetime(),
+            location=location,
+            date=future_date,  # Use timezone-aware datetime
             keyword=fake.word(),
             is_free=random.choice([True, False]),
             member_only=random.choice([True, False]),
@@ -162,10 +169,8 @@ def create_dummy_events(societies, n=70):
 
         approved_societies = [s for s in societies if s.status == "approved"]
 
-        if approved_societies:  # Ensure there's at least one approved society
+        if approved_societies:
             event.society.set(random.sample(approved_societies, random.randint(1, min(3, len(approved_societies)))))
-
-        # event.society.set(random.sample(societies, random.randint(1, 3)))  # Select 1 to 3 societies
 
         events.append(event)
     return events
@@ -192,7 +197,7 @@ def create_dummy_memberships(users, societies):
                 status=MembershipStatus.APPROVED,  # Ensure they are approved members
             )
             memberships.append(membership)
-    
+
     Membership.objects.bulk_create(memberships)  # Bulk insert for efficiency
     print(f"Created {len(memberships)} memberships.")
 
@@ -210,7 +215,7 @@ if __name__ == "__main__":
     societies = create_dummy_societies(users, 50)
     print(f"Created {len(societies)} societies.")
 
-    #  Generate Members 
+    #  Generate Members
     create_dummy_memberships(users, societies)
     print("Dummy memberships registrations created.")
 

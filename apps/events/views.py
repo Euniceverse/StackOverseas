@@ -102,7 +102,7 @@ def create_event(request, society_id):
                 is_free=form.cleaned_data['is_free'],
             )
             # For the many-to-many societies, you do:
-            event.society.set(form.cleaned_data['society']) 
+            event.society.add(society)
 
             messages.success(request, "Event created successfully!")
             # The signal will create the News. We redirect to an edit page to let them finalize
@@ -110,7 +110,7 @@ def create_event(request, society_id):
     else:
         form = NewEventForm()
 
-    return render(request, 'events/create_event.html', {
+    return render(request, 'create_event.html', {
         'form': form,
         'society': society,
     })
@@ -141,7 +141,7 @@ def auto_edit_news(request, event_id):
     else:
         formset = NewsFormSet(queryset=news_qs)
 
-    return render(request, 'events/auto_edit_news.html', {
+    return render(request, 'auto_edit_news.html', {
         'event': event,
         'formset': formset,
     })

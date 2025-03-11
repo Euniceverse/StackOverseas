@@ -68,12 +68,12 @@ class NewEventForm(forms.Form):
         required=False,
     )
 
-    society = forms.ModelMultipleChoiceField(
-        queryset=Society.objects.all(),
-        required=True,
-        widget=forms.CheckboxSelectMultiple,
-        help_text="Select one or more societies hosting the event."
-    )
+    # society = forms.ModelMultipleChoiceField(
+    #    queryset=Society.objects.all(),
+    #    required=True,
+    #    widget=forms.CheckboxSelectMultiple,
+    #    help_text="Select one or more societies hosting the event."
+    #)
 
     def clean_fee(self):
         fee = self.cleaned_data.get("fee", Decimal("0.00"))

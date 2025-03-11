@@ -19,3 +19,16 @@ def create_news_on_event(sender, instance, created, **kwargs):
                 is_published=False,
                 event=instance # linked to Event  
             )
+
+@receiver(post_save, sender=Event)
+def create_auto_news(sender, instance, created, **kwargs):
+
+    if created:
+        # For each society hosting the event (in case you allow multiple):
+        for soc in instance.society.all():
+            News.objects.create(
+                event=instance,
+                title=f"Auto News for {instance.name}",
+                content=f"This was auto-created for {instance.name} in {soc.name}.",
+                is_published=False  # Remains unpublished until user edits
+            )

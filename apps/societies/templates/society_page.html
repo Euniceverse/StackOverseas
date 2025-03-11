@@ -53,12 +53,13 @@
             Manage This Society
         </a>
 
-        <a href="#"
-            class="btn btn-primary create-event-link"
-            data-create-event-url="{% url 'event_create' society.id %}">
+        <a href="{% url 'event_create' society.id %}"
+            class="btn btn-primary"
+            onclick="return confirm('Are you sure you want to create an event?');">
             Create Event
         </a>
 
+        
         <p>Drag & drop widgets to rearrange them.</p>
 
         <div id="widgets-container">

@@ -81,7 +81,7 @@ def admin_check(user):
 def admin_pending_societies(request):
     """List all societies that are still pending, allowing admin to choose approve/reject."""
     pending_socs = Society.objects.filter(status='pending')
-    return render(request, 'societies/admin_pending_societies.html', {
+    return render(request, 'admin_pending_societies.html', {
         'pending_socs': pending_socs
     })
 
@@ -137,7 +137,7 @@ def manage_society(request, society_id):
     # Check if request.user is the manager (the one who created the society):
     if request.user.is_superuser:
         is_authorized = True
-        
+
     else:  
         if society.manager == request.user:
             is_authorized = True

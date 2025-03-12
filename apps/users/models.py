@@ -4,6 +4,14 @@ from django.db import models
 from django.utils import timezone
 from datetime import timedelta
 import re
+from django.utils.crypto import get_random_string
+from django.urls import reverse
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.cache import cache
+from django.conf import settings
 
 def validate_ac_uk_email(email):
     """Ensure the email ends with .ac.uk"""
@@ -40,6 +48,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=50)
     preferred_name = models.CharField(max_length=50)
     last_verified_date = models.DateTimeField(null=True, blank=True)
+    annual_verification_date = models.DateTimeField(null=True, blank=True)
 
     # By default, users are non-admins
     is_active = models.BooleanField(default=True)
@@ -82,6 +91,48 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         self.verify_email()  # Update last_verified_date
         self.save()
         return True
+
+    def check_annual_verification(self):
+        """Check if annual verification is needed and handle accordingly."""
+        if not self.annual_verification_date:
+            return False
+
+        #one_year_ago = timezone.now() - timedelta(days=365)
+        #five_years_ago = timezone.now() - timedelta(days=1825)  # 5 years
+        one_year_ago = timezone.now() - timedelta(minutes=2)
+        five_years_ago = timezone.now() - timedelta(minutes=8)  # 5 years
+
+        if self.annual_verification_date <= five_years_ago:
+            # Delete account if inactive for 5 years
+            self.delete()
+            return True
+
+        if self.annual_verification_date <= one_year_ago:
+            # Deactivate account if verification is older than 1 year
+            self.is_active = False
+            self.save()
+            return True
+
+        return False
+
+    def send_annual_verification_email(self):
+        """Send annual verification email reusing existing activation logic."""
+        activation_token = get_random_string(50)
+        cache_key = f"annual_verify_{activation_token}"
+
+        # Store user email in cache
+        cache.set(cache_key, self.email, 3600)  # 1 hour expiry
+
+        # Generate verification link
+        verification_link = f"http://{settings.DOMAIN_NAME}{reverse('annual_verify', kwargs={'uidb64': urlsafe_base64_encode(force_bytes(self.email)), 'token': activation_token})}"
+
+        mail_subject = "Annual Account Verification Required"
+        message = render_to_string("annual_verification_email.html", {
+            "user": self,
+            "verification_link": verification_link,
+        })
+        email = EmailMessage(mail_subject, message, to=[self.email])
+        email.send()
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"

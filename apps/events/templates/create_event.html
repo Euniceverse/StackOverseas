@@ -17,6 +17,20 @@
 <form method="post">
   {% csrf_token %}
   {{ form.as_p }}
-  <button type="submit" class="btn btn-primary">Create Event</button>
+  <button type="submit" class="btn btn-primary" id="createEventSubmitBtn">
+    Create Event
+  </button>
+
+  <!-- Cancel just a normal button -> external JS will confirm -->
+  <button type="button" class="btn btn-danger" id="cancelCreateEventBtn"
+          onclick="if (confirm('Are you sure you want to cancel?')) window.history.back();">
+    Cancel
+  </button>
 </form>
+
+{% endblock %}
+
+{% block extra_scripts %}
+
+<script src="{% static 'js/create_event.js' %}" defer></script>
 {% endblock %}

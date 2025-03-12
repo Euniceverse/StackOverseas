@@ -29,7 +29,9 @@ class Society(models.Model):
     )
 
     location = models.CharField(max_length=255, blank=True, null=True) # Nehir
-
+    latitude = models.FloatField(blank=True, null=True)  # Converted lat
+    longitude = models.FloatField(blank=True, null=True)
+    
     members_count = models.IntegerField(default=0)
     price_range = models.DecimalField(max_digits=7, decimal_places=2, default=0.00)
 
@@ -45,8 +47,7 @@ class Society(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="managed_societies"
-    )
-
+    )   
 
     # Check whether this society is approved and can be customise
     def is_customisable(self):
@@ -89,8 +90,9 @@ class Membership(models.Model):
 @receiver(m2m_changed, sender=Society.members.through)
 def update_members_count(sender, instance, action, **kwargs):
     if action in ["post_add", "post_remove", "post_clear"]:
-        instance.members_count = instance.members.count()
+        instance.members_count = instance.members.filter(is_active=True).count()
         instance.save()
+
 
 
 

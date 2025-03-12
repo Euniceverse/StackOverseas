@@ -19,3 +19,27 @@ def create_news_on_event(sender, instance, created, **kwargs):
                 is_published=False,
                 event=instance # linked to Event  
             )
+
+@receiver(post_save, sender=Event)
+def create_auto_news(sender, instance, created, **kwargs):
+
+    if created:
+        # For each society hosting the event (in case you allow multiple):
+        for soc in instance.society.all():
+            capacity_text = instance.capacity if instance.capacity else "Unlimited"
+            # Build a default content that includes date, location, capacity, etc.
+            content_str = (
+                f"Event: {instance.name}\n"
+                f"Date: {instance.date:%Y-%m-%d %H:%M}\n"
+                f"Location: {instance.location}\n"
+                f"Capacity: {capacity_text}\n"
+                f"Description: {instance.description}\n"
+                f"Society: {soc.name}\n"
+            )
+
+            News.objects.create(
+                event=instance,
+                title=f"Auto News for {instance.name}",
+                content=content_str,   # embed event info in the content
+                is_published=False     # remains unpublished until user finalizes
+            )

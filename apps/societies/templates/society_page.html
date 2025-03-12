@@ -12,13 +12,24 @@
 <p>Members: {{ society.members_count }}</p>
 
 {% if user.is_authenticated %}
-  
-  {% if user_membership %}
-    {% if user_membership.status == 'approved' %}
-      <p>You are a member of this society (Role: {{ user_membership.get_role_display }}).</p>
-    {% elif user_membership.status == 'pending' %}
-      <p>Your membership application is pending.</p>
-    {% endif %}
+    {% if membership %}
+        {% if membership.status == 'approved' %}
+            <form action="{% url 'leave_society' society.id %}" method="POST" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">
+                Leave Society
+              </button>
+            </form>
+            <p>You are a member of this society (Role: {{ membership.get_role_display }}).</p>
+
+        {% elif membership.status == 'pending' %}
+            <p class="text-muted">Your membership application is pending.</p>
+
+        {% elif membership.status == 'rejected' %}
+          
+            <p class="text-danger">Your application was rejected.</p>
+
+        {% endif %}
     {% else %}
         <p>You are not a member of this society.</p>
         <a href="{% url 'join_society' society.id %}" class="btn btn-primary">
@@ -26,48 +37,120 @@
         </a>
     {% endif %}
 {% else %}
-    <p>You are not logged in. <a href="{% url 'log_in' %}?next={% url 'society_page' society.id %}">
-       Log in</a> to join this society.
+    <p>
+      You are not logged in. 
+      <a href="{% url 'log_in' %}?next={% url 'society_page' society.id %}">Log in</a> to join or leave this society.
     </p>
+{% endif %}
+
+
+{% if is_manager %}
+<h3>Manage Members</h3>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Member Email</th>
+      <th>Role</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for membership in memberships %}
+    <tr>
+      <td>{{ membership.user.email }}</td>
+      <td>{{ membership.role }}</td>
+      <td>{{ membership.status }}</td>
+      <td>
+        <!-- Approve membership if pending -->
+        {% if membership.status == 'pending' %}
+        <form action="{% url 'update_membership' society.id membership.user.id %}" 
+              method="post" style="display:inline;">
+          {% csrf_token %}
+          <button class="btn btn-success" name="action" value="approve">
+            Approve
+          </button>
+        </form>
+        {% endif %}
+
+        <!-- Remove Member -->
+        <form action="{% url 'update_membership' society.id membership.user.id %}" 
+              method="post" style="display:inline;">
+          {% csrf_token %}
+          <button class="btn btn-danger" name="action" value="remove">
+            Remove
+          </button>
+        </form>
+
+        <!-- Promote to Co-Manager -->
+        <form action="{% url 'update_membership' society.id membership.user.id %}" 
+              method="post" style="display:inline;">
+          {% csrf_token %}
+          <button class="btn btn-warning" name="action" value="promote_co_manager">
+            Promote to Co-Manager
+          </button>
+        </form>
+
+        <!-- Promote to Editor -->
+        <form action="{% url 'update_membership' society.id membership.user.id %}" 
+              method="post" style="display:inline;">
+          {% csrf_token %}
+          <button class="btn btn-info" name="action" value="promote_editor">
+            Promote to Editor
+          </button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 {% endif %}
 
 <!-- If user is manager/co_manager/editor + approved, show "Manage Society" and "Create Event" -->
 {% if user_membership and user_membership.status|lower == 'approved' and user_membership.role in manager_roles %}
-    <a href="{% url 'manage_society' society.id %}" class="btn btn-warning">
-        Manage This Society
-    </a>
-    <a href="{% url 'event_create' society.id %}" class="btn btn-primary">
-        Create Event
-    </a>
+
+       <a href="{% url 'manage_society' society.id %}" class="btn btn-warning">
+            Manage This Society
+        </a>
+
+        <a href="#"
+            id="createEventLink"
+            class="btn btn-primary"
+            data-create-event-url="{% url 'event_create' society.id %}">
+            Create Event
+        </a>
+
 
     <p>Drag & drop widgets to rearrange them.</p>
 
-    <div id="widgets-container">
-        <ul id="sortable-widgets">
-            {% for widget in widgets %}
-                <li class="widget ui-state-default" data-widget-id="{{ widget.id }}">
-                    <h3>{{ widget.get_widget_type_display }}</h3>
-                    <div class="widget-content">
-                        {% if widget.widget_type == "announcements" %}
-                            <p>Latest announcements will appear here.</p>
-                        {% elif widget.widget_type == "events" %}
-                            <p>Upcoming events will be displayed here.</p>                            {% elif widget.widget_type == "gallery" %}
-                            <p>Photo gallery will be displayed here.</p>
-                        {% elif widget.widget_type == "contacts" %}
-                            <p>Contact information for the society will be displayed here.</p>
-                        {% elif widget.widget_type == "featured" %}
-                            <p>Featured members (president, vice, etc.) will be displayed here.</p>
-                        {% elif widget.widget_type == "leaderboard" %}
-                            <p>Leaderboard will be displayed here.</p>
-                        {% elif widget.widget_type == "news" %}
-                            <p>News will be displayed here.</p>
-                        {% endif %}
-                    </div>
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
-    <button id="save-order">Save Order</button>
+        <div id="widgets-container">
+            <ul id="sortable-widgets">
+                {% for widget in widgets %}
+                    <li class="widget ui-state-default" data-widget-id="{{ widget.id }}">
+                        <h3>{{ widget.get_widget_type_display }}</h3>
+                        <div class="widget-content">
+                            {% if widget.widget_type == "announcements" %}
+                                <p>Latest announcements will appear here.</p>
+                            {% elif widget.widget_type == "events" %}
+                                <p>Upcoming events will be displayed here.</p>
+                            {% elif widget.widget_type == "gallery" %}
+                                <p>Photo gallery will be displayed here.</p>
+                            {% elif widget.widget_type == "contacts" %}
+                                <p>Contact information for the society will be displayed here.</p>
+                            {% elif widget.widget_type == "featured" %}
+                                <p>Featured members (president, vice, etc.) will be displayed here.</p>
+                            {% elif widget.widget_type == "leaderboard" %}
+                                <p>Leaderboard will be displayed here.</p>
+                            {% elif widget.widget_type == "news" %}
+                                <p>News will be displayed here.</p>
+                            {% endif %}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <button id="save-order">Save Order</button>
+
     
 {% else %}
     <!-- Normal or not logged in => show widgets, but no drag & drop -->
@@ -169,4 +252,7 @@ $(document).ready(function() {
     }
 });
 </script>
+
+<script src="{% static 'js/society_page.js' %}" defer></script>
+
 {% endblock %}

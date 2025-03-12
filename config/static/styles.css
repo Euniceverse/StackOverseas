@@ -139,7 +139,7 @@
     top: 100%;
     left: 0;
     box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
-    z-index: 1000;
+    z-index: 10000000;
   }
 
   .nav-links ul li:hover > .dropdown-menu {
@@ -164,7 +164,7 @@
 
   /* News Panel */
 .news-panel {
-  min-height: 100vh; 
+  min-height: 100vh;
   background: #DAE5FF;
   padding: 20px;
   display: flex;

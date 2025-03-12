@@ -34,6 +34,19 @@ document.addEventListener("DOMContentLoaded", function () {
         // 🔥 Show selected view and highlight button
         activeButton.classList.add("active");
         activeView.style.display = "block";
+
+        if (activeView === mapView) {
+            initializeMap(); // 🌍 지도 최초 로드
+            resizeMap();
+        }
+        if (activeView === calendarView) {
+            initializeCalendar(); // 🌍 지도 최초 로드
+            resizeCalendar();     // 🌍 지도 크기 재조정
+        }
+        if (activeView === listView) {
+            initializeList(); // 🌍 지도 최초 로드
+            resizeList();     // 🌍 지도 크기 재조정
+        }
     }
 
     // ✅ Default view: CALENDAR

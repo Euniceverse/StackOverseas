@@ -6,15 +6,18 @@ from django.contrib import messages
 from apps.users.models import CustomUser
 from django import template
 from config.constants import SOCIETY_TYPE_CHOICES
-
+from apps.societies.models import Society
 
 def staff_required(user):
     return user.is_staff
 
 def approved_societies(user):
-    if user.is_superuser:
-        return Society.objects.all()
-    return Society.objects.filter(status="approved")
+    """Retrieve approved societies, filtering by visibility unless user is superuser."""
+    query = Society.objects.filter(status="approved")
+    if not user.is_superuser:
+        query = query.filter(visibility="Public")
+    return query
+
 
 def get_societies(user):
     """Get all approved societies where the given user is a member."""
@@ -25,7 +28,7 @@ def get_societies(user):
 
     # Query societies managed by the user
     managing_societies = Society.objects.filter(manager_id=user.id)
-    
+
     # Query approved societies where the user is a member
     member_societies = Society.objects.filter(status="approved", members=user)
 
@@ -81,8 +84,8 @@ def top_societies(user):
         top_societies_per_type[society_type] = (
             all_approved.filter(society_type=society_type).order_by('-members_count')[:5]
         )
-    top_overall_societies = Society.objects.order_by('-members_count')[:5]
 
+    top_overall_societies = all_approved.order_by('-members_count')[:5]
     return {
         'top_overall_societies': top_overall_societies,
         'top_societies_per_type': top_societies_per_type
@@ -92,16 +95,16 @@ def top_societies(user):
 def approve_society(request, registration_id):
     """Approve a society registration and create the actual Society."""
     registration = get_object_or_404(SocietyRegistration, id=registration_id, status='pending')
-    
+
     # create the society from the approved registration
     new_society = Society.objects.create(
         name=registration.name,
         description=registration.description,
         society_type=registration.society_type,
-        manager=registration.applicant, 
+        manager=registration.applicant,
         status='approved',
         visibility=registration.visibility
     )
-    
+
     messages.success(request, f"Society '{new_society.name}' has been approved and created!")
-    return redirect("admin_pending_societies")
+    return redirect("admin_society_list")

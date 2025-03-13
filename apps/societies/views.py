@@ -165,6 +165,12 @@ def manage_society(request, society_id):
     if not is_authorized:
         messages.error(request, "You do not have permission to manage this society.")
         return redirect('societiespage')
+    
+    society.members_count = Membership.objects.filter(
+        society=society, status=MembershipStatus.APPROVED
+    ).count()
+    society.save()
+
 
     # Get all memberships for this society
     memberships = Membership.objects.filter(society=society).select_related('user')
@@ -172,7 +178,8 @@ def manage_society(request, society_id):
     return render(request, 'manage_society.html', {
         'society': society,
         'memberships': memberships,
-        'user' : request.user
+        'user' : request.user,
+        'members_count': society.members_count
     })
 
 def view_all_members(request):
@@ -234,6 +241,11 @@ def update_membership(request, society_id, user_id):
             membership.status = MembershipStatus.APPROVED
             membership.save()
             messages.success(request, f"{membership.user.email} is now an Editor.")
+
+        society.members_count = Membership.objects.filter(
+            society=society, status=MembershipStatus.APPROVED
+        ).count()
+        society.save()
 
         return redirect('manage_society', society_id=society_id)
 
@@ -481,6 +493,11 @@ def society_page(request, society_id):
     society = get_object_or_404(Society, id=society_id)
     widgets = Widget.objects.filter(society=society).order_by("position")
 
+    members_count = Membership.objects.filter(
+        society=society, 
+        status=MembershipStatus.APPROVED
+    ).count()
+
     membership = None
     is_member = False
     is_manager = False
@@ -502,6 +519,7 @@ def society_page(request, society_id):
         "is_member": is_member,
         "is_manager": is_manager,
         "user_membership": membership,
+        "members_count": members_count,
     }
     return render(request, "society_page.html", context)
     

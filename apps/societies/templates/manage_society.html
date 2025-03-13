@@ -8,6 +8,7 @@ Manage {{ society.name }}
 {% block content %}
 {%if not user.is_superuser%}
   <h2>Manage Society: {{ society.name }}</h2>
+  <p>Members: {{ society.members_count }}</p>
 {% endif %}
 
 {% if messages %}
@@ -39,7 +40,7 @@ Manage {{ society.name }}
       <td>
         <!-- Only show Approve if they are pending -->
         {% if membership.status == 'pending' %}
-        <form action="{% url 'update_membership' society.id user.id %}" 
+        <form action="{% url 'update_membership' society.id  membership.user.id %}" 
               method="post"
               onsubmit="return confirm('Are you sure you want to APPROVE this user?');"
               style="display:inline;">
@@ -49,7 +50,7 @@ Manage {{ society.name }}
         {% endif %}
         
         <!-- Remove button: confirm again -->
-        <form action="{% url 'update_membership' society.id user.id %}" 
+        <form action="{% url 'update_membership' society.id membership.user.id %}" 
               method="post" 
               onsubmit="return confirm('Are you sure you want to REMOVE this user?');"
               style="display:inline;">
@@ -58,7 +59,7 @@ Manage {{ society.name }}
         </form>
 
         <!-- Promote to Co-Manager -->
-        <form action="{% url 'update_membership' society.id user.id %}" 
+        <form action="{% url 'update_membership' society.id membership.user.id %}" 
               method="post" 
               onsubmit="return confirm('Promote this user to CO-MANAGER?');"
               style="display:inline;">
@@ -67,7 +68,7 @@ Manage {{ society.name }}
         </form>
 
         <!-- Promote to Editor -->
-        <form action="{% url 'update_membership' society.id user.id %}" 
+        <form action="{% url 'update_membership' society.id membership.user.id %}" 
               method="post" 
               onsubmit="return confirm('Promote this user to EDITOR?');"
               style="display:inline;">

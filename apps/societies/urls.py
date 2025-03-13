@@ -37,7 +37,6 @@ urlpatterns = [
     path('<int:society_id>/admin/', society_admin_view, name='society_admin_view'),
     path('<int:society_id>/remove-widget/<int:widget_id>/', remove_widget, name='remove_widget'),
     path('<int:society_id>/update-order/', update_widget_order, name='update_widget_order'),
-    path('<int:society_id>/leave/', leave_society, name='leave_society'),
     
     # Catch-all: society public page – must be last!
     path('<int:society_id>/', society_page, name='society_page'),

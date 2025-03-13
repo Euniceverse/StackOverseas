@@ -4,39 +4,71 @@
     Home - Student Societies
 {% endblock %}
 
+
 {% block content %}
-    <h1>Welcome to Stack Overseas Societies!</h1>
-    <p>Find and join societies that interest you.</p>
-    
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Welcome to Stack Overseas Societies!</h1>
+    <p class="text-center">Find and join societies that interest you.</p>
+
     <!-- Overall Top 5 Societies -->
-    <h2>Overall Top 5 Societies</h2>
-    <div class="society-container">
-        {% for society in top_overall_societies %}
-            <div class="society-box">
-                <h3>{{ society.name }}</h3>
-                <p>Members: {{ society.members_count }}</p>
-            </div>
-        {% empty %}
-            <p>No societies found.</p>
-        {% endfor %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="text-center">Overall Top 5 Societies</h2>
+        </div>
+        <div class="card-body">
+            {% if top_overall_societies %}
+                <div class="row">
+                    {% for society in top_overall_societies %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 society-box">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">{{ society.name }}</h5>
+                                    <p class="card-text"><strong>Members:</strong> {{ society.members_count }}</p>
+                                    <a href="{% url 'society_page' society.id %}" class="btn btn-primary">View Society</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-center">No societies found.</p>
+            {% endif %}
+        </div>
     </div>
 
     <!-- Top 5 Societies Per Type -->
     {% for society_type, societies in top_societies_per_type.items %}
-        <h3>Top 5 {{ society_type }} Societies</h3>
-        <div class="society-container">
-            {% for society in societies %}
-                <div class="society-box">
-                    <h3>{{ society.name }}</h3>
-                    <p>Members: {{ society.members_count }}</p>
-                </div>
-            {% endfor %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="text-center">Top 5 {{ society_type|title }} Societies</h3>
+            </div>
+            <div class="card-body">
+                {% if societies %}
+                    <div class="row">
+                        {% for society in societies %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100 society-box">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">{{ society.name }}</h5>
+                                        <p class="card-text"><strong>Members:</strong> {{ society.members_count }}</p>
+                                        <a href="{% url 'society_page' society.id %}" class="btn btn-primary">View Society</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-center">No societies found in this category.</p>
+                {% endif %}
+            </div>
         </div>
     {% endfor %}
 
     <!-- Button to View All Societies -->
-    <a href="{% url 'societiespage' %}" class="btn btn-primary">View All Societies</a>
-
+    <div class="text-center mt-4">
+        <a href="{% url 'societiespage' %}" class="btn btn-primary">View All Societies</a>
+    </div>
+</div>
 {% endblock %}
 
 {% block news_panel %}

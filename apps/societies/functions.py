@@ -11,6 +11,7 @@ from apps.societies.models import Society
 def staff_required(user):
     return user.is_staff
 
+
 def approved_societies(user):
     """Retrieve approved societies, filtering by visibility unless user is superuser."""
     query = Society.objects.filter(status="approved")
@@ -107,4 +108,4 @@ def approve_society(request, registration_id):
     )
 
     messages.success(request, f"Society '{new_society.name}' has been approved and created!")
-    return redirect("admin_society_list")
+    return redirect("admin_pending_societies")

@@ -43,6 +43,7 @@ class FunctionsTestCase(TestCase):
         self.society = Society.objects.create(
             name="Test Society",
             status="approved",
+            visibility="Public",
             members_count=10,
             manager=self.staff_user
         )

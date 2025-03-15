@@ -168,7 +168,8 @@ def manage_society(request, society_id):
         return redirect('societiespage')
     
     society.members_count = Membership.objects.filter(
-        society=society, status=MembershipStatus.APPROVED
+        society=society, 
+        status=MembershipStatus.APPROVED
     ).count()
     society.save()
 
@@ -244,7 +245,8 @@ def update_membership(request, society_id, user_id):
             messages.success(request, f"{membership.user.email} is now an Editor.")
 
         society.members_count = Membership.objects.filter(
-            society=society, status=MembershipStatus.APPROVED
+            society=society, 
+            status=MembershipStatus.APPROVED
         ).count()
         society.save()
 

@@ -596,7 +596,10 @@ class ManageSocietiesAndMembersTest(TestCase):
         )
         self.admin_user = get_user_model().objects.create_superuser(
             email='admin@example.ac.uk',
-            password='adminpass'
+            password='adminpass',
+            first_name='Admin',
+            last_name='User',
+            preferred_name='Admin'
         )
         self.client.login(email='test@example.ac.uk', password='password123')
 
@@ -709,7 +712,10 @@ class SocietyDeletionAndWidgetsTest(TestCase):
         )
         self.admin_user = get_user_model().objects.create_superuser(
             email="admin@university.ac.uk",
-            password="AdminPass"
+            password="AdminPass",
+            first_name='The',
+            last_name='Admin',
+            preferred_name='Boss'
         )
         self.society = Society.objects.create(
             name="AI Club",
@@ -860,7 +866,10 @@ class AdminViewsTest(TestCase):
         )
         self.admin_user = User.objects.create_superuser(
             email="admin@uni.ac.uk",
-            password="adminpass"
+            password="adminpass",
+            first_name='Admin2',
+            last_name='Another',
+            preferred_name='Two'
         )
         # Create a pending society
         self.pending_society = Society.objects.create(
@@ -1207,7 +1216,10 @@ class AdminConfirmDeleteTest(TestCase):
         self.client = Client()
         self.admin = User.objects.create_superuser(
             email="admin2@uni.ac.uk",
-            password="pass"
+            password="pass",
+            first_name='Admin',
+            last_name='Two',
+            preferred_name='Ad'
         )
         self.user = User.objects.create_user(
             email="user@uni.ac.uk",

@@ -6,6 +6,7 @@ from apps.societies.models import (
 )
 from apps.users.models import CustomUser
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils import timezone
 
 
 class SocietyModelTest(TestCase):

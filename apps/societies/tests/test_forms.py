@@ -6,6 +6,7 @@ from apps.societies.models import SocietyRegistration, Society, Membership, Memb
 from django.core.files.uploadedfile import SimpleUploadedFile
 from apps.users.models import CustomUser
 from config.constants import SOCIETY_TYPE_CHOICES
+from django.utils import timezone
 
 
 class NewSocietyFormTest(TestCase):

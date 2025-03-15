@@ -374,7 +374,7 @@ def decide_application(request, society_id, application_id, decision):
     top_societies_per_type = {}
     # print("All Societies:", list(Society.objects.all()))
 
-    all_approved_societies = approved_societies()
+    all_approved_societies = approved_societies(request.user)
 
     for society_type, _ in SOCIETY_TYPE_CHOICES:
         top_societies_per_type[society_type] = (

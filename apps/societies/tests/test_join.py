@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.template import Context, Template
+from django.utils import timezone
 
 from apps.societies.models import (
     Society, Membership, MembershipStatus, MembershipRole,

@@ -1,8 +1,9 @@
 from django.test import TestCase, Client
-from django.urls import reverse
+from django.urls import reverse, resolve
 from django.contrib.auth import get_user_model
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.utils import timezone
 from unittest.mock import patch
 import json
 
@@ -820,9 +821,20 @@ class MySocietiesViewTest(TestCase):
             status="approved",
             manager=self.user
         )
-        Membership.objects.create(society=self.society, user=self.user, status=MembershipStatus.APPROVED)
+        Membership.objects.create(
+            society=self.society, 
+            user=self.user, 
+            status=MembershipStatus.APPROVED
+        )
+        
         # Create some dummy news
-        News.objects.create(title="News 1", content="Content", is_published=True, date_posted=timezone.now())
+        News.objects.create(
+            title="News 1", 
+            content="Content", 
+            is_published=True, 
+            date_posted=timezone.now(),
+            society=self.society
+        )
     
     def test_my_societies_loads(self):
         url = reverse('my_societies')

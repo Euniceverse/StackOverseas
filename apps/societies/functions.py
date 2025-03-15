@@ -107,4 +107,4 @@ def approve_society(request, registration_id):
     )
 
     messages.success(request, f"Society '{new_society.name}' has been approved and created!")
-    return redirect("admin_society_list")
+    return redirect("admin_pending_societies")

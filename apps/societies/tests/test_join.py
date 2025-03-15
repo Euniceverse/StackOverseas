@@ -20,7 +20,10 @@ class TestTemplateFilter(TestCase):
         # Create a user, society, membership
         user = User.objects.create_user(
             email='filteruser@uni.ac.uk',
-            password='testpass'
+            password='testpass',
+            first_name='Filter',
+            last_name='User',
+            preferred_name='Filter'
         )
         soc = Society.objects.create(
             name='Filter Test Society',
@@ -53,7 +56,10 @@ class NoRequirementJoinTest(TestCase):
         self.client = Client()
         self.user = User.objects.create_user(
             email='noreq@uni.ac.uk',
-            password='pass123'
+            password='pass123',
+            first_name='No',
+            last_name='Requirement',
+            preferred_name='None'
         )
         self.society = Society.objects.create(
             name='NoReq Society',
@@ -81,11 +87,17 @@ class QuizRequirementJoinTest(TestCase):
         # Create user, manager, society, requirement=quiz
         self.quiz_taker = User.objects.create_user(
             email='quiz@uni.ac.uk',
-            password='quizpass'
+            password='quizpass',
+            first_name='Quiz',
+            last_name='Guy',
+            preferred_name='Quizzy'
         )
         self.quiz_manager = User.objects.create_user(
             email='quizmgr@uni.ac.uk',
-            password='mgrpass'
+            password='mgrpass',
+            first_name='Quiz',
+            last_name='Manager',
+            preferred_name='Quizzed'
         )
         self.quiz_soc = Society.objects.create(
             name='Quiz Society',
@@ -152,11 +164,17 @@ class ManualRequirementJoinTest(TestCase):
         self.client = Client()
         self.user = User.objects.create_user(
             email='manual@uni.ac.uk',
-            password='manualpass'
+            password='manualpass',
+            first_name='Manual',
+            last_name='Requirement',
+            preferred_name='Manual'
         )
         self.manager = User.objects.create_user(
             email='manager@uni.ac.uk',
-            password='managerpass'
+            password='managerpass',
+            first_name='Manager',
+            last_name='Test',
+            preferred_name='Manage'
         )
         self.soc = Society.objects.create(
             name='Manual Society',
@@ -217,11 +235,17 @@ class ManagerApplicationDecisionTest(TestCase):
         self.client = Client()
         self.manager = User.objects.create_user(
             email='boss@uni.ac.uk',
-            password='bosspass'
+            password='bosspass',
+            first_name='Boss',
+            last_name='Apps',
+            preferred_name='Boss'
         )
         self.applicant = User.objects.create_user(
             email='applicant@uni.ac.uk',
-            password='apppass'
+            password='apppass',
+            first_name='Applicant',
+            last_name='Decision',
+            preferred_name='App'
         )
         self.soc = Society.objects.create(
             name='ManualSoc',
@@ -296,13 +320,25 @@ class ManageButtonVisibilityTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.user_manager = User.objects.create_user(
-            email='mgr@uni.ac.uk', password='mgrpass'
+            email='mgr@uni.ac.uk', 
+            password='mgrpass',
+            first_name='Manager',
+            last_name='Client',
+            preferred_name='Mgr'
         )
         self.user_normal = User.objects.create_user(
-            email='norm@uni.ac.uk', password='normpass'
+            email='norm@uni.ac.uk', 
+            password='normpass',
+            first_name='Normal',
+            last_name='User',
+            preferred_name='Norm'
         )
         self.user_editor = User.objects.create_user(
-            email='editor@uni.ac.uk', password='editorpass'
+            email='editor@uni.ac.uk', 
+            password='editorpass',
+            first_name='Editor',
+            last_name='Tester',
+            preferred_name='Edit'
         )
         self.soc = Society.objects.create(
             name='VisibilitySoc',
@@ -376,13 +412,17 @@ class JoinSocietyTest(TestCase):
         self.client = Client()
         self.user = User.objects.create_user(
             email='user@university.ac.uk',
-            password='password123'
+            password='password123',
+            first_name='User',
+            last_name='Join',
+            preferred_name='User'
         )
         self.society = Society.objects.create(
             name='Test Society',
             description='A test society',
             society_type='academic',
-            status='approved'
+            status='approved',
+            manager=self.user
         )
 
     def test_user_can_request_to_join_society(self):

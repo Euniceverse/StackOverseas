@@ -10,6 +10,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.utils.timezone import now
 
 from .models import Society, SocietyRegistration, Widget
 from .forms import NewSocietyForm

@@ -21,8 +21,11 @@ class SocietyModelTest(TestCase):
         )
 
         self.society = Society.objects.create(
-            name="Test Society", description="A test society", 
-            society_type="type1", manager=self.user, status="approved"
+            name="Test Society", 
+            description="A test society", 
+            society_type="type1", 
+            manager=self.user, 
+            status="approved"
         )
     
     def test_model_creation(self):

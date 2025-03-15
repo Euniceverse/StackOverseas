@@ -23,12 +23,20 @@ class SocietiesViewsTest(TestCase):
 
         self.client.login(email='test@example.ac.uk', password='password123')
 
+        manager = get_user_model().objects.create_user(
+            email='manager1@example.ac.uk',
+            password='password123',
+            first_name='Manager',
+            last_name='One',
+            preferred_name='MOne'
+        )
+
         self.society = Society.objects.create(
             name="Tech Club",
             description="A club for tech enthusiasts",
             society_type="academic",
             status="approved",  # changed from pending to approved
-            manager=self.user
+            manager=manager
         )
 
         self.create_url = reverse('create_society')
@@ -112,7 +120,7 @@ class SocietiesViewsTest(TestCase):
         other_user = get_user_model().objects.create_user(
             email='member@example.ac.uk', 
             password='password123',
-            first_name='Mem'
+            first_name='Mem',
             last_name='Ber',
             preferred_name='Member'
         )
@@ -130,7 +138,7 @@ class SocietiesViewsTest(TestCase):
         """Test promoting a user to Co-Manager."""
         other_user = get_user_model().objects.create_user(
             email='co_manager@example.ac.uk', 
-            password='password123'
+            password='password123',
             first_name='Co',
             last_name='Manager',
             preferred_name='Co'
@@ -215,12 +223,20 @@ class SocietiesViewsTest(TestCase):
     
     def test_societiespage_sorting(self):
     
+        manager = get_user_model().objects.create_user(
+            email='manager1@example.ac.uk',
+            password='password123',
+            first_name='Manager',
+            last_name='One',
+            preferred_name='MOne'
+        )
+
         soc2 = Society.objects.create(
             name="Alpha Club",
             description="Another club",
             society_type="academic",
             status="approved",
-            manager=self.user
+            manager=manager
         )
 
         url = reverse('societiespage') + "?sort=name_asc"
@@ -381,11 +397,19 @@ class CreateSocietyViewTest(TestCase):
         
         # create 3 societies
         for i in range(1, 4):
+            manager = get_user_model().objects.create_user(
+                email='manager1@example.ac.uk',
+                password='password123',
+                first_name='Manager',
+                last_name='One',
+                preferred_name='MOne'
+            )
+
             Society.objects.create(
                 name=f"Test Society {i}",
                 description="Desc",
                 society_type="academic",
-                manager=self.user,
+                manager=manager,
                 status='approved'
             )
             
@@ -405,11 +429,19 @@ class CreateSocietyViewTest(TestCase):
     def test_create_society_limit_reached(self):
         # Create 3 societies managed by this user
         for i in range(3):
+            manager = get_user_model().objects.create_user(
+                email='manager1@example.ac.uk',
+                password='password123',
+                first_name='Manager',
+                last_name='One',
+                preferred_name='MOne'
+            )
+            
             Society.objects.create(
                 name=f"Test Society {i}",
                 description="Desc",
                 society_type="academic",
-                manager=self.user,
+                manager=manager,
                 status='approved'
             )
         post_data = {
@@ -486,7 +518,7 @@ class RequestDeleteSocietyTest(TestCase):
         self.client = Client()
         self.user = User.objects.create_user(
             email="testuser@uni.ac.uk", 
-            password="password123"
+            password="password123",
             first_name='Test',
             last_name='User',
             preferred_name='Test'
@@ -997,7 +1029,7 @@ class JoinSocietyViewTest(TestCase):
         self.client = Client()
         self.user = User.objects.create_user(
             email="join@uni.ac.uk",
-            password="pass"
+            password="pass",
             first_name='Join',
             last_name='Test',
             preferred_name='Join'
@@ -1006,7 +1038,8 @@ class JoinSocietyViewTest(TestCase):
             name="Join Club",
             description="For joining",
             society_type="academic",
-            status="approved"
+            status="approved",
+            manager=self.user
         )
         self.join_url = reverse('join_society', args=[self.society.id])
     
@@ -1239,7 +1272,7 @@ class RemoveWidgetTest(TestCase):
         self.client = Client()
         self.user = User.objects.create_user(
             email="widgetremover@uni.ac.uk",
-            password="pass"
+            password="pass",
             first_name="Widget",
             last_name="Remover",
             preferred_name="Widget"
@@ -1327,6 +1360,7 @@ class UpdateWidgetOrderViewTest(TestCase):
         )
         self.society = Society.objects.create(
             name="Order Society",
+            society_type="sports",
             status="approved",
             manager=self.manager
         )

@@ -89,7 +89,13 @@ class SocietiesViewsTest(TestCase):
     def test_update_membership_approve(self):
         """Test approving a membership."""
         other_user = get_user_model().objects.create_user(
-            email='member@example.ac.uk', password='password123')
+            email='member@example.ac.uk', 
+            password='password123',
+            first_name='Test',
+            last_name='User',
+            preferred_name='Tester'
+        )
+
         membership = Membership.objects.create(
             society=self.society, user=other_user, role=MembershipRole.MEMBER, status=MembershipStatus.PENDING)
 
@@ -104,7 +110,12 @@ class SocietiesViewsTest(TestCase):
     def test_update_membership_remove(self):
         """Test removing a membership."""
         other_user = get_user_model().objects.create_user(
-            email='member@example.ac.uk', password='password123')
+            email='member@example.ac.uk', 
+            password='password123',
+            first_name='Mem'
+            last_name='Ber',
+            preferred_name='Member'
+        )
         membership = Membership.objects.create(
             society=self.society, user=other_user, role=MembershipRole.MEMBER, status=MembershipStatus.APPROVED)
         
@@ -118,7 +129,12 @@ class SocietiesViewsTest(TestCase):
     def test_update_membership_promote_co_manager(self):
         """Test promoting a user to Co-Manager."""
         other_user = get_user_model().objects.create_user(
-            email='co_manager@example.ac.uk', password='password123')
+            email='co_manager@example.ac.uk', 
+            password='password123'
+            first_name='Co',
+            last_name='Manager',
+            preferred_name='Co'
+        )
         membership = Membership.objects.create(
             society=self.society, user=other_user, role=MembershipRole.MEMBER, status=MembershipStatus.APPROVED)
         
@@ -134,7 +150,12 @@ class SocietiesViewsTest(TestCase):
     def test_update_membership_promote_editor(self):
         """Test promoting a user to Editor."""
         other_user = get_user_model().objects.create_user(
-            email='editor@example.ac.uk', password='password123')
+            email='editor@example.ac.uk', 
+            password='password123',
+            first_name='Editor',
+            last_name='Test',
+            preferred_name='Editor'
+        )
         membership = Membership.objects.create(
             society=self.society, user=other_user, role=MembershipRole.MEMBER, status=MembershipStatus.APPROVED)
         
@@ -221,12 +242,42 @@ class TopSocietiesViewTest(TestCase):
             preferred_name='MOne'
         )
 
-        self.society1 = Society.objects.create(name="Chess Club", society_type="Sports", members_count=120, manager=manager)
-        self.society2 = Society.objects.create(name="Robotics Society", society_type="Technology", members_count=80, manager=manager)
-        self.society3 = Society.objects.create(name="Drama Club", society_type="Arts", members_count=95, manager=manager)
-        self.society4 = Society.objects.create(name="Debate Society", society_type="Academics", members_count=110, manager=manager)
-        self.society5 = Society.objects.create(name="Music Society", society_type="Arts", members_count=100, manager=manager)
-        self.society6 = Society.objects.create(name="Math Club", society_type="Academics", members_count=50, manager=manager)
+        self.society1 = Society.objects.create(
+            name="Chess Club", 
+            society_type="Sports", 
+            members_count=120, 
+            manager=manager
+        )
+        self.society2 = Society.objects.create(
+            name="Robotics Society", 
+            society_type="Technology", 
+            members_count=80, 
+            manager=manager
+        )
+        self.society3 = Society.objects.create(
+            name="Drama Club", 
+            society_type="Arts", 
+            members_count=95, 
+            manager=manager
+        )
+        self.society4 = Society.objects.create(
+            name="Debate Society", 
+            society_type="Academics", 
+            members_count=110, 
+            manager=manager
+        )
+        self.society5 = Society.objects.create(
+            name="Music Society", 
+            society_type="Arts", 
+            members_count=100, 
+            manager=manager
+        )
+        self.society6 = Society.objects.create(
+            name="Math Club", 
+            society_type="Academics", 
+            members_count=50, 
+            manager=manager
+        )
 
     #test if homepage loads successfully
     def test_top_societies_view_status_code(self):
@@ -386,7 +437,10 @@ class ApplicationManagementTest(TestCase):
         )
         self.manager = get_user_model().objects.create_user(
             email="manager@university.ac.uk",
-            password="ManagerPass"
+            password="ManagerPass",
+            first_name="Manager",
+            last_name="Person",
+            preferred_name="Manage"
         )
         self.society = Society.objects.create(
             name="AI Club",
@@ -557,7 +611,10 @@ class MembershipAndSocietyTest(TestCase):
         )
         self.manager = get_user_model().objects.create_user(
             email='manager@example.ac.uk',
-            password='managerpass'
+            password='managerpass',
+            first_name='Manager',
+            last_name='Test',
+            preferred_name='Manager'
         )
         self.society = Society.objects.create(
             name="Tech Club",
@@ -672,7 +729,13 @@ class SocietyDeletionAndWidgetsTest(TestCase):
         self.assertTemplateUsed(response, "society_admin.html")
     
     def test_society_admin_view_no_permission(self):
-        another_user = get_user_model().objects.create_user(email="another@uni.ac.uk", password="pass")
+        another_user = get_user_model().objects.create_user(
+            email="another@uni.ac.uk", 
+            password="pass",
+            first_name="Another",
+            last_name="User",
+            preferred_name="Another"
+        )
         self.client.login(email="another@uni.ac.uk", password="pass")
         response = self.client.get(reverse("society_admin_view", args=[self.society.id]))
         self.assertEqual(response.status_code, 302)  # Redirect due to permission error
@@ -683,7 +746,13 @@ class SocietyDeletionAndWidgetsTest(TestCase):
         self.assertRedirects(response, reverse("society_admin_view", args=[self.society.id]))
     
     def test_remove_widget_no_permission(self):
-        another_user = get_user_model().objects.create_user(email="another@uni.ac.uk", password="pass")
+        another_user = get_user_model().objects.create_user(
+            email="another@uni.ac.uk", 
+            password="pass",
+            first_name="Another",
+            last_name="User",
+            preferred_name="Another"
+        )
         self.client.login(email="another@uni.ac.uk", password="pass")
         response = self.client.post(reverse("remove_widget", args=[self.society.id, self.widget.id]))
         self.assertEqual(response.status_code, 302)  # Redirect due to permission error

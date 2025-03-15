@@ -7,6 +7,7 @@ from django.utils import timezone
 from unittest.mock import patch
 import json
 
+from apps.societies import views
 from apps.societies.models import Society, SocietyRegistration, Membership, MembershipRole, MembershipStatus, MembershipApplication, Widget
 from apps.news.models import News
 from apps.societies.functions import get_societies, manage_societies, get_all_users
@@ -37,7 +38,7 @@ class SocietiesViewsTest(TestCase):
             description="A club for tech enthusiasts",
             society_type="academic",
             status="approved",  # changed from pending to approved
-            manager=manager
+            manager=self.user
         )
 
         self.create_url = reverse('create_society')
@@ -48,7 +49,7 @@ class SocietiesViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)  # Should return HTTP 200 OK
 
     def test_fetch_societies_list(self):
-        response = self.client.get(reverse('society-list'))
+        response = self.client.get(reverse('top_societies'))
         self.assertEqual(response.status_code, 200)
         self.assertIn("Tech Club", response.content.decode())
 
@@ -86,8 +87,8 @@ class SocietiesViewsTest(TestCase):
         self.assertEqual(self.society.name, "Updated Tech Club")
 
     def test_delete_society(self):
-        response = self.client.post(reverse('society-delete', args=[self.society.id]))
-        self.assertEqual(response.status_code, 204)
+        response = self.client.post(reverse('admin_confirm_delete', args=[self.society.id]), {'action': 'approve'})
+        self.assertEqual(response.status_code, 302)
         self.assertFalse(Society.objects.filter(id=self.society.id).exists())
 
     def test_join_society(self):
@@ -225,7 +226,7 @@ class SocietiesViewsTest(TestCase):
     def test_societiespage_sorting(self):
     
         manager = get_user_model().objects.create_user(
-            email='manager1@example.ac.uk',
+            email='manager4@example.ac.uk',
             password='password123',
             first_name='Manager',
             last_name='One',
@@ -252,7 +253,7 @@ class TopSocietiesViewTest(TestCase):
     #create society test cases for the database
     def setUp(self):
         manager = get_user_model().objects.create_user(
-            email='manager1@example.ac.uk',
+            email='manager5@example.ac.uk',
             password='password123',
             first_name='Manager',
             last_name='One',
@@ -298,12 +299,12 @@ class TopSocietiesViewTest(TestCase):
 
     #test if homepage loads successfully
     def test_top_societies_view_status_code(self):
-        response = self.client.get(reverse('homepage'))
+        response = self.client.get(reverse('societiespage'))
         self.assertEqual(response.status_code, 200)
 
     #test top 5 societies are ordered correctly
     def test_top_overall_societies(self):
-        response = self.client.get(reverse('homepage'))
+        response = self.client.get(reverse('societiespage'))
         top_overall = response.context['top_overall_societies']
 
         expected_order = [self.society1, self.society4, self.society5, self.society3, self.society2]
@@ -311,7 +312,7 @@ class TopSocietiesViewTest(TestCase):
 
     # test grouped societies are correctly sorted and grouped by type
     def test_top_societies_per_type(self):
-        response = self.client.get(reverse('homepage'))
+        response = self.client.get(reverse('societiespage'))
         top_societies_per_type = response.context['top_societies_per_type']
 
         self.assertEqual(list(top_societies_per_type["Arts"]), [self.society5, self.society3])
@@ -323,7 +324,7 @@ class TopSocietiesViewTest(TestCase):
     # test the view when no societies
     def test_no_societies(self):
         Society.objects.all().delete()  # remove all the societies
-        response = self.client.get(reverse('homepage'))
+        response = self.client.get(reverse('societiespage'))
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['top_overall_societies']), 0)
@@ -386,7 +387,7 @@ class CreateSocietyViewTest(TestCase):
             'visibility': 'Public',
             'tags': 'art, creativity'
         }
-        response = self.client.post(self.url, data=post_data)
+        response = self.client.post(self.create_url, data=post_data)
         # Expect redirect
         self.assertEqual(response.status_code, 302)
         # Check that a SocietyRegistration and Society were created
@@ -399,7 +400,7 @@ class CreateSocietyViewTest(TestCase):
         # create 3 societies
         for i in range(1, 4):
             manager = get_user_model().objects.create_user(
-                email='manager1@example.ac.uk',
+                email=f'manager{i}@example.ac.uk',
                 password='password123',
                 first_name='Manager',
                 last_name='One',
@@ -431,7 +432,7 @@ class CreateSocietyViewTest(TestCase):
         # Create 3 societies managed by this user
         for i in range(3):
             manager = get_user_model().objects.create_user(
-                email='manager1@example.ac.uk',
+                email=f'manager{i}@example.ac.uk',
                 password='password123',
                 first_name='Manager',
                 last_name='One',
@@ -452,7 +453,7 @@ class CreateSocietyViewTest(TestCase):
             'visibility': 'Private',
             'tags': 'tag'
         }
-        response = self.client.post(self.url, data=post_data)
+        response = self.client.post(self.create_url, data=post_data)
         self.assertEqual(response.status_code, 302)
         # No SocietyRegistration should be created for Society 4
         self.assertFalse(Society.objects.filter(name='Society 4').exists())
@@ -1042,6 +1043,7 @@ class UpdateMembershipViewTest(TestCase):
         self.assertEqual(self.membership.role, MembershipRole.EDITOR)
     
     def test_get_request_redirects(self):
+        self.client.login(email="mgr2@uni.ac.uk", password="pass")
         response = self.client.get(self.update_url)
         self.assertRedirects(response, reverse('manage_society', args=[self.society.id]))
 
@@ -1233,25 +1235,25 @@ class AdminConfirmDeleteTest(TestCase):
             status="request_delete",
             manager=self.user
         )
-        self.url = reverse("admin_confirm_delete", args=[self.society.id])
+        self.create_url = reverse("admin_confirm_delete", args=[self.society.id])
     
     def test_admin_approve_delete(self):
         self.client.login(email="admin2@uni.ac.uk", password="pass")
-        response = self.client.post(self.url, {"action": "approve"})
+        response = self.client.post(self.create_url, {"action": "approve"})
         self.society.refresh_from_db()
         self.assertEqual(self.society.status, "deleted")
         self.assertRedirects(response, reverse("societiespage"))
     
     def test_admin_reject_delete(self):
         self.client.login(email="admin2@uni.ac.uk", password="pass")
-        response = self.client.post(self.url, {"action": "reject"})
+        response = self.client.post(self.create_url, {"action": "reject"})
         self.society.refresh_from_db()
         self.assertEqual(self.society.status, "approved")
         self.assertRedirects(response, reverse("societiespage"))
     
     def test_get_admin_confirm_delete_page(self):
         self.client.login(email="admin2@uni.ac.uk", password="pass")
-        response = self.client.get(self.url)
+        response = self.client.get(self.create_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "admin_confirm_delete.html")
 
@@ -1277,17 +1279,17 @@ class SocietyAdminViewTest(TestCase):
             status="approved",
             manager=self.manager
         )
-        self.url = reverse("society_admin_view", args=[self.society.id])
+        self.create_url = reverse("society_admin_view", args=[self.society.id])
     
     def test_admin_view_permission(self):
         self.client.login(email="adminview@uni.ac.uk", password="pass")
-        response = self.client.get(self.url)
+        response = self.client.get(self.create_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "society_admin.html")
     
     def test_admin_view_no_permission(self):
         self.client.login(email="other@uni.ac.uk", password="pass")
-        response = self.client.get(self.url)
+        response = self.client.get(self.create_url)
         self.assertNotEqual(response.status_code, 200)
         self.assertIn(response.status_code, [302, 403])
 
@@ -1307,11 +1309,11 @@ class RemoveWidgetTest(TestCase):
             manager=self.user
         )
         self.widget = Widget.objects.create(society=self.society, widget_type="events")
-        self.url = reverse("remove_widget", args=[self.society.id, self.widget.id])
+        self.create_url = reverse("remove_widget", args=[self.society.id, self.widget.id])
     
     def test_remove_widget_authorized(self):
         self.client.login(email="widgetremover@uni.ac.uk", password="pass")
-        response = self.client.post(self.url)
+        response = self.client.post(self.create_url)
         self.assertFalse(Widget.objects.filter(id=self.widget.id).exists())
         self.assertRedirects(response, reverse("society_admin_view", args=[self.society.id]))
     
@@ -1324,7 +1326,7 @@ class RemoveWidgetTest(TestCase):
             preferred_name="Other"
         )
         self.client.login(email="otherwidget@uni.ac.uk", password="pass")
-        response = self.client.post(self.url)
+        response = self.client.post(self.create_url)
         self.assertIn(response.status_code, [302, 403])
         self.assertTrue(Widget.objects.filter(id=self.widget.id).exists())
 
@@ -1348,11 +1350,11 @@ class SocietyPageViewTest(TestCase):
         # Create some memberships and widgets
         Membership.objects.create(society=self.society, user=self.user, status=MembershipStatus.APPROVED)
         self.widget = Widget.objects.create(society=self.society, widget_type="news", position=0)
-        self.url = reverse("society_page", args=[self.society.id])
+        self.create_url = reverse("society_page", args=[self.society.id])
     
     def test_society_page_loads(self):
         self.client.login(email="public@uni.ac.uk", password="pass")
-        response = self.client.get(self.url)
+        response = self.client.get(self.create_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "society_page.html")
         self.assertIn("society", response.context)
@@ -1360,14 +1362,14 @@ class SocietyPageViewTest(TestCase):
     
     def test_society_page_context_membership(self):
         self.client.login(email="public@uni.ac.uk", password="pass")
-        response = self.client.get(self.url)
+        response = self.client.get(self.create_url)
         # Check that if the logged-in user is a member, user_membership is in context
         self.assertIn("user_membership", response.context)
     
     def test_society_page_excludes_member_only_widgets_for_non_members(self):
         # Create a widget of type 'discussion' that should be excluded for non-members
         Widget.objects.create(society=self.society, widget_type="discussion", position=1)
-        response = self.client.get(self.url)
+        response = self.client.get(self.create_url)
         # Assuming non-members should not see 'discussion' widget:
         self.assertNotIn("discussion", [w.widget_type for w in response.context["widgets"]])
 
@@ -1390,12 +1392,12 @@ class UpdateWidgetOrderViewTest(TestCase):
         )
         self.widget1 = Widget.objects.create(society=self.society, widget_type="events", position=0)
         self.widget2 = Widget.objects.create(society=self.society, widget_type="news", position=1)
-        self.url = reverse("update_widget_order", args=[self.society.id])
+        self.create_url = reverse("update_widget_order", args=[self.society.id])
     
     def test_update_widget_order_authorized(self):
         self.client.login(email="order@uni.ac.uk", password="pass")
         new_order = [self.widget2.id, self.widget1.id]
-        response = self.client.post(self.url, data=json.dumps({"widget_order": new_order}),
+        response = self.client.post(self.create_url, data=json.dumps({"widget_order": new_order}),
                                     content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.widget1.refresh_from_db()
@@ -1413,7 +1415,7 @@ class UpdateWidgetOrderViewTest(TestCase):
         )
         self.client.login(email="otherorder@uni.ac.uk", password="pass")
         new_order = [self.widget2.id, self.widget1.id]
-        response = self.client.post(self.url, data=json.dumps({"widget_order": new_order}),
+        response = self.client.post(self.create_url, data=json.dumps({"widget_order": new_order}),
                                     content_type="application/json")
         self.assertEqual(response.status_code, 403)
 
@@ -1438,18 +1440,18 @@ class LeaveSocietyViewTest(TestCase):
             user=self.user,
             status=MembershipStatus.APPROVED
         )
-        self.url = reverse("leave_society", args=[self.society.id])
+        self.create_url = reverse("leave_society", args=[self.society.id])
     
     def test_leave_society_get(self):
         """GET should render a confirmation page."""
         self.client.login(email="leaver@uni.ac.uk", password="pass")
-        response = self.client.get(self.url)
+        response = self.client.get(self.create_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "confirm_leave.html")
     
     def test_leave_society_post(self):
         self.client.login(email="leaver@uni.ac.uk", password="pass")
-        response = self.client.post(self.url)
+        response = self.client.post(self.create_url)
         self.assertRedirects(response, reverse("society_page", args=[self.society.id]))
         self.assertFalse(Membership.objects.filter(id=self.membership.id).exists())
     
@@ -1457,7 +1459,7 @@ class LeaveSocietyViewTest(TestCase):
         # Remove membership first
         self.membership.delete()
         self.client.login(email="leaver@uni.ac.uk", password="pass")
-        response = self.client.post(self.url)
+        response = self.client.post(self.create_url)
         self.assertRedirects(response, reverse("society_page", args=[self.society.id]))
         
 

@@ -39,7 +39,7 @@ class TestTemplateFilter(TestCase):
 
         # Minimal test of the template filter
         template_str = """
-            {% load society_extras %}
+            # {% load society_extras %}
             {% with membership_list=society.society_memberships.all %}
                 {% with mymem=membership_list|get_user_membership:user %}
                     Role: {{ mymem.role }} Status: {{ mymem.status }}

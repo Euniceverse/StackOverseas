@@ -10,7 +10,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from django.utils.timezone import now
+from django.utils.timezone import now, timezone
 
 from .models import Society, SocietyRegistration, Widget
 from .forms import NewSocietyForm
@@ -334,7 +334,7 @@ def view_applications(request, society_id):
 
 @login_required
 def decide_application(request, society_id, application_id, decision):
-    from .models import MembershipApplication
+    from .models import MembershipApplication, MembershipRole
     """Manager or co-manager can approve or reject an application with requirement_type=manual."""
     society = get_object_or_404(Society, id=society_id)
     application = get_object_or_404(society.applications, id=application_id)
@@ -343,7 +343,6 @@ def decide_application(request, society_id, application_id, decision):
     if society.manager == request.user:
         is_manager_or_co = True
     else:
-        from .models import MembershipRole
         membership_co = Membership.objects.filter(
             society=society,
             user=request.user,
@@ -367,31 +366,45 @@ def decide_application(request, society_id, application_id, decision):
         membership, created = Membership.objects.get_or_create(
             society=society,
             user=application.user,
-            defaults={'role': 'member', 'status': 'pending'}
+            defaults={'role': MembershipRole.MEMBER, 'status': MembershipStatus.APPROVED}
         )
+
+        if not created:
+            membership.status = MembershipStatus.APPROVED
+            membership.save()
+        messages.success(request, f"Application for {application.user.email} approved.")
+
+    elif decision == 'reject':
+        application.is_rejected = True
+        application.save()
+
+        # remove membership (if it exists):
+        Membership.objects.filter(society=society, user=application.user).delete()
+        messages.warning(request, f"Application for {application.user.email} rejected.")
+
     # get all the society type
     # society_types = Society.objects.values_list('society_type', flat=True).distinct()
 
     # a dictionary to start top societies
-    top_societies_per_type = {}
+    # top_societies_per_type = {}
     # print("All Societies:", list(Society.objects.all()))
 
-    all_approved_societies = approved_societies(request.user)
+    # all_approved_societies = approved_societies(request.user)
 
-    for society_type, _ in SOCIETY_TYPE_CHOICES:
-        top_societies_per_type[society_type] = (
-            all_approved_societies.filter(society_type=society_type)
-            .order_by('-members_count')[:5]
-        )
-        membership.status = MembershipStatus.APPROVED
-        membership.save()
-        messages.success(request, f"Application for {application.user.email} approved.")
-    else:
-        application.is_rejected = True
-        application.save()
-        # remove membership if any
-        Membership.objects.filter(society=society, user=application.user).delete()
-        messages.warning(request, f"Application for {application.user.email} rejected.")
+    # for society_type, _ in SOCIETY_TYPE_CHOICES:
+    #     top_societies_per_type[society_type] = (
+    #         all_approved_societies.filter(society_type=society_type)
+    #         .order_by('-members_count')[:5]
+    #     )
+    #     membership.status = MembershipStatus.APPROVED
+    #     membership.save()
+    #     messages.success(request, f"Application for {application.user.email} approved.")
+    # else:
+    #     application.is_rejected = True
+    #     application.save()
+    #     # remove membership if any
+    #     Membership.objects.filter(society=society, user=application.user).delete()
+    #     messages.warning(request, f"Application for {application.user.email} rejected.")
 
 
     return redirect('view_applications', society_id=society.id)

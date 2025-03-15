@@ -15,14 +15,14 @@ class SocietiesViewsTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = get_user_model().objects.create_user(
-            email='test@example.ac.uk',
+            email='test1@example.ac.uk',
             password='password123',
             first_name='Test',
             last_name='User',
             preferred_name='Tester'
         )
 
-        self.client.login(email='test@example.ac.uk', password='password123')
+        self.client.login(email='test1@example.ac.uk', password='password123')
 
         manager = get_user_model().objects.create_user(
             email='manager1@example.ac.uk',
@@ -462,7 +462,7 @@ class ApplicationManagementTest(TestCase):
         """Set up a test user and client."""
         self.client = Client()
         self.user = get_user_model().objects.create_user(
-            email="test@university.ac.uk",
+            email="test2@university.ac.uk",
             first_name="John",
             last_name="Doe",
             preferred_name="Johnny",
@@ -494,7 +494,7 @@ class ApplicationManagementTest(TestCase):
         self.assertIn("applications", response.context)
     
     def test_view_applications_no_permission(self):
-        self.client.login(email="test@university.ac.uk", password="Password123")
+        self.client.login(email="test2@university.ac.uk", password="Password123")
         response = self.client.get(reverse("view_applications", args=[self.society.id]))
         self.assertEqual(response.status_code, 302)
     
@@ -588,7 +588,7 @@ class ManageSocietiesAndMembersTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = get_user_model().objects.create_user(
-            email='test@example.ac.uk',
+            email='test2@example.ac.uk',
             password='password123',
             first_name='Test',
             last_name='User',
@@ -601,7 +601,7 @@ class ManageSocietiesAndMembersTest(TestCase):
             last_name='User',
             preferred_name='Admin'
         )
-        self.client.login(email='test@example.ac.uk', password='password123')
+        self.client.login(email='test2@example.ac.uk', password='password123')
 
         self.society = Society.objects.create(
             name="Tech Club",
@@ -639,7 +639,7 @@ class MembershipAndSocietyTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = get_user_model().objects.create_user(
-            email='test@example.ac.uk',
+            email='test3@example.ac.uk',
             password='password123',
             first_name='Test',
             last_name='User',
@@ -676,26 +676,26 @@ class MembershipAndSocietyTest(TestCase):
         self.assertRedirects(response, reverse("manage_society", args=[self.society.id]))
     
     def test_update_membership_no_permission(self):
-        self.client.login(email='test@example.ac.uk', password='password123')
+        self.client.login(email='test3@example.ac.uk', password='password123')
         response = self.client.post(reverse("update_membership", args=[self.society.id, self.user.id]), {"action": "approve"})
         self.assertEqual(response.status_code, 302)
     
-    def test_society_detail(self):
-        response = self.client.get(reverse("society_detail", args=[self.society.id]))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "society_detail.html")
-        self.assertIn("society", response.context)
+    # def test_society_detail(self):
+    #     response = self.client.get(reverse("society_detail", args=[self.society.id]))
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertTemplateUsed(response, "society_detail.html")
+    #     self.assertIn("society", response.context)
     
     def test_join_society_already_member(self):
         self.membership.status = MembershipStatus.APPROVED
         self.membership.save()
         response = self.client.get(reverse("join_society", args=[self.society.id]))
-        self.assertRedirects(response, reverse("society_detail", args=[self.society.id]))
+        self.assertRedirects(response, reverse("society_page", args=[self.society.id]))
     
     def test_join_society_new_application(self):
-        self.client.login(email='test@example.ac.uk', password='password123')
+        self.client.login(email='test3@example.ac.uk', password='password123')
         response = self.client.post(reverse("join_society", args=[self.society.id]), {})
-        self.assertRedirects(response, reverse("society_detail", args=[self.society.id]))
+        self.assertRedirects(response, reverse("society_page", args=[self.society.id]))
 
 
 
@@ -704,7 +704,7 @@ class SocietyDeletionAndWidgetsTest(TestCase):
         """Set up a test user and client."""
         self.client = Client()
         self.user = get_user_model().objects.create_user(
-            email="test@university.ac.uk",
+            email="test3@university.ac.uk",
             first_name="John",
             last_name="Doe",
             preferred_name="Johnny",
@@ -726,7 +726,7 @@ class SocietyDeletionAndWidgetsTest(TestCase):
             members_count=50
         )
         self.widget = Widget.objects.create(society=self.society, widget_type="events", position=1)
-        self.client.login(email="test@university.ac.uk", password="Password123")
+        self.client.login(email="test3@university.ac.uk", password="Password123")
     
     def test_request_delete_society_auto_delete(self):
         self.society.members_count = 50  # Less than 100 for auto-delete
@@ -786,13 +786,13 @@ class SocietyDeletionAndWidgetsTest(TestCase):
     
     def test_remove_widget_no_permission(self):
         another_user = get_user_model().objects.create_user(
-            email="another@uni.ac.uk", 
+            email="another2@uni.ac.uk", 
             password="pass",
             first_name="Another",
             last_name="User",
             preferred_name="Another"
         )
-        self.client.login(email="another@uni.ac.uk", password="pass")
+        self.client.login(email="another2@uni.ac.uk", password="pass")
         response = self.client.post(reverse("remove_widget", args=[self.society.id, self.widget.id]))
         self.assertEqual(response.status_code, 302)  # Redirect due to permission error
     
@@ -1074,7 +1074,7 @@ class JoinSocietyViewTest(TestCase):
         self.client.login(email="join@uni.ac.uk", password="pass")
         # For a society with no extra requirement, auto-approve join
         response = self.client.post(self.join_url, {})
-        self.assertRedirects(response, reverse('society_detail', args=[self.society.id]))
+        self.assertRedirects(response, reverse('society_page', args=[self.society.id]))
         # Membership should be auto-approved
         membership = Membership.objects.get(society=self.society, user=self.user)
         self.assertEqual(membership.status, MembershipStatus.APPROVED)
@@ -1083,7 +1083,7 @@ class JoinSocietyViewTest(TestCase):
         Membership.objects.create(society=self.society, user=self.user, status=MembershipStatus.APPROVED)
         self.client.login(email="join@uni.ac.uk", password="pass")
         response = self.client.post(self.join_url, {})
-        self.assertRedirects(response, reverse('society_detail', args=[self.society.id]))
+        self.assertRedirects(response, reverse('society_page', args=[self.society.id]))
 
 class ViewApplicationsTest(TestCase):
     def setUp(self):
@@ -1348,7 +1348,7 @@ class SocietyPageViewTest(TestCase):
         # Create some memberships and widgets
         Membership.objects.create(society=self.society, user=self.user, status=MembershipStatus.APPROVED)
         self.widget = Widget.objects.create(society=self.society, widget_type="news", position=0)
-        self.url = reverse("society_detail", args=[self.society.id])
+        self.url = reverse("society_page", args=[self.society.id])
     
     def test_society_page_loads(self):
         self.client.login(email="public@uni.ac.uk", password="pass")

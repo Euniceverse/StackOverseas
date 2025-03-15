@@ -75,8 +75,8 @@ class NoRequirementJoinTest(TestCase):
     def test_auto_join(self):
         self.client.login(email='noreq@uni.ac.uk', password='pass123')
         response = self.client.post(self.join_url)
-        # Should redirect to society_detail
-        detail_url = reverse('society_detail', args=[self.society.id])
+        # Should redirect to society_page
+        detail_url = reverse('society_page', args=[self.society.id])
         self.assertRedirects(response, detail_url)
         membership = Membership.objects.get(society=self.society, user=self.user)
         self.assertEqual(membership.status, 'approved')
@@ -138,7 +138,7 @@ class QuizRequirementJoinTest(TestCase):
             f'question_{self.q3.id}': 'yes',  # incorrect (since correct_answer=False)
         }
         response = self.client.post(self.join_url, data)
-        self.assertRedirects(response, reverse('society_detail', args=[self.quiz_soc.id]))
+        self.assertRedirects(response, reverse('society_page', args=[self.quiz_soc.id]))
         # Should be approved, because 2 out of 3 are correct, threshold=2
         mem = Membership.objects.get(society=self.quiz_soc, user=self.quiz_taker)
         self.assertEqual(mem.status, MembershipStatus.APPROVED)
@@ -148,10 +148,10 @@ class QuizRequirementJoinTest(TestCase):
         data = {
             f'question_{self.q1.id}': 'no',   # incorrect
             f'question_{self.q2.id}': 'no',   # incorrect
-            f'question_{self.q3.id}': 'yes',  # also incorrect
+            f'question_{self.q3.id}': 'yes',  # incorrect
         }
         response = self.client.post(self.join_url, data)
-        self.assertRedirects(response, reverse('society_detail', args=[self.quiz_soc.id]))
+        self.assertRedirects(response, reverse('society_page', args=[self.quiz_soc.id]))
         # membership should not exist or be removed
         self.assertFalse(Membership.objects.filter(society=self.quiz_soc, user=self.quiz_taker).exists())
         # Also check the application is marked is_rejected
@@ -313,11 +313,7 @@ class ManagerApplicationDecisionTest(TestCase):
 
 
 class ManageButtonVisibilityTest(TestCase):
-    """
-    Tests for the logic in society_detail.html:
-    Show "Manage This Society" only if user is manager/co_manager/editor with approved status.
-    We'll do a GET on society_detail and parse the response.
-    """
+   
     def setUp(self):
         self.client = Client()
         self.user_manager = User.objects.create_user(
@@ -347,7 +343,7 @@ class ManageButtonVisibilityTest(TestCase):
             status='approved',
             society_type='academic'
         )
-        self.detail_url = reverse('society_detail', args=[self.soc.id])
+        self.detail_url = reverse('society_page', args=[self.soc.id])
 
     def test_manager_can_see_button(self):
         """

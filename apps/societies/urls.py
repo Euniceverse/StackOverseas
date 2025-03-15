@@ -41,7 +41,6 @@ urlpatterns = [
     path('<int:society_id>/update-order/', update_widget_order, name='update_widget_order'),
     path('<int:society_id>/leave/', leave_society, name='leave_society'),
     path('<int:society_id>/request-delete/', request_delete_society, name='request_delete_society'),
-    path('<int:society_id>/membership/<int:membership_id>/approve/', approve_membership, name='approve-membership'),
 
     # society_page MUST BE LAST:
     path('<int:society_id>/', society_page, name='society_page'),

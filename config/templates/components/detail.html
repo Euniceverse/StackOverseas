@@ -44,9 +44,13 @@
 
         <!-- 📝 참가 버튼 -->
         <div class="event-action">
-            <a href="{% url 'create_checkout_session' %}?type=event&id={{ event.id }}" class="btn btn-primary">
-                Register Now
-            </a>
+            {% if event.id %}
+                <a href="{% url 'create_checkout_session' %}?type=event&id={{ event.id }}" class="btn btn-primary">
+                    Register Now
+                </a>
+            {% else %}
+                <p>Error: Event ID is missing</p>
+            {% endif %}
         </div>
     </div>
 </div>

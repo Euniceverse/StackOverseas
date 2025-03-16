@@ -23,8 +23,9 @@ from apps.payments.models import Payment
 
 def eventspage(request):
     """Events page view"""
+    events = Event.objects.all()
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
-    return render(request, "events.html", {"news_list": news_list})
+    return render(request, "events.html", {"news_list": news_list, "events": events})
 
 class EventListAPIView(generics.ListAPIView):
     """API to list all future events with timezone-aware filtering"""
@@ -152,3 +153,6 @@ def auto_edit_news(request, event_id):
     })
 
 
+def event_detail(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    return render(request, "detail.html", {"event": event})

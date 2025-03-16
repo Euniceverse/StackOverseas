@@ -44,7 +44,9 @@
 
         <!-- 📝 참가 버튼 -->
         <div class="event-action">
-            <button id="event-register" class="btn-register">Register Now</button>
+            <a href="{% url 'create_checkout_session' %}?type=event&id={{ event.id }}" class="btn btn-primary">
+                Register Now
+            </a>
         </div>
     </div>
 </div>

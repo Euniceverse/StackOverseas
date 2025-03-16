@@ -19,6 +19,7 @@ from django.utils import timezone
 from config.filters import EventFilter
 import requests
 from django.http import JsonResponse
+from apps.payments.models import Payment
 
 def eventspage(request):
     """Events page view"""
@@ -149,4 +150,5 @@ def auto_edit_news(request, event_id):
         'event': event,
         'formset': formset,
     })
+
 

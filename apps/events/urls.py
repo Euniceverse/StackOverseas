@@ -4,6 +4,9 @@ from .views import (
     create_event,
     auto_edit_news,
     EventListAPIView,
+    create_checkout_session,
+    payment_success,
+    payment_cancel,
 )
  
 urlpatterns = [

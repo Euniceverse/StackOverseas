@@ -38,7 +38,11 @@ EMAIL_HOST_PASSWORD = 'btlmfvczvkrffiiy'
 EMAIL_USE_TLS = True
 PASSWORD_RESET_TIMEOUT = 14400 # 4 hours
 
+# Strip Payment
+STRIPE_PUBLIC_KEY = "pk_test_51QviGhCivs73HAIb0tIGL6u609Zb1ugKLnKhX2KAWXGHNbhod64MBQZLI0aXiihufN0w1XjdFW3JjjyM9TEoEYVx00NaRxAXxk"
+STRIPE_SECRET_KEY = "sk_test_51QviGhCivs73HAIb8pPd5yO2KHlsxWTKxUDtu7JtcMPboLYYPg2LJjK6XXNLP6K23j8F9ufOUbg6gOKS6xiu2cUQ00EWJeJhl1"
 
+DOMAIN_NAME = "http://127.0.0.1:8000"
 
 # Application definition
 
@@ -59,6 +63,7 @@ INSTALLED_APPS = [
     'apps.news',
     'apps.societies',
     'apps.users',
+    'apps.payments'
 ]
 
 MIDDLEWARE = [

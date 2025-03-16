@@ -134,10 +134,6 @@ def view_manage_societies(request):
     return render(request, "societies.html", {'societies': to_manage, "news_list": news_list, 'page':'Manange'})
 
 
-# def top_societies():
-    """View to show top 5 societies per type and overall"""
-
-
 @login_required
 def manage_society(request, society_id):
     """

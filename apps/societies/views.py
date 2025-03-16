@@ -41,7 +41,11 @@ def societiespage(request):
     elif sort_option == "popularity":
         filtered_societies = filtered_societies.order_by("-members_count")
 
-    return render(request, "societies.html", {"societies": filtered_societies})
+
+    top_context = top_societies(request.user)  # returns dict with keys "top_overall_societies" and "top_societies_per_type"
+    context = {"societies": filtered_societies, **top_context}
+
+    return render(request, "societies.html", context)
 
 
 def my_societies(request):

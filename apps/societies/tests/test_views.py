@@ -95,7 +95,8 @@ class SocietiesViewsTest(TestCase):
         self.society.save()
         response = self.client.post(reverse('admin_confirm_delete', args=[self.society.id]), {'action': 'approve'})
         self.assertEqual(response.status_code, 302)
-        self.assertFalse(Society.objects.filter(id=self.society.id).exists())
+        updated_society = Society.objects.get(id=self.society.id)
+        self.assertEqual(updated_society.status, "deleted")
 
     def test_join_society(self):
         response = self.client.post(reverse('society-join', args=[self.society.id]))
@@ -626,8 +627,10 @@ class ManageSocietiesAndMembersTest(TestCase):
     @patch("apps.news.models.News.objects.filter")
     def test_view_manage_societies_with_news(self, mock_news_filter):
         mock_news_filter.return_value.order_by.return_value[:10] = [News(title="Tech News")]
-        response = self.client.get(reverse("admin_pending_societies"))
+        response = self.client.get(reverse("view_manage_societies"))
         self.assertEqual(response.context.get("news_list"))
+        self.assertEqual(len(response.context["news_list"]), 1)
+        self.assertEqual(response.context["news_list"][0].title, "Tech News")
     
     def test_view_all_members_superuser(self):
         self.client.login(email='admin@example.ac.uk', password='adminpass')

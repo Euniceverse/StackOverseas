@@ -45,7 +45,8 @@ class FunctionsTestCase(TestCase):
             name="Test Society",
             status="approved",
             members_count=10,
-            manager=self.staff_user
+            manager=self.staff_user,
+            visibility="Public"
         )
         
         self.pending_registration = SocietyRegistration.objects.create(

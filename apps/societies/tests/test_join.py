@@ -425,13 +425,15 @@ class JoinSocietyTest(TestCase):
     def test_user_can_request_to_join_society(self):
         self.client.login(email='user@university.ac.uk', password='password123')
         response = self.client.post(reverse('society-join', args=[self.society.id]))
-        self.assertEqual(response.status_code, 200)
+        detail_url = reverse('society_page', args=[self.society.id])
+        self.assertRedirects(response, detail_url)
         self.assertTrue(Membership.objects.filter(user=self.user, society=self.society).exists())
 
     def test_user_cannot_join_twice(self):
         Membership.objects.create(user=self.user, society=self.society, status=MembershipStatus.PENDING)
         response = self.client.post(reverse('society-join', args=[self.society.id]))
-        self.assertEqual(response.status_code, 400)
+        detail_url = reverse('society_page', args=[self.society.id])
+        self.assertRedirects(response, detail_url)
         memberships = Membership.objects.filter(user=self.user, society=self.society)
         self.assertEqual(memberships.count(), 1)  # Ensure only one request exists
 

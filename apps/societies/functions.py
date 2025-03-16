@@ -6,13 +6,14 @@ from django.contrib import messages
 from apps.users.models import CustomUser
 from django import template
 from config.constants import SOCIETY_TYPE_CHOICES
-from apps.societies.models import Society
 
 def staff_required(user):
     return user.is_staff
 
 def approved_societies(user):
     """Retrieve approved societies, filtering by visibility unless user is superuser."""
+    if hasattr(user, 'user'):
+        user = user.user
     query = Society.objects.filter(status="approved")
     if not user.is_superuser:
         query = query.filter(visibility="Public")

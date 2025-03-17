@@ -1,6 +1,6 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'detail.css' %}">
-
+<script src="{% static 'js/calendar.js' %}" defer></script>
 <!-- 🎯 이벤트 상세 모달 -->
 <div id="event-detail-modal" class="event-modal hidden">
     <div class="event-modal-content">
@@ -44,13 +44,10 @@
 
         <!-- 📝 참가 버튼 -->
         <div class="event-action">
-            {% if event.id %}
-                <a href="{% url 'create_checkout_session' %}?type=event&id={{ event.id }}" class="btn btn-primary">
-                    Register Now
-                </a>
-            {% else %}
-                <p>Error: Event ID is missing</p>
-            {% endif %}
+            <a class="register-button btn btn-primary" href="#" data-event-id="">
+                Register Now
+            </a>
         </div>
     </div>
 </div>
+

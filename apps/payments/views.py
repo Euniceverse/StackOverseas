@@ -75,8 +75,13 @@ def create_checkout_session(request):
 
     if item_type == "event":
         event = get_object_or_404(Event, id=item_id)
-        amount = event.fee * 100  # Convert GBP to pence
+        amount = int(float(event.fee) * 100)
         description = f"Event registration for {event.name}"
+
+        if amount <= 0:
+            return JsonResponse({"error": "Invalid amount. Must be greater than zero."}, status=400)
+
+        description = f"Registration for {event.name}"
 
     else:
         return HttpResponseBadRequest("Invalid type")

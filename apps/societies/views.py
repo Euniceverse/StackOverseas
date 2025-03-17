@@ -1,5 +1,5 @@
 from .models import Society, Membership, MembershipRole, MembershipStatus
-from .functions import approved_societies, get_societies, manage_societies, get_all_users
+from .functions import approved_societies, get_societies, manage_societies, get_all_users, top_societies
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import NewSocietyForm, JoinSocietyForm

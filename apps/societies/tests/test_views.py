@@ -42,6 +42,15 @@ class SocietiesViewsTest(TestCase):
             manager=self.user
         )
 
+        self.top_societies_patcher = patch(
+            "apps.societies.views.top_societies",
+            return_value={"top_overall_societies": [],
+            "top_societies_per_type": {}}
+        )
+        self.mock_top_societies = self.top_societies_patcher.start()
+        self.addCleanup(self.top_societies_patcher.stop)
+        
+
         self.create_url = reverse('create_society')
 
     def test_societies_page_status_code(self):
@@ -213,7 +222,7 @@ class SocietiesViewsTest(TestCase):
         self.assertTemplateUsed(response, "societies.html")
         self.assertEqual(len(response.context["societies"]), 1)
     
-    @patch("apps.news.models.News.objects.filter")
+    # @patch("apps.news.models.News.objects.filter")
     def test_my_societies_news_list(self, mock_news_filter):
         Membership.objects.create(user=self.user, society=self.society)
         
@@ -627,7 +636,7 @@ class ManageSocietiesAndMembersTest(TestCase):
     @patch("apps.news.models.News.objects.filter")
     def test_view_manage_societies_with_news(self, mock_news_filter):
         mock_news_filter.return_value.order_by.return_value[:10] = [News(title="Tech News")]
-        response = self.client.get(reverse("view_manage_societies"))
+        response = self.client.get(reverse("manage_societies"))
         self.assertEqual(response.context.get("news_list"))
         self.assertEqual(len(response.context["news_list"]), 1)
         self.assertEqual(response.context["news_list"][0].title, "Tech News")

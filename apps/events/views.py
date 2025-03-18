@@ -27,10 +27,6 @@ def get_events(societies):
     :param societies: Queryset or list of society objects to filter events.
     :return: QuerySet of events belonging to the given societies.
     """
-    print(Event.objects.filter(
-        date__gte=make_aware(datetime.now()),  # Only future events
-        society__in=societies  # Matches any society in the given list
-    ).distinct().order_by("date"))
     return Event.objects.filter(
         date__gte=make_aware(datetime.now()),  # Only future events
         society__in=societies  # Matches any society in the given list

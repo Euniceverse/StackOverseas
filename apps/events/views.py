@@ -20,6 +20,22 @@ from config.filters import EventFilter
 import requests
 from django.http import JsonResponse
 
+def get_events(societies):
+    """
+    Retrieve events for the given societies.
+
+    :param societies: Queryset or list of society objects to filter events.
+    :return: QuerySet of events belonging to the given societies.
+    """
+    print(Event.objects.filter(
+        date__gte=make_aware(datetime.now()),  # Only future events
+        society__in=societies  # Matches any society in the given list
+    ).distinct().order_by("date"))
+    return Event.objects.filter(
+        date__gte=make_aware(datetime.now()),  # Only future events
+        society__in=societies  # Matches any society in the given list
+    ).distinct().order_by("date")
+
 def eventspage(request):
     """Events page view"""
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
@@ -38,7 +54,10 @@ class EventListAPIView(generics.ListAPIView):
     def get_queryset(self):
         print("Filter-api-request:", self.request.GET)  # 🔥 디버깅 로그 추가
 
-        queryset = Event.objects.filter(date__gte=make_aware(datetime.now())).order_by("date")
+        # queryset = Event.objects.filter(date__gte=make_aware(datetime.now())).order_by("date")
+        societies = Society.objects.filter(status = "approved", visibility = "Public")
+        # print(f"✅ Approved Societies List: {list(societies)}")
+        queryset = get_events(societies)
 
         # ✅ 숫자로 변환하여 필터 적용
         fee_min = self.request.GET.get("fee_min", None)

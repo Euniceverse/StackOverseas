@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Payment Canceled</h2>
+<p>Your payment was canceled. If this was an error, you can try again.</p>
+{% if event %}
+    <a href="{% url 'event_detail' event.id %}" class="btn btn-warning">Try Again</a>
+{% else %}
+    <a href="{% url 'eventspage' %}" class="btn btn-warning">Go Back</a>
+{% endif %}
+
+{% endblock %}

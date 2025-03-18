@@ -7,6 +7,7 @@ from .models import News
 from .forms import NewsForm
 from config.filters import NewsFilter
 from config.constants import SOCIETY_TYPE_CHOICES
+from apps.societies.models import Membership, MembershipStatus
 
 def newspage(request):
     """News page with filtering and sorting"""
@@ -94,7 +95,31 @@ def edit_news(request, news_id):
 
 def news_detail(request, news_id):
     """Display a single news article and increment view count"""
-    news = News.objects.get(id=news_id)
+    news = get_object_or_404(News, id=news_id)
     news.views = F("views") + 1  # increase views
     news.save(update_fields=["views"])  # save without changing time
-    return render(request, "news_detail.html", {"news": news})
+
+    user_membership = None
+    if request.user.is_authenticated:
+        user_membership = Membership.objects.filter(
+            society=news.society,
+            user=request.user,
+            status=MembershipStatus.APPROVED
+        ).first()
+
+    context = {
+        "news": news,
+        "user_membership": user_membership,
+    }
+    return render(request, "news_detail.html", context)
+
+@login_required
+def delete_news(request, news_id):
+    news_item = get_object_or_404(News, id=news_id)
+    # Example permission check: only allow if the user is a manager, co_manager, editor for the society or is superuser.
+    if not (request.user.is_superuser or (hasattr(request, 'user_membership') and request.user_membership.role in ['manager', 'co_manager', 'editor'])):
+        messages.error(request, "You do not have permission to delete this news.")
+        return redirect('news_detail', news_id=news_id)
+    news_item.delete()
+    messages.success(request, "News deleted successfully!")
+    return redirect('news_list')

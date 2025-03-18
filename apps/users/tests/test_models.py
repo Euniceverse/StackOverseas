@@ -51,8 +51,13 @@ class CustomUserModelTest(TestCase):
 
     def test_create_user(self):
         """Test user creation through CustomUserManager."""
-        manager = CustomUserManager()
-        user = manager.create_user("test@university.ac.uk", "Test", "User", "Testy", "Password123")
+        user = CustomUser.objects.create_user(
+            "test@university.ac.uk", 
+            "Test", 
+            "User", 
+            "Testy", 
+            "Password123"
+        )
         self.assertEqual(user.email, "test@university.ac.uk")
         self.assertTrue(user.check_password("Password123"))
 
@@ -210,3 +215,30 @@ class CustomUserModelTest(TestCase):
         self.assertTrue(self.user.can_change_preferred_name())
         self.user.confirm_preferred_name_change("NewJohnny")
         self.assertEqual(self.user.preferred_name, "NewJohnny")
+    
+    def test_send_annual_verification_email(self):
+        """Test that sending annual verification email puts an email in the outbox."""
+        from django.core import mail
+        mail.outbox = [] # clear outbox
+        self.user.send_annual_verification_email()
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("Annual Account Verification Required", mail.outbox[0].subject)
+
+    def test_check_annual_verification_deactivates_user(self):
+        """Test that check_annual_verification deactivates the user if annual_verification_date is old."""
+        # Set annual_verification_date to more than 2 mins ago -> 3 mins
+        self.user.annual_verification_date = timezone.now() - timedelta(minutes=3)
+        self.user.save()
+        result = self.user.check_annual_verification()
+        self.assertTrue(result)
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.is_active)
+
+    def test_check_annual_verification_no_action(self):
+        """Test that check_annual_verification does nothing if the annual_verification_date is recent."""
+        self.user.annual_verification_date = timezone.now()
+        self.user.save()
+        result = self.user.check_annual_verification()
+        self.assertFalse(result)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.is_active)

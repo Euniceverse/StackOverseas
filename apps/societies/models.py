@@ -28,9 +28,10 @@ class Society(models.Model):
         blank=True
     )
 
-   
     location = models.CharField(max_length=255, blank=True, null=True) # Nehir
-
+    latitude = models.FloatField(blank=True, null=True)  # Converted lat
+    longitude = models.FloatField(blank=True, null=True)
+    
     members_count = models.IntegerField(default=0)
     price_range = models.DecimalField(max_digits=7, decimal_places=2, default=0.00)
 
@@ -230,8 +231,8 @@ class SocietyRegistration(models.Model):
         return self.extra_form.form_schema if self.has_extra_form() else None
 
     def __str__(self):
-        return f"{self.name} ({self.get_status_display()}) - Applicant: {self.applicant.username}"
-    
+        return f"{self.name} ({self.get_status_display()}) - Applicant: {self.applicant.email}"
+
     
 class SocietyExtraForm(models.Model):
     society_registration = models.OneToOneField(

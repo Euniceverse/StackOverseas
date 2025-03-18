@@ -10,9 +10,14 @@
 
     <div class="event-header">
         <div class="event-title">All Events</div>
-    
+
         <div class="event-search">
             {% include "components/search.html" %}
+            {% if suggestion %}
+            <div class="alert alert-info mt-2">
+                Did you mean: <a href="?q={{ suggestion }}&search_type=events">{{ suggestion }}</a>?
+            </div>
+            {% endif %}
         </div>
 
         <div class="event-filter">
@@ -43,4 +48,3 @@
         </div>
     </div>
 {% endblock %}
-

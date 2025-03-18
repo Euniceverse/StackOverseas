@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (activeView === mapView) {
             initializeMap(); // 🌍 지도 최초 로드
-            resizeMap();     // 🌍 지도 크기 재조정
+            resizeMap();
         }
         if (activeView === calendarView) {
             initializeCalendar(); // 🌍 지도 최초 로드

@@ -1,23 +1,34 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}
-    Create Society
+  Create Event for {{ society.name }}
 {% endblock %}
 
 {% block content %}
-  <h2>Create a New Society</h2>
+<h2>Create New Event for {{ society.name }}</h2>
 
-  {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-    {% endfor %}
-  {% endif %}
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+  {% endfor %}
+{% endif %}
 
-  <form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-primary" id="createEventSubmitBtn">
+    Create Event
+  </button>
 
-    <button type="submit" class="btn btn-primary">Submit</button>
-    <a href="{% url 'societiespage' %}" class="btn btn-secondary">Cancel</a>
-  </form>
+  <!-- Cancel button; external JS can confirm or use inline confirmation -->
+  <button type="button" class="btn btn-danger" id="cancelCreateEventBtn" 
+          onclick="if(confirm('Are you sure you want to cancel?')) { window.history.back(); }">
+    Cancel
+  </button>
+</form>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/create_event.js' %}" defer></script>
 {% endblock %}

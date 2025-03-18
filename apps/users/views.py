@@ -17,9 +17,29 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from django.http import HttpResponse
 from django.core.cache import cache
+from django.utils.crypto import get_random_string
+from django.contrib.auth.decorators import login_required
+from apps.societies.models import Society, Membership
+from apps.societies.functions import get_societies
+from django.utils import timezone
 
+@login_required
 def accountpage(request):
-    return render(request, "account.html")
+    # Get user's societies (both member and manager)
+    user_societies = get_societies(request.user)
+
+    # Get societies where user is manager
+    managed_societies = Society.objects.filter(manager=request.user)
+
+    # Get all memberships for the user
+    memberships = Membership.objects.filter(user=request.user).select_related('society')
+
+    return render(request, "account.html", {
+        'user': request.user,
+        'societies': user_societies,
+        'managed_societies': managed_societies,
+        'memberships': memberships,
+    })
 
 class LoginProhibitedMixin:
     """Mixin that redirects when a user is logged in."""
@@ -60,12 +80,19 @@ class LogInView(View):
 
     def post(self, request):
         """Handle login attempt."""
-        form = LogInForm(request.POST)  # Pass POST data correctly
+        form = LogInForm(request.POST)
         if form.is_valid():
             user = form.get_user()
             if user:
+                # Check if verification is needed
+                needs_verification = user.check_annual_verification()
+                if needs_verification:
+                    user.send_annual_verification_email()
+                    messages.warning(request, "Please check your email to verify your account. Your account has been temporarily deactivated for security purposes.")
+                    return render(request, self.template_name, {"form": form})
+
                 login(request, user)
-                return redirect("home")  # Redirect to the homepage or another page
+                return redirect("home")
         messages.error(request, "Invalid email or password.")
         return render(request, self.template_name, {"form": form})
 
@@ -75,31 +102,108 @@ def log_out(request):
     logout(request)
     return redirect('home')
 
-class PasswordView(LoginRequiredMixin, FormView):
+class PasswordView(LoginRequiredMixin, View):
     """Display password change screen and handle password change requests."""
 
-    template_name = 'password.html'
-    form_class = PasswordForm
+    def get(self, request):
+        """Instead of showing password form, send verification email."""
+        # Generate reset token
+        reset_token = get_random_string(50)
+        cache_key = f"pwd_reset_{reset_token}"
 
-    def get_form_kwargs(self, **kwargs):
-        """Pass the current user to the password change form."""
+        # Store email in cache with token
+        cache.set(cache_key, request.user.email, 3600)  # Store for 1 hour
 
-        kwargs = super().get_form_kwargs(**kwargs)
-        kwargs.update({'user': self.request.user})
-        return kwargs
+        # Send verification email
+        reset_link = f"http://{settings.DOMAIN_NAME}{reverse('reset_password', kwargs={'token': reset_token})}"
+        mail_subject = "Verify Password Change"
+        message = render_to_string("password_reset_email.html", {
+            "user": request.user,
+            "reset_link": reset_link,
+            "is_change": True  # To differentiate between forgot password and change password in template
+        })
+        email = EmailMessage(mail_subject, message, to=[request.user.email])
+        email.send()
 
-    def form_valid(self, form):
-        """Handle valid form by saving the new password."""
+        return render(request, 'password_confirmation.html')
 
-        form.save()
-        login(self.request, self.request.user)
-        return super().form_valid(form)
+class ForgotPasswordView(View):
+    template_name = 'forgot_password.html'
 
-    def get_success_url(self):
-        """Redirect the user after successful password change."""
+    def get(self, request):
+        return render(request, self.template_name)
 
-        messages.add_message(self.request, messages.SUCCESS, "Password updated!")
-        return reverse('home')
+    def post(self, request):
+        email = request.POST.get('email')
+        try:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            messages.error(request, "If an account exists with this email, you will receive a password reset link.")
+            return render(request, self.template_name)
+
+        # Generate reset token
+        reset_token = get_random_string(50)
+        cache_key = f"pwd_reset_{reset_token}"
+
+        # Store email in cache with token
+        cache.set(cache_key, email, 3600)  # Store for 1 hour
+
+        # Send reset email
+        reset_link = f"http://{settings.DOMAIN_NAME}{reverse('reset_password', kwargs={'token': reset_token})}"
+        mail_subject = "Reset your password"
+        message = render_to_string("password_reset_email.html", {
+            "user": user,
+            "reset_link": reset_link,
+            "is_change": False  # This is a forgot password request
+        })
+        email = EmailMessage(mail_subject, message, to=[user.email])
+        email.send()
+
+        messages.success(request, "If an account exists with this email, you will receive a password reset link.")
+        return render(request, self.template_name)
+
+class ResetPasswordView(View):
+    template_name = 'reset_password.html'
+
+    def get(self, request, token):
+        # Check if token is valid
+        cache_key = f"pwd_reset_{token}"
+        email = cache.get(cache_key)
+
+        if not email:
+            messages.error(request, "Password reset link is invalid or has expired.")
+            return redirect('log_in')
+
+        return render(request, self.template_name)
+
+    def post(self, request, token):
+        cache_key = f"pwd_reset_{token}"
+        email = cache.get(cache_key)
+
+        if not email:
+            messages.error(request, "Password reset link is invalid or has expired.")
+            return redirect('log_in')
+
+        password = request.POST.get('new_password')
+        password_confirmation = request.POST.get('password_confirmation')
+
+        if password != password_confirmation:
+            messages.error(request, "Passwords do not match.")
+            return render(request, self.template_name)
+
+        try:
+            user = CustomUser.objects.get(email=email)
+            user.set_password(password)
+            user.save()
+
+            # Clear the reset token
+            cache.delete(cache_key)
+
+            messages.success(request, "Password has been reset successfully. Please log in with your new password.")
+            return redirect('log_in')
+        except CustomUser.DoesNotExist:
+            messages.error(request, "Invalid request.")
+            return redirect('log_in')
 
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
@@ -119,8 +223,6 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
         messages.add_message(self.request, messages.SUCCESS, "Profile updated!")
         return reverse("home")
 
-
-from django.utils.crypto import get_random_string
 
 class SignUpView(LoginProhibitedMixin, FormView):
     # ... existing code ...
@@ -191,6 +293,7 @@ def activate(request, uidb64, token):
             password=user_data['password']
         )
         user.is_active = True
+        user.annual_verification_date = timezone.now()
         user.save()
 
         # Clear cached data
@@ -200,3 +303,32 @@ def activate(request, uidb64, token):
         return redirect("home")
     except Exception as e:
         return HttpResponse("Activation link is invalid!")
+
+def annual_verify(request, uidb64, token):
+    try:
+        cache_key = f"annual_verify_{token}"
+        email = cache.get(cache_key)
+
+        if not email:
+            return HttpResponse("Verification link is invalid or has expired!")
+
+        decoded_email = force_str(urlsafe_base64_decode(uidb64))
+        if email != decoded_email:
+            return HttpResponse("Verification link is invalid!")
+
+        user = CustomUser.objects.get(email=email)
+        user.is_active = True
+        user.annual_verification_date = timezone.now()
+        user.last_verified_date = timezone.now()
+        user.save()
+
+        # Clear cached data
+        cache.delete(cache_key)
+
+        # Log in the user after verification
+        login(request, user)
+
+        messages.success(request, "Account verified successfully!")
+        return redirect("home")
+    except Exception as e:
+        return HttpResponse("Verification link is invalid!")

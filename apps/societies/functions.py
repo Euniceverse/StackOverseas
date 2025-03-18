@@ -7,12 +7,13 @@ from apps.users.models import CustomUser
 from django import template
 from config.constants import SOCIETY_TYPE_CHOICES
 
-
 def staff_required(user):
     return user.is_staff
 
 def approved_societies(user):
     """Retrieve approved societies, filtering by visibility unless user is superuser."""
+    if hasattr(user, 'user'):
+        user = user.user
     query = Society.objects.filter(status="approved")
     if not user.is_superuser:
         query = query.filter(visibility="Public")
@@ -24,24 +25,34 @@ def get_societies(user):
 
     # Check if the user exists
     if not CustomUser.objects.filter(pk=user.pk).exists():
-        return approved_societies()  # Fallback if user doesn't exist
+        return approved_societies(user)  # Fallback if user doesn't exist
 
     # Query societies managed by the user
-    managing_societies = Society.objects.filter(manager_id=user.id).exclude(status="deleted")
-    
+    managing_societies = Society.objects.filter(manager_id=user.id)
+
     # Query approved societies where the user is a member
-    member_societies = Society.objects.filter(status="approved", members=user, visibility = "Public")
+    member_societies = Society.objects.filter(status="approved", members=user)
 
     if managing_societies.exists():
         # The union (|) operator combines two QuerySets and removes duplicates
         return (managing_societies | member_societies).distinct()
 
-    
     return member_societies
 
 
-def manage_societies():
-    return Society.objects.filter(status__in=['pending','request_delete'])
+def manage_societies(user): 
+    if not CustomUser.objects.filter(pk=user.pk).exists():
+        return {"registrations": SocietyRegistration.objects.none(),
+                "societies": Society.objects.none()}
+
+    if user.is_superuser:
+        pending_registrations = SocietyRegistration.objects.filter(status="pending")
+        pending_societies = Society.objects.filter(status__in=["pending", "request_delete"])
+        return {"registrations": pending_registrations,
+                "societies": pending_societies}
+    else:
+        return {"registrations": SocietyRegistration.objects.none(),
+                "societies": Society.objects.none()}
 
 
 def get_all_users():
@@ -85,16 +96,16 @@ def top_societies(user):
 def approve_society(request, registration_id):
     """Approve a society registration and create the actual Society."""
     registration = get_object_or_404(SocietyRegistration, id=registration_id, status='pending')
-    
+
     # create the society from the approved registration
     new_society = Society.objects.create(
         name=registration.name,
         description=registration.description,
         society_type=registration.society_type,
-        manager=registration.applicant, 
+        manager=registration.applicant,
         status='approved',
         visibility=registration.visibility
     )
-    
+
     messages.success(request, f"Society '{new_society.name}' has been approved and created!")
-    return redirect("admin_society_list")
+    return redirect("admin_pending_societies")

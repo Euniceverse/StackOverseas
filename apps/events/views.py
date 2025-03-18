@@ -17,52 +17,91 @@ from apps.news.models import News
 from django.forms import modelformset_factory
 from django.utils import timezone
 from config.filters import EventFilter
+import requests
+from django.http import JsonResponse
+
+def user_can_delete_event(user, event):
+    """Return True if user is superuser or has manager/co_manager/editor role for any society of the event."""
+    if user.is_superuser:
+        return True
+
+    # The event may belong to multiple societies (m2m)
+    societies = event.society.all()
+    allowed_roles = [MembershipRole.MANAGER, MembershipRole.CO_MANAGER, MembershipRole.EDITOR]
+
+    for soc in societies:
+        membership = Membership.objects.filter(
+            society=soc,
+            user=user,
+            status=MembershipStatus.APPROVED
+        ).first()
+        if membership and membership.role in allowed_roles:
+            return True
+
+    return False
+
+@login_required
+def delete_event(request, event_id):
+    """Delete an event if user is manager/co_manager/editor or superuser."""
+    event = get_object_or_404(Event, id=event_id)
+
+    # Check permission
+    if not user_can_delete_event(request.user, event):
+        messages.error(request, "You do not have permission to delete this event.")
+        return redirect('eventspage')
+
+    # If authorized, delete the event
+    event.delete()
+    messages.success(request, "Event deleted successfully.")
+    return redirect('eventspage')
 
 def eventspage(request):
     """Events page view"""
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
     return render(request, "events.html", {"news_list": news_list})
 
-class StandardResultsSetPagination(PageNumberPagination):
-    """Pagination for API"""
-    page_size = 10
-    page_size_query_param = "page_size"
-    max_page_size = 100
-
 class EventListAPIView(generics.ListAPIView):
     """API to list all future events with timezone-aware filtering"""
     serializer_class = EventSerializer
-    pagination_class = None  # ✅ 한 번에 모든 이벤트 가져오기
+    pagination_class = None
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = EventFilter
-    search_fields = ["name", "description"]
+    search_fields = ["name", "description", "keyword", "location"]
     ordering_fields = ["date", "name"]
     ordering = ["date"]
 
     def get_queryset(self):
-        """Custom filtering and debugging for Event API"""
-        print("🔍 API 요청 파라미터:", self.request.GET)  # ✅ 현재 요청된 필터링 조건 확인
+        print("Filter-api-request:", self.request.GET)  # 🔥 디버깅 로그 추가
 
-        # 기본 쿼리셋: 현재 날짜 이후의 이벤트만 조회
         queryset = Event.objects.filter(date__gte=make_aware(datetime.now())).order_by("date")
 
-        # 필터 적용
+        # ✅ 숫자로 변환하여 필터 적용
+        fee_min = self.request.GET.get("fee_min", None)
+        fee_max = self.request.GET.get("fee_max", None)
+
+        print(f"📌 Before Conversion: fee_min={fee_min}, fee_max={fee_max}")  # 🔥 변환 전 로그 추가
+
+        try:
+            fee_min = int(fee_min) if fee_min and fee_min.isdigit() else 0  # `None` 또는 `""`이면 기본값 0
+            fee_max = int(fee_max) if fee_max and fee_max.isdigit() else 999999  # `None` 또는 `""`이면 큰 값으로 처리
+        except ValueError:
+            fee_min, fee_max = 0, 999999  # 잘못된 값이면 기본값으로 설정
+
+        print(f"📌 After Conversion: fee_min={fee_min}, fee_max={fee_max}")  # 🔥 변환 후 로그 추가
+
+        queryset = queryset.filter(fee__gte=fee_min, fee__lte=fee_max)
+
         filtered_queryset = EventFilter(self.request.GET, queryset=queryset).qs
 
-        print(f"🎯 필터 적용 후 이벤트 개수: {filtered_queryset.count()}")  # ✅ 필터 적용 후 개수 확인
+        print(f"🎯 Filtered-api-num: {filtered_queryset.count()}")  # 🔥 필터링된 이벤트 개수 출력
+
         return filtered_queryset
 
+
 class EventDetailAPIView(generics.RetrieveAPIView):
-    """API to get details of a single event"""
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     lookup_field = "id"
-
-class UpcomingEventsAPIView(generics.ListAPIView):
-    """API to list only upcoming events"""
-    queryset = Event.objects.filter(date__gte=timezone.now())  # Only future events
-    serializer_class = EventSerializer
-    pagination_class = None
 
 @login_required
 def create_event(request, society_id):
@@ -80,9 +119,10 @@ def create_event(request, society_id):
         user=request.user,
         status=MembershipStatus.APPROVED
     ).first()
+
     allowed_roles = [MembershipRole.MANAGER, MembershipRole.CO_MANAGER, MembershipRole.EDITOR]
-    if not membership or membership.role not in allowed_roles:
-        messages.error(request, "You do not have permission to create an event for this society.")
+    if not (request.user.is_superuser or (membership and membership.role in allowed_roles)):
+        messages.error(request, "You do not have permission to create an event.")
         return redirect('society_page', society_id=society.id)
 
     if request.method == 'POST':
@@ -101,7 +141,7 @@ def create_event(request, society_id):
                 is_free=form.cleaned_data['is_free'],
             )
             # For the many-to-many societies, you do:
-            event.society.set(form.cleaned_data['society']) 
+            event.society.add(society)
 
             messages.success(request, "Event created successfully!")
             # The signal will create the News. We redirect to an edit page to let them finalize
@@ -109,7 +149,7 @@ def create_event(request, society_id):
     else:
         form = NewEventForm()
 
-    return render(request, 'events/create_event.html', {
+    return render(request, 'create_event.html', {
         'form': form,
         'society': society,
     })
@@ -140,7 +180,8 @@ def auto_edit_news(request, event_id):
     else:
         formset = NewsFormSet(queryset=news_qs)
 
-    return render(request, 'events/auto_edit_news.html', {
+    return render(request, 'auto_edit_news.html', {
         'event': event,
         'formset': formset,
     })
+

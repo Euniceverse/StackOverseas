@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Update Membership for {{ membership.user.email }}</h2>
+<form method="post">
+    {% csrf_token %}
+    <label for="action">Select Action:</label>
+    <select name="action" id="action">
+        <option value="approve">Approve</option>
+        <option value="remove">Remove</option>
+        <option value="promote_co_manager">Promote to Co-Manager</option>
+        <option value="promote_editor">Promote to Editor</option>
+    </select>
+    <button type="submit">Submit</button>
+</form>
+{% endblock %}

@@ -12,33 +12,56 @@
 <p>Members: {{ society.members_count }}</p>
 
 {% if user.is_authenticated %}
-  
-  {% if user_membership %}
-    {% if user_membership.status == 'approved' %}
-      <p>You are a member of this society (Role: {{ user_membership.get_role_display }}).</p>
-    {% elif user_membership.status == 'pending' %}
-      <p>Your membership application is pending.</p>
-    {% endif %}
+
+    {% if membership %}
+
+        {% if membership.status == 'approved' %}
+            <!-- The user is approved and can leave the society -->
+            <form action="{% url 'leave_society' society.id %}" method="POST" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">
+                Leave Society
+              </button>
+            </form>
+            <p>You are a member of this society (Role: {{ membership.get_role_display }}).</p>
+
+        {% elif membership.status == 'pending' %}
+            <p class="text-muted">Your membership application is pending.</p>
+
+        {% elif membership.status == 'rejected' %}
+            <p class="text-danger">Your application was rejected.</p>
+        {% endif %}
+
     {% else %}
+        <!-- The user is logged in but not a member yet -->
         <p>You are not a member of this society.</p>
-        <a href="{% url 'join_society' society.id %}" class="btn btn-primary">
+        <a href="{% url 'join_society' society.id %}" 
+            class="btn btn-primary"
+            id="join-society-link">
             Join Society
         </a>
     {% endif %}
+
 {% else %}
-    <p>You are not logged in. <a href="{% url 'log_in' %}?next={% url 'society_page' society.id %}">
-       Log in</a> to join this society.
+    <!-- The user is not logged in at all -->
+    <p>You are not logged in.
+       <a href="{% url 'log_in' %}?next={% url 'society_page' society.id %}">Log in</a>
+       to join or leave this society.
     </p>
 {% endif %}
 
 <!-- If user is manager/co_manager/editor + approved, show "Manage Society" and "Create Event" -->
-{% if user_membership.role in 'manager co_manager editor' and user_membership.status == 'approved' %}
-        <a href="{% url 'manage_society' society.id %}" class="btn btn-warning">
+    {% if user_membership and user_membership.role == "manager" or user_membership and user_membership.role == "co_manager" or user_membership and user_membership.role == "editor" or user.is_superuser %}
+
+       <a href="{% url 'manage_society' society.id %}" class="btn btn-warning">
             Manage This Society
         </a>
-        <a href="{% url 'event_create' society.id %}" class="btn btn-primary">
+
+        <a href="{% url 'event_create' society.id %}"
+            class="btn btn-primary">
             Create Event
         </a>
+
 
         <p>Drag & drop widgets to rearrange them.</p>
 
@@ -69,6 +92,7 @@
             </ul>
         </div>
         <button id="save-order">Save Order</button>
+
     
 {% else %}
         <!-- Normal or not logged in => show widgets, but no drag & drop -->
@@ -98,6 +122,7 @@
             {% endfor %}
             </ul>
         </div>
+
 {% endif %}
 {% endblock %}
 
@@ -170,4 +195,8 @@ $(document).ready(function() {
     }
 });
 </script>
+
+<script src="{% static 'js/society_page.js' %}" defer></script>
+<script src="{% static 'js/join_society.js' %}" defer></script>
+
 {% endblock %}

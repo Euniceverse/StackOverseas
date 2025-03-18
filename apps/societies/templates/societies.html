@@ -136,7 +136,7 @@
                         {% elif society.status == "request_delete" %}
                             <span class="badge bg-warning text-dark">Request to Delete</span>
                             <a href="{% url 'admin_confirm_delete' society.id %}" class="btn btn-danger mt-2">Handle Delete Request</a>
-                            
+
                         {% else %}
                             <span class="badge bg-secondary">Deleted</span>
                         {% endif %}
@@ -146,13 +146,13 @@
                     {%if society.status == "pending" %}
                     <td>
                         <!-- Approve button -->
-                        <a href="{% url 'admin_confirm_society_decision' society.id 'approve' %}" 
+                        <a href="{% url 'admin_confirm_society_decision' society.id 'approve' %}"
                            class="btn btn-success btn-sm">
                            Approve
                         </a>
-                        
+
                         <!-- Reject button -->
-                        <a href="{% url 'admin_confirm_society_decision' society.id 'reject' %}" 
+                        <a href="{% url 'admin_confirm_society_decision' society.id 'reject' %}"
                            class="btn btn-danger btn-sm">
                            Reject
                         </a>

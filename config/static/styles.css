@@ -164,7 +164,7 @@
 
   /* News Panel */
 .news-panel {
-  min-height: 100vh; 
+  min-height: 100vh;
   background: #DAE5FF;
   padding: 20px;
   display: flex;

@@ -17,7 +17,14 @@ Join {{ society.name }}
 
 <form method="post" enctype="multipart/form-data">
   {% csrf_token %}
-  {{ form.as_p }}
+
+  {% if auto_approve %}
+    {{ form.as_p }}
+    <p>No additional info required. Click 'Submit' to confirm joining this society.</p>
+  {% else %}
+
+    {{ form.as_p }}
+  {% endif %}
 
   <button type="submit" class="btn btn-primary">Submit</button>
 

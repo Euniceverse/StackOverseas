@@ -284,32 +284,54 @@ def join_society(request, society_id):
     # Check if user is already in the membership table with an approved or pending status
     existing_member = Membership.objects.filter(society=society, user=request.user).first()
 
-    if request.method == 'POST':
-        if existing_member and existing_member.status in [MembershipStatus.APPROVED, MembershipStatus.PENDING]:
-            messages.info(request, "You are already a member or have an application pending.")
-            return redirect('society_page', society_id=society.id)
+    if existing_member and existing_member.status in [MembershipStatus.APPROVED, MembershipStatus.PENDING]:
+        messages.info(request, "You are already a member or have an application pending.")
+        return redirect('society_page', society_id=society.id)
+    
+    requirement = getattr(society, 'requirement', None)
+    req_type = requirement.requirement_type if requirement else RequirementType.NONE
 
-        form = JoinSocietyForm(society=society, user=request.user, data=request.POST, files=request.FILES)
-        if form.is_valid():
-            application = form.create_membership_and_application()
-            if application.is_approved:
-                messages.success(request, "You have joined the society successfully!")
-            elif application.is_rejected:
-                messages.error(request, "Your application was rejected based on your answers.")
+    if req_type == RequirementType.NONE:
+        if request.method == 'POST':
+
+            form = JoinSocietyForm(society=society, user=request.user, data=request.POST, files=request.FILES)
+            if form.is_valid():
+                application = form.create_membership_and_application()
+                if application.is_approved:
+                    messages.success(request, "You have joined the society successfully!")
+                return redirect('society_page', society_id=society.id)
             else:
-                messages.info(request, "Your application has been submitted and is pending approval.")
-            return redirect('society_page', society_id=society.id)
+                return render(request, 'join_society.html', {'society': society, 'form': form})
         
         else:
-            return render(request, 'join_society.html', {'society': society, 'form': form})
-    
-    else:
-        form = JoinSocietyForm(society=society, user=request.user)
+            form = JoinSocietyForm(society=society, user=request.user)
 
-        return render(request, 'join_society.html', {
-            'society': society,
-            'form': form
-        })
+            return render(request, 'join_society.html', {
+                'society': society,
+                'form': form,
+                'auto_approve': True
+            })
+    else:
+        if request.method == 'POST':
+            form = JoinSocietyForm(society=society, user=request.user, data=request.POST, files=request.FILES)
+            if form.is_valid():
+                application = form.create_membership_and_application()
+                if application.is_approved:
+                    messages.success(request, "You have joined the society successfully!")
+                elif application.is_rejected:
+                    messages.error(request, "Your application was rejected based on your answers.")
+                else:
+                    messages.info(request, "Your application has been submitted and is pending approval.")
+                return redirect('society_page', society_id=society.id)
+            else:
+                return render(request, 'join_society.html', {'society': society, 'form': form})
+        else:
+            form = JoinSocietyForm(society=society, user=request.user)
+            return render(request, 'join_society.html', {
+                'society': society,
+                'form': form,
+                'auto_approve': False
+            })
 
 
 @login_required

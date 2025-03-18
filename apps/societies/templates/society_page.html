@@ -35,7 +35,11 @@
     {% else %}
         <!-- The user is logged in but not a member yet -->
         <p>You are not a member of this society.</p>
-        <a href="{% url 'join_society' society.id %}" class="btn btn-primary">Join Society</a>
+        <a href="{% url 'join_society' society.id %}" 
+            class="btn btn-primary"
+            id="join-society-link">
+            Join Society
+        </a>
     {% endif %}
 
 {% else %}
@@ -193,5 +197,6 @@ $(document).ready(function() {
 </script>
 
 <script src="{% static 'js/society_page.js' %}" defer></script>
+<script src="{% static 'js/join_society.js' %}" defer></script>
 
 {% endblock %}

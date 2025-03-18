@@ -1,15 +1,20 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Events{% endblock %}
+{% block title %}{{type}} Events{% endblock %}
 
 {% block fullpage %}
+<script>
+    var societies = JSON.parse('{{ societies|safe }}');
+    console.log("Loaded Societies:", societies);
+</script>
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'events.css' %}">
     <script src="{% static 'js/view-switcher.js' %}" defer></script>
 
     <div class="event-header">
-        <div class="event-title">All Events</div>
+        <div class="event-title">{{type}} Events</div>
 
         <div class="event-search">
             {% include "components/search.html" %}

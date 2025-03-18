@@ -119,7 +119,7 @@
                             <a href="{% url 'eventspage' %}">EVENTS</a>
                             <ul class="dropdown-menu">
                                 <li><a href="{% url 'eventspage' %}">All Events</a></li>
-                                    <li><a href="#">My Events</a></li>
+                                    <li><a href="{% url 'my-events-page' %}">My Events</a></li>
                             </ul>
                             {% else %}
                             <a href="{% url 'log_in' %}">EVENTS</a>

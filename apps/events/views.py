@@ -11,6 +11,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from apps.events.forms import NewEventForm
 from apps.societies.models import Society, Membership, MembershipRole, MembershipStatus
+from apps.societies.functions import get_societies
 from django.urls import reverse
 from apps.news.forms import NewsForm
 from apps.news.models import News
@@ -35,7 +36,13 @@ def get_events(societies):
 def eventspage(request):
     """Events page view"""
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
-    return render(request, "events.html", {"news_list": news_list})
+    return render(request, "events.html", {"news_list": news_list, "type": "All", "societies": get_societies(request.user)})
+
+def my_events_page(request):
+    """Events page view"""
+    news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
+    return render(request, "events.html", {"news_list": news_list, "type":"My", "societies": get_societies(request.user)})
+
 
 class EventListAPIView(generics.ListAPIView):
     """API to list all future events with timezone-aware filtering"""

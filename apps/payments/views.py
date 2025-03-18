@@ -27,7 +27,7 @@ def create_checkout_session(request):
 
         try:
             session = stripe.checkout.Session.create(
-                payment_method_types=["card, apple pay, google pay"],
+                payment_method_types=["card"],
                 line_items=[
                     {
                         "price_data": {
@@ -42,9 +42,8 @@ def create_checkout_session(request):
                     },
                 ],
                 mode="payment",
-                success_url="http://127.0.0.1:8000/payments/success/",
-                cancel_url="http://127.0.0.1:8000/payments/cancel/",
-            )
+                success_url="http://127.0.0.1:8000/payments/success/?event_id={event_id}",
+                cancel_url = f"http://127.0.0.1:8000/payments/cancel/?event_id={int(event_id)}"            )
 
             return JsonResponse({"url": session.url})
 
@@ -59,4 +58,10 @@ def payment_success(request):
 
 def payment_cancel(request):
     """Handles cancelled payments."""
-    return render(request, "payment_cancel.html")
+    event_id = request.GET.get('event_id')  # Get event_id from URL query parameters
+    try:
+        event_id = int(event_id)  # Convert to integer
+        event = get_object_or_404(Event, id=event_id)
+    except (ValueError, TypeError):
+        event = None  # Handle invalid IDs
+    return render(request, "payment_cancel.html", {"event": event})

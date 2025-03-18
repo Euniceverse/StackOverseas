@@ -6,8 +6,7 @@ from .views import (
     EventListAPIView,
     EventDetailAPIView,
     event_detail,
-    event_payment,
-    event_registration,
+  
 )
  
 urlpatterns = [
@@ -16,7 +15,4 @@ urlpatterns = [
     path('create/<int:society_id>/', create_event, name='event_create'),
     path('auto_news/<int:event_id>/', auto_edit_news, name='auto_edit_news'),
     path("event/<int:event_id>/", event_detail, name="event_detail"),
-    path("register/<int:event_id>/", event_registration, name="event_registration"),
-    path("payment/<int:event_id>/", event_payment, name="event_payment"),
-   
 ]

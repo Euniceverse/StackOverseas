@@ -81,7 +81,7 @@
                 
                             console.log(`📢 Sending data -> ID: ${eventId}, Name: ${name}, Price: ${price}`);
                 
-                            fetch("/payments/checkout/", {
+                            fetch("{% url 'payments:create_checkout_session' %}", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                                 body: new URLSearchParams({
@@ -93,11 +93,11 @@
                             })
                             .then(response => response.json())
                             .then(data => {
-                                if (data.sessionId) {
-                                    console.log("✅ Redirecting to Stripe...");
-                                    window.location.href = `https://checkout.stripe.com/pay/${data.sessionId}`;
+                                if (data.url) {  // ✅ Redirect to the correct session URL
+                                    console.log("✅ Redirecting to Stripe Checkout...");
+                                    window.location.href = data.url;
                                 } else {
-                                    console.error("❌ ERROR: No session ID returned:", data);
+                                    console.error("❌ ERROR: No checkout session URL returned:", data);
                                 }
                             })
                             .catch(error => console.error("❌ ERROR: Checkout request failed!", error));

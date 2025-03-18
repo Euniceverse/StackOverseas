@@ -488,8 +488,8 @@ class AnnualVerifyViewTest(TestCase):
     def test_annual_verify_invalid_token(self):
         cache.delete(self.cache_key)
         response = self.client.get(self.url)
-        self.assertEqual(response.content.decode(), "Verification link is invalid!")
-
+        self.assertEqual(response.content.decode(), "Verification link is invalid or has expired!")
+        
     def test_annual_verify_mismatched_email(self):
         cache.set(self.cache_key, 'different@example.ac.uk', 3600) # store email as other
         response = self.client.get(self.url)

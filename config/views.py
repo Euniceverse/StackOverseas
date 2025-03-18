@@ -1,16 +1,18 @@
 from django.shortcuts import render
-from .functions import search_societies
+from .functions import search_societies, get_recent_news
 from apps.societies.functions import top_societies
 
 def home(request):
     """Display the main page.
     Shows login/signup buttons for anonymous users,
     and user-specific content for authenticated users."""
+    recent_news = get_recent_news()
     disct_soc = top_societies(request.user)
     return render(request, "home.html", {
+        "news_list": recent_news,
         "top_societies_per_type": disct_soc['top_societies_per_type'],
         "top_overall_societies": disct_soc['top_overall_societies'],
-        'user' : request.user
+        "user": request.user,
     })
 
 def ai_search(request):

@@ -77,7 +77,7 @@ function initializeCalendar() {
 
     eventClick: function (info) {
       console.log("🖱️ Event clicked:", info.event);
-
+      document.getElementById("event-id-input").value = info.event.id;
       document.getElementById("event-name").textContent = info.event.title;
       document.getElementById("event-type").textContent = info.event.type;
       document.getElementById("event-date").textContent = info.event.start
@@ -91,10 +91,11 @@ function initializeCalendar() {
         : "Time not specified";
       document.getElementById("event-location").textContent =
         info.event.extendedProps.location;
-      document.getElementById("event-fee").textContent =
-        info.event.extendedProps.fee !== "Free"
-          ? info.event.extendedProps.fee + " USD"
-          : "Free";
+
+      let eventFee = info.event.extendedProps.fee;
+      document.getElementById("event-price-input").value =
+        eventFee !== "Free" && eventFee !== "" ? parseFloat(eventFee) : 0.0;
+
       document.getElementById("event-description").textContent =
         info.event.extendedProps.description;
       // ✅ Update the Register Button with the correct event ID

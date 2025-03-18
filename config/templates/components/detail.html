@@ -44,9 +44,67 @@
 
         <!-- 📝 참가 버튼 -->
         <div class="event-action">
-            <a class="register-button btn btn-primary" href="#" data-event-id="">
-                Register Now
-            </a>
+            <!-- Payment Form (Hidden) -->
+            <form id="paymentForm" action="/payments/checkout/" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="event_id" id="event-id-input">
+                <input type="hidden" name="name" id="event-name-input">
+                <input type="hidden" name="price" id="event-price-input">
+                <input type="hidden" name="description" id="event-description-input">
+            </form>
+
+            <!-- Register Now Button -->
+            <button type="button" id="registerButton" class="register-button btn btn-primary">Register Now</button>
+
+            <script src="https://js.stripe.com/v3/"></script>
+            <script>
+                const stripe = Stripe("pk_test_51QviGaE1rp8ABg2BZkClndNES4HcFS2yJVKbc10uIfMf9jF6QuuS1TKZ7SgVKU8DK43TXWzQlS1fGcswox4WFuve00bNqjsbvD"); 
+            </script>
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    let registerButton = document.querySelector(".register-button");
+                
+                    if (registerButton) {
+                        registerButton.addEventListener("click", function (event) {
+                            event.preventDefault();  // Stop default behavior
+                
+                            // Fetch event details from the modal
+                            let eventId = document.getElementById("event-id-input").value.trim();
+                            let name = document.getElementById("event-name").textContent.trim();
+                            let price = document.getElementById("event-price-input").value.trim();
+                            let description = document.getElementById("event-description").textContent.trim();
+                
+                            if (!eventId || !name || !price) {
+                                console.error("❌ ERROR: Missing event data!");
+                                return;
+                            }
+                
+                            console.log(`📢 Sending data -> ID: ${eventId}, Name: ${name}, Price: ${price}`);
+                
+                            fetch("/payments/checkout/", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                                body: new URLSearchParams({
+                                    event_id: document.getElementById("event-id-input").value,
+                                    name: document.getElementById("event-name").textContent,
+                                    price: document.getElementById("event-price-input").value,
+                                    description: document.getElementById("event-description").textContent
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.sessionId) {
+                                    console.log("✅ Redirecting to Stripe...");
+                                    window.location.href = `https://checkout.stripe.com/pay/${data.sessionId}`;
+                                } else {
+                                    console.error("❌ ERROR: No session ID returned:", data);
+                                }
+                            })
+                            .catch(error => console.error("❌ ERROR: Checkout request failed!", error));
+                        });
+                    }
+                });
+            </script>
         </div>
     </div>
 </div>

@@ -20,6 +20,14 @@ from config.filters import EventFilter
 import requests
 from django.http import JsonResponse
 from apps.payments.models import Payment
+import stripe
+from django.conf import settings
+
+
+stripe.api_key = settings.STRIPE_SECRET_KEY 
+
+
+
 
 def eventspage(request):
     """Events page view"""
@@ -156,3 +164,54 @@ def auto_edit_news(request, event_id):
 def event_detail(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     return render(request, "detail.html", {"event": event})
+
+
+def event_registration(request, event_id):
+    # Get the event
+    event = get_object_or_404(Event, id=event_id)
+    
+    # If the event is free, register immediately.
+    if event.is_free or event.fee == 0:
+        # You could create a registration record here if needed.
+        messages.success(request, "You have successfully registered for this free event!")
+        return render(request, "events/registration_success.html", {"event": event})
+    
+    # Otherwise, if it’s a paid event, redirect to the payment page.
+    else:
+        return redirect("event_payment", event_id=event.id)
+
+@login_required
+def event_payment(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    
+    if request.method == "POST":
+        # Create a Stripe Checkout session
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": "usd",
+                    "product_data": {"name": event.name},
+                    "unit_amount": int(event.fee * 100),  # fee in cents/pence
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            success_url=request.build_absolute_uri(reverse("payment_success")),
+            cancel_url=request.build_absolute_uri(reverse("payment_cancel")),
+        )
+        return redirect(session.url)
+    
+    # For GET request, show a payment page that contains a button/form that posts to this view.
+    return render(request, "events/event_payment.html", {"event": event})
+
+# @login_required
+# def payment_success(request):
+#     # Here you would update the registration record if necessary.
+#     messages.success(request, "Payment successful! You are now registered for the event.")
+#     return render(request, "events/payment_success.html")
+
+# @login_required
+# def payment_cancel(request):
+#     messages.warning(request, "Payment canceled. You have not been registered for the event.")
+#     return render(request, "events/payment_cancel.html")

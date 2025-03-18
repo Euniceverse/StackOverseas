@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Checkout</title>
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <h1>Processing Your Payment...</h1>
+    <p>Please wait while we redirect you to the Stripe checkout page.</p>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get("event_id");
+
+            if (!eventId) {
+                console.error("❌ ERROR: Missing event ID!");
+                return;
+            }
+
+            fetch(`/create-checkout-session/?event_id=${eventId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sessionId) {
+                    let stripe = Stripe("{{ STRIPE_PUBLIC_KEY }}");
+                    stripe.redirectToCheckout({ sessionId: data.sessionId });
+                } else {
+                    console.error("❌ ERROR: Stripe session creation failed", data.error);
+                }
+            })
+            .catch(error => console.error("❌ ERROR: Fetch failed", error));
+        });
+    </script>
+</body>
+</html>

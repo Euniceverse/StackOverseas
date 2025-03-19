@@ -18,3 +18,4 @@ sentence_transformers==3.4.1
 symspellpy==6.9.0
 torch==2.1.1
 gunicorn==21.2.0
+numpy==1.26.4

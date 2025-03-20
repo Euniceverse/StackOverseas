@@ -1,5 +1,5 @@
 from django.db import models
-from django.conf import settings
+from django.conf import settings 
 from django.apps import apps
 from apps.users.models import CustomUser
 from config.constants import VISIBILITY_CHOICES, REGISTRATION_STATUS_CHOICES
@@ -248,26 +248,3 @@ class SocietyExtraForm(models.Model):
 
     def __str__(self):
         return f"Extra Form for {self.society_registration.name}"
-
-class Widget(models.Model):
-    WIDGET_TYPES = [
-        ("announcements", "Announcements"),
-        ("events", "Events"),
-        ("gallery", "Gallery"),
-        ("contacts", "Contact Information"),
-        ("featured", "Featured Members"),
-        ("leaderboard", "Leaderboard"),
-        ("news", "News")
-    ]
-    
-    society = models.ForeignKey(Society, on_delete=models.CASCADE, related_name="widgets")
-    widget_type = models.CharField(max_length=50, choices=WIDGET_TYPES)
-    position = models.PositiveIntegerField(default=0) 
-    custom_html = models.TextField(blank=True, null=True) 
-    position = models.PositiveIntegerField(default=0) 
-
-    class Meta:
-        ordering = ["position"]
-        
-    def __str__(self):
-        return f"{self.get_widget_type_display()} for {self.society.name}"

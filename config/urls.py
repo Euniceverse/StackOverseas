@@ -19,11 +19,10 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 from .views import home
-from apps.societies.functions import top_societies
 from pathlib import Path
 from .views import ai_search
 
-BASE_DIR = Path(__file__).resolve().parent.parent  # ✅ Define BASE_DIR
+BASE_DIR = Path(__file__).resolve().parent.parent 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -33,6 +32,7 @@ urlpatterns = [
     path('societies/', include('apps.societies.urls')),
     path('users/', include('apps.users.urls')),
     path('search/', ai_search, name='ai_search'),
+    path('widgets/', include('apps.widgets.urls') )
 ]
 
 # Serve media files during development

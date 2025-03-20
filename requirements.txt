@@ -15,5 +15,7 @@ typing_extensions==4.12.2
 tzdata==2025.1
 urllib3==2.3.0
 sentence_transformers==3.4.1
-symspellpy==6.7.0
-torch==2.6.0
+symspellpy==6.9.0
+torch==2.1.1
+gunicorn==21.2.0
+numpy==1.26.4

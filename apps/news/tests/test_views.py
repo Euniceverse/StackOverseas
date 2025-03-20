@@ -273,4 +273,87 @@ class NewsDetailViewTests(TestCase):
         updated = News.objects.get(id=self.news_item.id)
         self.assertEqual(updated.views, 6)
         self.assertContains(response, "Detail News")
-        
+
+# ... existing imports and test classes in test_views.py remain unchanged ...
+
+class NewsPageSortingTests(TestCase):
+    """Additional tests for the newspage view sorting and context variables."""
+    def setUp(self):
+        # Create a manager user
+        self.manager = CustomUser.objects.create_user(
+            email="manager@ac.uk",
+            password="password123",
+            first_name="Manager",
+            last_name="User",
+            preferred_name="Manager"
+        )
+        # Create societies (all approved)
+        self.society = Society.objects.create(
+            name="Tech Society",
+            description="A society for tech enthusiasts",
+            society_type="Technology",
+            manager=self.manager,
+            status="approved"
+        )
+        # Create several news items with distinct date_posted and views
+        now_time = timezone.now()
+        self.news1 = News.objects.create(
+            title="News A",
+            content="Content A",
+            society=self.society,
+            date_posted=now_time - timezone.timedelta(days=3),
+            views=10,
+            is_published=True
+        )
+        self.news2 = News.objects.create(
+            title="News B",
+            content="Content B",
+            society=self.society,
+            date_posted=now_time - timezone.timedelta(days=2),
+            views=20,
+            is_published=True
+        )
+        self.news3 = News.objects.create(
+            title="News C",
+            content="Content C",
+            society=self.society,
+            date_posted=now_time - timezone.timedelta(days=1),
+            views=5,
+            is_published=True
+        )
+        self.url = reverse("newspage")
+
+    def test_default_sorting_newest(self):
+        """Test that by default, news are sorted with newest first."""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        news_list = list(response.context["news_list"])
+        # Since "newest" is default, the first news item should be the one with the most recent date_posted.
+        self.assertEqual(news_list[0].title, "News C")
+
+        # Also, check that selected_sort is set to "newest" in context.
+        self.assertEqual(response.context.get("selected_sort"), "newest")
+
+    def test_sorting_oldest(self):
+        """Test that sorting by 'oldest' returns news in ascending order of date_posted."""
+        response = self.client.get(self.url + "?sort=oldest")
+        self.assertEqual(response.status_code, 200)
+        news_list = list(response.context["news_list"])
+        # In ascending order, the oldest (news1) comes first.
+        self.assertEqual(news_list[0].title, "News A")
+        self.assertEqual(response.context.get("selected_sort"), "oldest")
+
+    def test_sorting_popularity(self):
+        """Test that sorting by 'popularity' returns news in descending order of views."""
+        response = self.client.get(self.url + "?sort=popularity")
+        self.assertEqual(response.status_code, 200)
+        news_list = list(response.context["news_list"])
+        # news2 has the highest views (20) so should come first.
+        self.assertEqual(news_list[0].title, "News B")
+        self.assertEqual(response.context.get("selected_sort"), "popularity")
+
+    def test_context_includes_societies_and_choices(self):
+        """Test that the context contains societies and SOCIETY_TYPE_CHOICES."""
+        response = self.client.get(self.url)
+        self.assertIn("societies", response.context)
+        self.assertIn("SOCIETY_TYPE_CHOICES", response.context)        

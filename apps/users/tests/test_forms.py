@@ -387,3 +387,18 @@ class SignUpFormTest(TestCase):
         user = form.save()
         self.assertFalse(user.is_active)
         self.assertTrue(user.check_password('SecurePassword123'))
+    
+    def test_save_without_commit(self): # returns unsaved users
+        data = {
+            'email': 'temp@university.ac.uk',
+            'first_name': 'Temp',
+            'last_name': 'User',
+            'preferred_name': 'Temp',
+            'new_password': 'ValidPassword123',
+            'password_confirmation': 'ValidPassword123'
+        }
+        form = SignUpForm(data=data)
+        self.assertTrue(form.is_valid())
+        user = form.save(commit=False)
+        # Since commit=False, user.pk should be None -> unsaved
+        self.assertIsNone(user.pk)

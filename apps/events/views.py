@@ -20,6 +20,41 @@ from config.filters import EventFilter
 import requests
 from django.http import JsonResponse
 
+def user_can_delete_event(user, event):
+    """Return True if user is superuser or has manager/co_manager/editor role for any society of the event."""
+    if user.is_superuser:
+        return True
+
+    # The event may belong to multiple societies (m2m)
+    societies = event.society.all()
+    allowed_roles = [MembershipRole.MANAGER, MembershipRole.CO_MANAGER, MembershipRole.EDITOR]
+
+    for soc in societies:
+        membership = Membership.objects.filter(
+            society=soc,
+            user=user,
+            status=MembershipStatus.APPROVED
+        ).first()
+        if membership and membership.role in allowed_roles:
+            return True
+
+    return False
+
+@login_required
+def delete_event(request, event_id):
+    """Delete an event if user is manager/co_manager/editor or superuser."""
+    event = get_object_or_404(Event, id=event_id)
+
+    # Check permission
+    if not user_can_delete_event(request.user, event):
+        messages.error(request, "You do not have permission to delete this event.")
+        return redirect('eventspage')
+
+    # If authorized, delete the event
+    event.delete()
+    messages.success(request, "Event deleted successfully.")
+    return redirect('eventspage')
+
 def eventspage(request):
     """Events page view"""
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]

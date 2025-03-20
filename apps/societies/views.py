@@ -11,9 +11,11 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from .models import Society, SocietyRegistration, Widget
+from .models import Society, SocietyRegistration
 from .forms import NewSocietyForm
 from apps.news.models import News
+from config.functions import get_recent_news
+from apps.widgets.models import Widget 
 from config.filters import SocietyFilter
 from config.constants import SOCIETY_TYPE_CHOICES
 import json
@@ -26,6 +28,9 @@ def societiespage(request):
 
     # Sorting
     sort_option = request.GET.get("sort", "name_asc")
+    
+    # news panel news
+    recent_news = get_recent_news()
 
     if sort_option == "name_asc":
         filtered_societies = filtered_societies.order_by("name")
@@ -40,7 +45,10 @@ def societiespage(request):
     elif sort_option == "popularity":
         filtered_societies = filtered_societies.order_by("-members_count")
 
-    return render(request, "societies.html", {"societies": filtered_societies})
+    return render(request, "societies.html", {
+        "news_list": recent_news,
+        "societies": filtered_societies,
+        })
 
 
 def my_societies(request):
@@ -264,7 +272,6 @@ def society_detail(request, society_id):
         'memberships': memberships,
         'user_membership': user_membership,
     })
-    #return render(request, 'society_page.html', {'society': society})
 
 @login_required
 def join_society(request, society_id):
@@ -489,13 +496,12 @@ def remove_widget(request, society_id, widget_id):
     return redirect("society_admin_view", society_id=society_id)
 
 def society_page(request, society_id):
-    """Public society page that displays widgets dynamically."""
     society = get_object_or_404(Society, id=society_id)
     widgets = Widget.objects.filter(society=society).order_by("position")
 
     members_count = Membership.objects.filter(
         society=society, 
-        status=MembershipStatus.APPROVED
+        status='approved'
     ).count()
 
     membership = None
@@ -504,13 +510,10 @@ def society_page(request, society_id):
 
     if request.user.is_authenticated:
         membership = Membership.objects.filter(society=society, user=request.user).first()
-        if membership and membership.status == MembershipStatus.APPROVED:
+        if membership and membership.status == 'approved':
             is_member = True
         if society.manager == request.user:
             is_manager = True
-    
-    if not is_member:
-        widgets = widgets.exclude(widget_type__in=["discussion", "members"])
 
     context = {
         "society": society,
@@ -518,52 +521,9 @@ def society_page(request, society_id):
         "membership": membership,
         "is_member": is_member,
         "is_manager": is_manager,
-        "user_membership": membership,
         "members_count": members_count,
     }
     return render(request, "society_page.html", context)
-    
-    # remove member-only widgets for non-members
-    if not is_member:
-        widgets = widgets.exclude(widget_type__in=["discussion", "members"])
-
-    return render(
-        request,
-        "society_page.html",
-        {
-            "society": society,
-            "widgets": widgets,
-            "is_member": is_member,
-            "is_manager": is_manager,
-        },
-    )
-
-@csrf_exempt
-#@login_required
-def update_widget_order(request, society_id):
-    """Update widget order when the manager rearranges widgets."""
-    if request.method == "POST":
-        society = get_object_or_404(Society, id=society_id)
-
-        # ensures only the manager can update order
-        if request.user != society.manager:
-            return JsonResponse({"error": "Permission denied"}, status=403)
-
-        try:
-            data = json.loads(request.body)
-            widget_order = data.get("widget_order", [])
-
-            for index, widget_id in enumerate(widget_order):
-                widget = Widget.objects.get(id=widget_id, society=society)
-                widget.position = index
-                widget.save()
-
-            return JsonResponse({"success": True})
-
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=400)
-
-    return JsonResponse({"error": "Invalid request"}, status=400)
 
 @login_required
 def leave_society(request, society_id):

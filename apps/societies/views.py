@@ -85,6 +85,16 @@ def create_society(request):
             visibility="Private",  # Admin should still see private ones
             )     
             new_society.save()  
+            
+            # Create an approved membership record for the society manager if one doesn't exist
+            if not Membership.objects.filter(society=new_society, user=new_society.manager).exists():
+                Membership.objects.create(
+                    society=new_society,
+                    user=new_society.manager,
+                    role=MembershipRole.MANAGER,
+                    status=MembershipStatus.APPROVED
+                )
+
 
             messages.success(request, "Society application submitted. Awaiting approval.")
             return redirect('societiespage')

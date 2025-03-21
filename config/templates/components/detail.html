@@ -4,7 +4,7 @@
 <!-- 🎯 이벤트 상세 모달 -->
 <div id="event-detail-modal" class="event-modal hidden">
     <div class="event-modal-content">
-        
+
         <!-- ❌ 닫기 버튼 -->
         <button id="event-detail-close" class="modal-close">&times;</button>
 
@@ -46,7 +46,7 @@
         <div class="event-action">
             <button id="event-register" class="btn-register">Register Now</button>
 
-            {% if user_membership and (user_membership.role == "manager" or user_membership.role == "co_manager" or user_membership.role == "editor") or user.is_superuser %}
+            {% if user_membership and user_membership.role == 'manager' or user_membership.role == 'co_manager' or user_membership.role == 'editor' or user.is_superuser %}
             <form id="delete-event-form" method="post" action="{% url 'delete_event' event.id %}">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-danger" id="event-delete">

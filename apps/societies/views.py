@@ -1,4 +1,4 @@
-from .models import Society, Membership, MembershipRole, MembershipStatus
+from .models import Society, Membership, MembershipRole, MembershipStatus, RequirementType
 from .functions import approved_societies, get_societies, manage_societies, get_all_users, top_societies
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -70,7 +70,7 @@ def create_society(request):
             society_registration = form.save(commit=False)
             society_registration.applicant = request.user
             society_registration.status = 'pending'
-            society_registration.save()     
+            society_registration.save()
 
             # Create a Society instance for admin visibility
             new_society = Society.objects.create(
@@ -80,8 +80,8 @@ def create_society(request):
             status="pending",  # Ensure it's pending so admin can see it
             manager=society_registration.applicant,
             visibility="Private",  # Admin should still see private ones
-            )     
-            new_society.save()  
+            )
+            new_society.save()
 
             messages.success(request, "Society application submitted. Awaiting approval.")
             return redirect('societiespage')
@@ -150,7 +150,7 @@ def manage_society(request, society_id):
     if request.user.is_superuser:
         is_authorized = True
 
-    else:  
+    else:
         if society.manager == request.user:
             is_authorized = True
         else:
@@ -166,9 +166,9 @@ def manage_society(request, society_id):
     if not is_authorized:
         messages.error(request, "You do not have permission to manage this society.")
         return redirect('societiespage')
-    
+
     society.members_count = Membership.objects.filter(
-        society=society, 
+        society=society,
         status=MembershipStatus.APPROVED
     ).count()
     society.save()
@@ -248,13 +248,13 @@ def update_membership(request, society_id, user_id):
             return redirect('manage_society', society_id=society.id)
 
         society.members_count = Membership.objects.filter(
-            society=society, 
+            society=society,
             status=MembershipStatus.APPROVED
         ).count()
         society.save()
 
         return redirect('manage_society', society_id=society_id)
-    
+
     else:
         return render(request, 'update_membership.html', {
             'society': society,
@@ -287,7 +287,7 @@ def join_society(request, society_id):
     if existing_member and existing_member.status in [MembershipStatus.APPROVED, MembershipStatus.PENDING]:
         messages.info(request, "You are already a member or have an application pending.")
         return redirect('society_page', society_id=society.id)
-    
+
     requirement = getattr(society, 'requirement', None)
     req_type = requirement.requirement_type if requirement else RequirementType.NONE
 
@@ -302,7 +302,7 @@ def join_society(request, society_id):
                 return redirect('society_page', society_id=society.id)
             else:
                 return render(request, 'join_society.html', {'society': society, 'form': form})
-        
+
         else:
             form = JoinSocietyForm(society=society, user=request.user)
 
@@ -410,7 +410,7 @@ def decide_application(request, society_id, application_id, decision):
             user=application.user,
             defaults={'role': MembershipRole.MEMBER, 'status': MembershipStatus.APPROVED}
         )
-    
+
         # Now update status to approved
         membership.status = MembershipStatus.APPROVED
         membership.save()
@@ -552,7 +552,7 @@ def society_page(request, society_id):
     widgets = Widget.objects.filter(society=society).order_by("position")
 
     members_count = Membership.objects.filter(
-        society=society, 
+        society=society,
         status=MembershipStatus.APPROVED
     ).count()
 
@@ -566,7 +566,7 @@ def society_page(request, society_id):
             is_member = True
         if society.manager == request.user:
             is_manager = True
-    
+
     if not is_member:
         widgets = widgets.exclude(widget_type__in=["discussion", "members"])
 
@@ -580,7 +580,7 @@ def society_page(request, society_id):
         "members_count": members_count,
     }
     return render(request, "society_page.html", context)
-    
+
     # remove member-only widgets for non-members
     if not is_member:
         widgets = widgets.exclude(widget_type__in=["discussion", "members"])
@@ -627,7 +627,7 @@ def update_widget_order(request, society_id):
 def leave_society(request, society_id):
     society = get_object_or_404(Society, id=society_id)
     membership = Membership.objects.filter(
-        society=society, 
+        society=society,
         user=request.user,
         status=MembershipStatus.APPROVED
     ).first()

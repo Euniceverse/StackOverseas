@@ -84,8 +84,8 @@ def search_societies(query):
     corrected_query = correct_spelling(query.strip().lower())
     completed_query = autocomplete(corrected_query)
 
-    # Step 2: Get all society types and names
-    society_types = list(Society.objects.values_list("society_type", flat=True))
+    # Step 2: Get all society types from approved societies only
+    society_types = list(Society.objects.filter(status="approved").values_list("society_type", flat=True))
 
     if not society_types:
         return [], completed_query
@@ -98,8 +98,8 @@ def search_societies(query):
     best_match_index = torch.argmax(similarity_scores)
     best_match = society_types[best_match_index]
 
-    # Step 4: Filter societies strictly by the best-matching `society_type`
-    filtered_societies = list(Society.objects.filter(society_type=best_match))
+    # Step 4: Filter only approved societies with the best-matching `society_type`
+    filtered_societies = list(Society.objects.filter(status="approved", society_type=best_match))
 
     if not filtered_societies:
         return [], completed_query
@@ -113,13 +113,14 @@ def search_societies(query):
 
     sorted_results = [society for society, score in ranked_societies]
 
-    # Step 6: Check Society Names (for name-based searches)
-    name_societies = Society.objects.filter(name__icontains=completed_query)
+    # Step 6: Check approved Society Names (for name-based matches)
+    name_societies = Society.objects.filter(status="approved", name__icontains=completed_query)
 
     # Step 7: Merge Name Matches + Sorted Description Matches (Avoid Duplicates)
     final_results = list(name_societies) + [society for society in sorted_results if society not in name_societies]
 
     return final_results, completed_query
+
 
 def get_recent_news(count=5):
     """Return the most recent published news items."""

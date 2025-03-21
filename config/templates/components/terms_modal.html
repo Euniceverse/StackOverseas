@@ -1,0 +1,71 @@
+{% load static %}
+
+<div id="terms-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Terms and Conditions</h2>
+            <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p class="effective-date">Effective Date: March 21, 2024</p>
+
+            <section>
+                <h3>1. Acceptance of Terms</h3>
+                <p>By accessing or using StackOverseas, you agree to be bound by these Terms and our Privacy Policy.</p>
+            </section>
+
+            <section>
+                <h3>2. User Accounts and Authentication</h3>
+                <ul>
+                    <li>Valid university email required</li>
+                    <li>Accurate profile information required</li>
+                    <li>No impersonation allowed</li>
+                </ul>
+            </section>
+
+            <!-- Add other sections as needed -->
+        </div>
+    </div>
+</div>
+
+<style>
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: relative;
+    background-color: #fff;
+    margin: 15% auto;
+    padding: 20px;
+    width: 70%;
+    max-width: 700px;
+    max-height: 70vh;
+    overflow-y: auto;
+    border-radius: 5px;
+}
+
+.close {
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+.modal-header {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.modal-body section {
+    margin-bottom: 1.5rem;
+}
+</style>

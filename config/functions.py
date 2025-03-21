@@ -5,6 +5,7 @@ import requests
 import torch
 from apps.societies.models import Society
 from apps.events.models import Event
+from apps.news.models import News
 
 # Load AI model for meaning-based matching
 model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -119,3 +120,7 @@ def search_societies(query):
     final_results = list(name_societies) + [society for society in sorted_results if society not in name_societies]
 
     return final_results, completed_query
+
+def get_recent_news(count=5):
+    """Return the most recent published news items."""
+    return News.objects.filter(is_published=True).order_by('-date_posted')[:count]

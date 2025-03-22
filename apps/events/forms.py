@@ -1,6 +1,6 @@
 from config.constants import (
-    MAX_NAME, MAX_DESCRIPTION, MAX_LOCATION, 
-    EVENT_TYPE_CHOICES
+    MAX_NAME, MAX_DESCRIPTION, MAX_LOCATION,
+    EVENT_TYPE_CHOICES, UNI_CHOICES
 )
 from apps.societies.models import Society
 from django.core.validators import MinValueValidator
@@ -37,13 +37,13 @@ class NewEventForm(forms.Form):
 
     keyword = forms.CharField(
         max_length=50,
-        required=False, 
+        required=False,
     )
 
-    location = forms.CharField(
-        max_length=MAX_LOCATION,
+    location = forms.ChoiceField(
+        choices=[('', 'Select Location')] + [(city, city) for city in UNI_CHOICES.keys()],
         required=True,
-        help_text="Enter location such as 'London' or 'Online'."
+        help_text="Select the event location."
     )
 
     capacity = forms.IntegerField(
@@ -52,7 +52,7 @@ class NewEventForm(forms.Form):
     )
 
     member_only = forms.BooleanField(
-        initial=False, 
+        initial=False,
         required=False,
     )
 
@@ -67,6 +67,9 @@ class NewEventForm(forms.Form):
         initial=True,
         required=False,
     )
+
+    latitude = forms.FloatField(required=False, widget=forms.HiddenInput())
+    longitude = forms.FloatField(required=False, widget=forms.HiddenInput())
 
     # society = forms.ModelMultipleChoiceField(
     #    queryset=Society.objects.all(),
@@ -91,5 +94,3 @@ class NewEventForm(forms.Form):
             cleaned_data["is_free"] = False
 
         return cleaned_data
-    
-

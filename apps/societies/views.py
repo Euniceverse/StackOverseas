@@ -74,14 +74,22 @@ def create_society(request):
 
             # Create a Society instance for admin visibility
             new_society = Society.objects.create(
-            name=society_registration.name,
-            description=society_registration.description,
-            society_type=society_registration.society_type,
-            status="pending",  # Ensure it's pending so admin can see it
-            manager=society_registration.applicant,
-            visibility="Private",  # Admin should still see private ones
+                name=society_registration.name,
+                description=society_registration.description,
+                society_type=society_registration.society_type,
+                status="pending",  # Ensure it's pending so admin can see it
+                manager=society_registration.applicant,
+                visibility="Private",  # Admin should still see private ones
             )
             new_society.save()
+
+            # Create a membership for the manager with manager role
+            Membership.objects.create(
+                society=new_society,
+                user=request.user,
+                role=MembershipRole.MANAGER,
+                status=MembershipStatus.APPROVED
+            )
 
             messages.success(request, "Society application submitted. Awaiting approval.")
             return redirect('societiespage')

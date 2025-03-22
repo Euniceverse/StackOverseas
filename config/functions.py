@@ -99,7 +99,12 @@ def search_societies(query):
     best_match = society_types[best_match_index]
 
     # Step 4: Filter only approved societies with the best-matching `society_type`
-    filtered_societies = list(Society.objects.filter(status="approved", society_type=best_match))
+    filtered_societies = list(Society.objects.filter(
+    status="approved",
+    visibility="Public",  # 🟢 ADD THIS LINE
+    society_type=best_match
+    ))
+
 
     if not filtered_societies:
         return [], completed_query

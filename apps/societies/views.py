@@ -132,11 +132,21 @@ def admin_confirm_society_decision(request, society_id, action):
         'action': action
     })
 
+@login_required
 def view_manage_societies(request):
-    to_manage = manage_societies(request.user)
-    news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
-    return render(request, "societies.html", {'societies': to_manage, "news_list": news_list, 'page':'Manange'})
+    if request.user.is_superuser:
+        # For admin users, show all societies regardless of status
+        societies = Society.objects.all()
+    else:
+        # For regular users, show only approved societies
+        societies = Society.objects.filter(status='approved')
 
+    news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
+    return render(request, "societies.html", {
+        'societies': societies,
+        'news_list': news_list,
+        'page': 'Manage'
+    })
 
 @login_required
 def manage_society(request, society_id):

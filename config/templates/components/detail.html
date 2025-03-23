@@ -45,6 +45,15 @@
         <!-- 📝 참가 버튼 -->
         <div class="event-action">
             <button id="event-register" class="btn-register">Register Now</button>
+
+            {% if user_membership and (user_membership.role == "manager" or user_membership.role == "co_manager" or user_membership.role == "editor") or user.is_superuser %}
+            <form id="delete-event-form" method="post" action="{% url 'delete_event' event.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger" id="event-delete">
+                    Delete Event
+                </button>
+            </form>
+            {% endif %}
         </div>
     </div>
 </div>

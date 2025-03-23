@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.shortcuts import reverse
+from django.utils import timezone
 from apps.societies.models import Society, Membership, SocietyRegistration
 from apps.users.models import CustomUser
 from apps.societies.functions import (
@@ -44,7 +45,8 @@ class FunctionsTestCase(TestCase):
             name="Test Society",
             status="approved",
             members_count=10,
-            manager=self.staff_user
+            manager=self.staff_user,
+            visibility="Public"
         )
         
         self.pending_registration = SocietyRegistration.objects.create(

@@ -1,7 +1,19 @@
 {% extends "base.html" %}
+{% load static %}
 {% block content %}
     <h1>{{ news.title }}</h1>
-    <body>
+    <div class="news-detail">
         <p>{{ news.content }}</p>
-    </body>
+    </div>
+
+    {% if user.is_authenticated %}
+        {% if user_membership and user_membership.role == "manager" or user_membership and user_membership.role == "co_manager" or user_membership and user_membership.role == "editor" or user.is_superuser %}
+        <form id="delete-news-form" method="post" action="{% url 'delete_news' news.id %}" onsubmit="return confirm('Are you sure you want to delete this news?');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" id="news-delete">Delete News</button>
+        </form>
+      {% endif %}
+    {% endif %}
+    
 {% endblock %}
+

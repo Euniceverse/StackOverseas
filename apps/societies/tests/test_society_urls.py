@@ -1,5 +1,6 @@
 from django.test import TestCase, Client
 from django.urls import reverse, resolve
+from django.utils import timezone
 from apps.societies.views import societiespage, create_society, join_society, admin_confirm_delete
 
 class SocietiesUrlsTest(TestCase):

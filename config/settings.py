@@ -102,12 +102,8 @@ MEDIA_ROOT = BASE_DIR / 'config' / 'media'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'YOUR_DB_NAME',
-        'USER': 'YOUR_DB_USER',
-        'PASSWORD': 'YOUR_DB_PASSWORD',
-        'HOST': 'YOUR_DB_HOST',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.environ.get('SQLITE_DB_PATH',  '/mnt/data/db.sqlite3'),
     }
 }
 

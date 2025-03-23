@@ -197,5 +197,5 @@ def auto_edit_news(request, event_id):
 
 def event_detail(request, event_id):
     event = get_object_or_404(Event, id=event_id)
-    return render(request, "detail.html", {"event": event})
+    return render(request, "config/detail.html", {"event": event})
 

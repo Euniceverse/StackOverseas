@@ -40,10 +40,10 @@ class NewEventForm(forms.Form):
         required=False,
     )
 
-    location = forms.ChoiceField(
-        choices=[('', 'Select Location')] + [(city, city) for city in UNI_CHOICES.keys()],
+    location = forms.CharField(
+        max_length=MAX_LOCATION,
         required=True,
-        help_text="Select the event location."
+        help_text="Start typing your UK address..."
     )
 
     capacity = forms.IntegerField(
@@ -68,8 +68,8 @@ class NewEventForm(forms.Form):
         required=False,
     )
 
-    latitude = forms.FloatField(required=False, widget=forms.HiddenInput())
-    longitude = forms.FloatField(required=False, widget=forms.HiddenInput())
+    latitude = forms.FloatField(required=True, widget=forms.HiddenInput())
+    longitude = forms.FloatField(required=True, widget=forms.HiddenInput())
 
     # society = forms.ModelMultipleChoiceField(
     #    queryset=Society.objects.all(),
@@ -89,8 +89,13 @@ class NewEventForm(forms.Form):
         cleaned_data = super().clean()
         fee = cleaned_data.get("fee", Decimal("0.00"))
         is_free = cleaned_data.get("is_free", True)
+        latitude = cleaned_data.get("latitude")
+        longitude = cleaned_data.get("longitude")
 
         if fee > Decimal("0.00"):
             cleaned_data["is_free"] = False
+
+        if not latitude or not longitude:
+            raise forms.ValidationError("Please select a valid address from the suggestions to set the location coordinates.")
 
         return cleaned_data

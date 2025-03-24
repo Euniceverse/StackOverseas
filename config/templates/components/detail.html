@@ -66,9 +66,9 @@
                 
                     if (registerButton) {
                         registerButton.addEventListener("click", function (event) {
-                            event.preventDefault();  // Stop default behavior
+                            event.preventDefault();  
                 
-                            // Fetch event details from the modal
+                         
                             let eventId = document.getElementById("event-id-input").value.trim();
                             let name = document.getElementById("event-name").textContent.trim();
                             let price = document.getElementById("event-price-input").value.trim();
@@ -93,7 +93,7 @@
                             })
                             .then(response => response.json())
                             .then(data => {
-                                if (data.url) {  // ✅ Redirect to the correct session URL
+                                if (data.url) {  
                                     console.log("✅ Redirecting to Stripe Checkout...");
                                     window.location.href = data.url;
                                 } else {
@@ -106,7 +106,7 @@
                 });
             </script>
 
-            {% if user_membership and (user_membership.role == "manager" or user_membership.role == "co_manager" or user_membership.role == "editor") or user.is_superuser %}
+            {% if user_membership and user_membership.role == "manager" or user_membership and user_membership.role == "co_manager" or user_membership and user.membership.role == "editor" or user.is_superuser %}
             <form id="delete-event-form" method="post" action="{% url 'delete_event' event.id %}">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-danger" id="event-delete">

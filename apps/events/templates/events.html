@@ -6,7 +6,15 @@
 {% block fullpage %}
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'events.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="{% static 'js/map.js' %}" defer></script>
     <script src="{% static 'js/view-switcher.js' %}" defer></script>
+    <!-- Set the global variable for the map URL -->
+    <script>
+      window.eventMapUrl = "{% url 'event_map' %}";
+      console.log("eventMapUrl:", window.eventMapUrl);
+    </script>
 
     <div class="event-header">
         <div class="event-title">All Events</div>

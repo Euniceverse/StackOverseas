@@ -111,13 +111,19 @@ def create_dummy_societies(users, n=50):
 
         generated_description = generate_society_description(generated_name, society_type,)
 
+        if random.random() < 0.7: 
+            fee = 0
+        else:
+            fee = random.randint(1, 20)  
+            
         society = Society.objects.create(
             name=generated_name,
             description=generated_description,
             society_type=society_type,
             status=random.choice([key for key, _ in constants.SOCIETY_STATUS_CHOICES]),
             manager=random.choice(users),
-            joining_fee = 5.00
+            joining_fee = fee
+            
         )
 
         society.location = get_location_from_email(society.manager.email)  # Get location from email
@@ -154,7 +160,7 @@ def create_dummy_events(societies, n=70):
             future_date = timezone.make_aware(future_date)
 
         is_free = random.choice([True, False])  # Determine if the event is free
-        fee = 0.00 if is_free else round(random.uniform(5, 100), 2)
+        fee = 0.00 if is_free else round(random.randint(5, 100), 2)
 
         event = Event.objects.create(
             event_type=random.choice([key for key in constants.EVENT_TYPE_CHOICES]),

@@ -38,7 +38,12 @@ EMAIL_HOST_PASSWORD = 'btlmfvczvkrffiiy'
 EMAIL_USE_TLS = True
 PASSWORD_RESET_TIMEOUT = 14400 # 4 hours
 
+# Strip Payment
+#STRIPE_PUBLIC_KEY = "pk_test_51QviGhCivs73HAIb0tIGL6u609Zb1ugKLnKhX2KAWXGHNbhod64MBQZLI0aXiihufN0w1XjdFW3JjjyM9TEoEYVx00NaRxAXxk" 
+STRIPE_PUBLIC_KEY = "pk_test_51QviGaE1rp8ABg2BZkClndNES4HcFS2yJVKbc10uIfMf9jF6QuuS1TKZ7SgVKU8DK43TXWzQlS1fGcswox4WFuve00bNqjsbvD"
+STRIPE_SECRET_KEY = "sk_test_51QviGaE1rp8ABg2B5FjMH41ur4Ud9tVa7ehaWILwhobjmC4SBjWPTYm9a7DDmBPZVMRus3AzzARkpymzj4h2zsWw00Hg0K7rJI"
 
+DOMAIN_NAME = "http://127.0.0.1:8000"
 
 # Application definition
 
@@ -59,6 +64,7 @@ INSTALLED_APPS = [
     'apps.news',
     'apps.societies',
     'apps.users',
+    'apps.payments'
 ]
 
 MIDDLEWARE = [
@@ -198,3 +204,7 @@ ALLOWED_HOSTS = [
 
 DOMAIN_NAME = "127.0.0.1:8000"  # Change this if running on another port
 
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:8000",
+    "https://checkout.stripe.com",
+]

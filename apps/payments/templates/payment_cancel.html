@@ -7,7 +7,7 @@
 {% if type == "event" and object %}
     <a href="{% url 'eventspage' %}" class="btn btn-warning">Back to Event</a>
 {% elif type == "society" and object %}
-    <a href="{% url 'society_detail' object.id %}" class="btn btn-warning">Back to Society</a>
+    <a href="{% url 'society_page' object.id %}" class="btn btn-warning">Back to Society</a>
 {% else %}
     <a href="{% url 'home' %}" class="btn btn-secondary">Go Home</a>
 {% endif %}

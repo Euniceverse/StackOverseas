@@ -578,6 +578,7 @@ def society_page(request, society_id):
         "society": society,
         "widgets": widgets,
         "membership": membership,
+        "user_membership": membership,
         "is_member": is_member,
         "is_manager": is_manager,
         "members_count": members_count,

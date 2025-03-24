@@ -29,7 +29,6 @@ class Vote(models.Model):
     
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        self.option.option_count += 1
         self.option.save()
 
     def __str__(self):

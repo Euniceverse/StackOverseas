@@ -8,20 +8,39 @@
 <body>
     <h1>{{ question.question_text }}</h1>
 
-    <form method="POST">
-        {% csrf_token %}
-        {% for option in options %}
-            <div>
-                <label>
-                    <input type="radio" name="option" value="{{ option.id }}">
-                    {{ option.option_text }} (Votes: {{ option.option_count }})
-                </label>
-            </div>
-        {% endfor %}
-        <button type="submit">Vote</button>
-    </form>
+    {% if user_selected_option %}
+        <p>You voted for: <strong>{{ user_selected_option.option_text }}</strong></p>
+        <form action="{% url 'panels:cancel_vote' question_id=question.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit">Cancel Vote</button>
+        </form>
+        <form method="POST">
+            {% csrf_token %}
+            {% for option in options %}
+                <div>
+                    <label>
+                        <input type="radio" name="option" value="{{ option.id }}">
+                        {{ option.option_text }} (Votes: {{ option.option_count }})
+                    </label>
+                </div>
+            {% endfor %}
+            <button type="submit">Vote</button>
+        </form>
+    {% else %}
+        <form method="POST">
+            {% csrf_token %}
+            {% for option in options %}
+                <div>
+                    <label>
+                        <input type="radio" name="option" value="{{ option.id }}">
+                        {{ option.option_text }} (Votes: {{ option.option_count }})
+                    </label>
+                </div>
+            {% endfor %}
+            <button type="submit">Vote</button>
+        </form>
+    {% endif %}
 
     <a href="{% url 'panels:index' %}">Back to Poll List</a>
 </body>
 </html>
-

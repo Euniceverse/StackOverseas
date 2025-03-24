@@ -13,13 +13,14 @@ def create_poll(request):
     if request.method == 'POST':
         form = PollForm(request.POST)
         if form.is_valid():
-            form.save(user=request.user)  # 폼에서 저장 처리
-            return redirect('panels:index')  # 성공 시 목록 페이지로 리디렉션
+            form.save(user=request.user) 
+            return redirect('panels:index') 
     else:
-        form = PollForm()  # GET 요청 시 빈 폼
+        form = PollForm()  
 
     return render(request, 'create_poll.html', {'form': form})
 
+@login_required
 def index(request):
     questions = Question.objects.all()
     return render(request, 'index.html', {'questions': questions})
@@ -27,22 +28,44 @@ def index(request):
 @login_required
 def vote(request, question_id):
     question = get_object_or_404(Question, id=question_id)
-
-    if request.method == 'POST':
-        selected_option_id = request.POST.get('option')
-        selected_option = get_object_or_404(Option, id=selected_option_id, question=question)
-
-        # 이미 투표한 사용자 체크
-        if Vote.objects.filter(voted_by=request.user, option=selected_option).exists():
-            return redirect('panels:index')  # 이미 투표한 경우 리디렉션
-
-        # 새로운 투표 저장
-        vote = Vote(option=selected_option, voted_by=request.user)
-        vote.save()
-
-        selected_option.save()
-
-        return redirect('panels:index')
-
     options = question.options.all()
-    return render(request, 'vote.html', {'question': question, 'options': options})
+
+    user_vote = Vote.objects.filter(voted_by=request.user, option__question=question).first()
+    user_selected_option = user_vote.option if user_vote else None
+
+    if request.method == 'POST' and not user_vote:
+        selected_option_id = request.POST.get('option')
+        if selected_option_id:
+            selected_option = get_object_or_404(Option, id=selected_option_id, question=question)
+
+            Vote.objects.create(option=selected_option, voted_by=request.user)
+            selected_option.option_count += 1
+            selected_option.save()
+
+            return redirect('panels:vote', question_id=question.id)
+
+    return render(request, 'vote.html', {
+        'question': question,
+        'options': options,
+        'user_selected_option': user_selected_option 
+    })
+
+from django.db import transaction
+
+@login_required
+def cancel_vote(request, question_id):
+    question = get_object_or_404(Question, id=question_id)
+
+    vote = Vote.objects.filter(voted_by=request.user, option__question=question).first()
+
+    if vote:
+        selected_option = vote.option  
+        with transaction.atomic():  
+            vote.delete()  
+
+            selected_option.refresh_from_db()
+            if selected_option.option_count > 0:
+                selected_option.option_count -= 1
+                selected_option.save()
+
+    return redirect('panels:vote', question_id=question.id) 

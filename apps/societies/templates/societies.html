@@ -162,7 +162,12 @@
                     {% endif %}
 
                     <p class="card-text">{{ society.description|truncatewords:15 }}</p>
-                    <a href="{% url 'society_page' society.id %}" class="btn btn-primary">View Details</a>
+                    {% if society.id %}
+  <a href="{% url 'society_page' society.id %}" class="btn btn-primary">View Details</a>
+{% else %}
+  <span class="text-muted">Not available</span>
+{% endif %}
+
                 </div>
             </div>
         </div>
@@ -216,4 +221,9 @@
 </script>
 
 
+{% endblock %}
+
+
+{% block news_panel %}
+    {% include 'news-panel.html' %}
 {% endblock %}

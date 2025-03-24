@@ -35,7 +35,7 @@
     {% else %}
         <!-- The user is logged in but not a member yet -->
         <p>You are not a member of this society.</p>
-        <a href="{% url 'join_society' society.id %}" 
+        <a href="{% url 'join_society' society.id %}"
             class="btn btn-primary"
             id="join-society-link">
             Join Society
@@ -43,11 +43,11 @@
     {% endif %}
 
 {% else %}
-    <!-- The user is not logged in at all -->
-    <p>You are not logged in.
-       <a href="{% url 'log_in' %}?next={% url 'society_page' society.id %}">Log in</a>
-       to join or leave this society.
-    </p>
+  <!-- The user is not logged in at all -->
+  <p>You are not logged in.
+     <a href="{% url 'log_in' %}?next={% url 'society_page' society.id %}">Log in</a>
+     to join or leave this society.
+  </p>
 {% endif %}
 
 <!-- If user is manager/co_manager/editor + approved, show "Manage Society" and "Create Event" -->
@@ -93,67 +93,52 @@
         </div>
         <button id="save-order">Save Order</button>
 
-    
+
 {% else %}
-        <!-- Normal or not logged in => show widgets, but no drag & drop -->
-        <div id="widgets-container">
-            <ul id="sortable-widgets">
+    <!-- For non-managers, just display the widgets without drag-and-drop -->
+    <div id="widgets-container">
+        <ul id="sortable-widgets">
             {% for widget in widgets %}
-                <li class="widget ui-state-default" data-widget-id="{{ widget.id }}">
+                <li class="widget">
                 <h3>{{ widget.get_widget_type_display }}</h3>
-                <div class="widget-content">
                     {% if widget.widget_type == "announcements" %}
-                    <p>Latest announcements will appear here.</p>
+                        {% include 'widgets/announcements_widget.html' with widget=widget %}
                     {% elif widget.widget_type == "events" %}
-                    <p>Upcoming events will be displayed here.</p>
+                        {% include 'widgets/events_widget.html' with widget=widget %}
                     {% elif widget.widget_type == "gallery" %}
-                    <p>Photo gallery will be displayed here.</p>
+                        {% include 'widgets/gallery_widget.html' with widget=widget %}
                     {% elif widget.widget_type == "contacts" %}
-                    <p>Contact information for the society will be displayed here.</p>
+                        {% include 'widgets/contacts_widget.html' with widget=widget %}
                     {% elif widget.widget_type == "featured" %}
-                    <p>Featured members (president, vice, etc.) will be displayed here.</p>
+                        {% include 'widgets/featured_widget.html' with widget=widget %}
                     {% elif widget.widget_type == "leaderboard" %}
-                    <p>Leaderboard will be displayed here.</p>
+                        {% include 'widgets/leaderboard_widget.html' with widget=widget %}
                     {% elif widget.widget_type == "news" %}
-                    <p>News will be displayed here.</p>
+                        {% include 'widgets/news_widget.html' with widget=widget %}
+                    {% else %}
+                        <div class="default-widget">
+                            {{ widget.custom_html|safe }}
+                        </div>
                     {% endif %}
-                </div>
                 </li>
             {% endfor %}
-            </ul>
-        </div>
-
+        </ul>
+    </div>
 {% endif %}
 {% endblock %}
 
 {% block extra_scripts %}
-<!-- Include jQuery & jQuery UI -->
+<!-- jQuery & jQuery UI for drag-and-drop functionality (only loaded if necessary) -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
 <script>
-    console.log("jQuery version:", $.fn.jquery);
-    console.log("jQuery UI loaded:", $.ui);
-</script>
-
-<script>
 $(document).ready(function() {
-    console.log("society_page loaded");
-
     if ($("#save-order").length) {
-        console.log("User is a manager. Initialising drag-and-drop...");
-
-        // Check if jQuery UI is working
-        if (!$.ui) {
-            console.error("jQuery UI is not loaded! Check script includes.");
-            return;
-        }
-
-        // Enable drag-and-drop sorting
+        // Initialize sortable if the save button exists (manager view)
         $("#sortable-widgets").sortable({
             placeholder: "ui-state-highlight",
             update: function(event, ui) {
-                console.log("Widgets rearranged!");
                 let order = [];
                 $(".widget").each(function() {
                     order.push($(this).data("widget-id"));
@@ -161,17 +146,14 @@ $(document).ready(function() {
                 $("#save-order").data("order", order);
                 console.log("New order:", order);
             }
-        }).disableSelection(); // Prevents text selection while dragging
+        }).disableSelection();
 
-        // Save new widget order
         $("#save-order").click(function() {
             let order = $(this).data("order") || [];
             if (order.length === 0) {
                 alert("Nothing to save!");
                 return;
             }
-
-            console.log("Saving new widget order...", order);
 
             $.ajax({
                 url: "{% url 'update_widget_order' society.id %}",
@@ -189,9 +171,6 @@ $(document).ready(function() {
                 }
             });
         });
-    }
-    else {
-        console.log("User is NOT a manager. Drag-and-drop disabled.");
     }
 });
 </script>

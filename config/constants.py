@@ -144,3 +144,12 @@ with open("event_choices.json", "w") as f:
     json.dump(event_choices_dict, f)
 
     
+WIDGET_TYPES = [
+        ("announcements", "Announcements"),
+        ("events", "Events"),
+        ("gallery", "Gallery"),
+        ("contacts", "Contact Information"),
+        ("featured", "Featured Members"),
+        ("leaderboard", "Leaderboard"),
+        ("news", "News")
+    ]

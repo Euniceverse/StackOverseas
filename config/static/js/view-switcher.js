@@ -5,54 +5,42 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const listView = document.querySelector(".event-view-list");
     const calendarView = document.querySelector(".event-view-calendar");
-    const mapView = document.querySelector(".event-view-map");
 
     if (!listButton || !calendarButton || !mapButton) {
         console.error("❌ ERROR: One or more buttons are missing!");
         return;
     }
 
-    if (!listView || !calendarView || !mapView) {
+    if (!listView || !calendarView) {
         console.error("❌ ERROR: One or more views are missing!");
         return;
     }
 
-    // ✅ Function to switch active view
     function switchView(activeButton, activeView) {
         console.log(`🔄 Switching to: ${activeButton.id}`);
 
-        // 🔥 Remove "active" class from all buttons
         listButton.classList.remove("active");
         calendarButton.classList.remove("active");
         mapButton.classList.remove("active");
 
-        // 🔥 Hide all views
         listView.style.display = "none";
         calendarView.style.display = "none";
-        mapView.style.display = "none";
 
-        // 🔥 Show selected view and highlight button
         activeButton.classList.add("active");
         activeView.style.display = "block";
 
-        if (activeView === mapView) {
-            initializeMap(); // 🌍 지도 최초 로드
-            resizeMap();
-        }
         if (activeView === calendarView) {
-            initializeCalendar(); // 🌍 지도 최초 로드
-            resizeCalendar();     // 🌍 지도 크기 재조정
+            initializeCalendar();
+            resizeCalendar();
         }
         if (activeView === listView) {
-            initializeList(); // 🌍 지도 최초 로드
-            resizeList();     // 🌍 지도 크기 재조정
+            initializeList();
+            resizeList();
         }
     }
 
-    // ✅ Default view: CALENDAR
     switchView(calendarButton, calendarView);
 
-    // ✅ Event listeners for each button
     listButton.addEventListener("click", function () {
         switchView(listButton, listView);
     });
@@ -61,8 +49,8 @@ document.addEventListener("DOMContentLoaded", function () {
         switchView(calendarButton, calendarView);
     });
 
+    // Use the global variable that holds the URL for event_map
     mapButton.addEventListener("click", function () {
-        switchView(mapButton, mapView);
+        window.location.href = window.eventMapUrl;
     });
 });
-

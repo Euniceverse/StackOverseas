@@ -16,7 +16,7 @@ from django.conf import settings
 
 class Event(models.Model):
     """Model representing an event (e.g. a student society meetup)."""
-    
+
     society = models.ManyToManyField(
         Society,
     )

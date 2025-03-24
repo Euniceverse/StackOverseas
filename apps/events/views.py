@@ -137,6 +137,10 @@ def create_event(request, society_id):
     if request.method == 'POST':
         form = NewEventForm(request.POST)
         if form.is_valid():
+            # Debug logging
+            print("Form data:", form.cleaned_data)
+            print("Coordinates:", form.cleaned_data.get('latitude'), form.cleaned_data.get('longitude'))
+
             event = Event.objects.create(
                 name=form.cleaned_data['name'],
                 description=form.cleaned_data['description'],
@@ -147,14 +151,20 @@ def create_event(request, society_id):
                 capacity=form.cleaned_data['capacity'],
                 member_only=form.cleaned_data['member_only'],
                 fee=form.cleaned_data['fee'],
+                fee_general=form.cleaned_data['fee'],
                 is_free=form.cleaned_data['is_free'],
+                latitude=form.cleaned_data['latitude'],
+                longitude=form.cleaned_data['longitude'],
             )
-            # For the many-to-many societies, you do:
-            event.society.add(society)
+            # Debug logging
+            print("Created event:", event.id, event.latitude, event.longitude)
 
+            event.society.add(society)
             messages.success(request, "Event created successfully!")
-            # The signal will create the News. We redirect to an edit page to let them finalize
             return redirect('auto_edit_news', event_id=event.id)
+        else:
+            # Debug logging
+            print("Form errors:", form.errors)
     else:
         form = NewEventForm()
 
@@ -166,7 +176,7 @@ def create_event(request, society_id):
 @login_required
 def auto_edit_news(request, event_id):
     """
-    Fetch all News objects that were auto-created for this Event 
+    Fetch all News objects that were auto-created for this Event
     (should be 1 per hosting society if you used your signal).
     Display them in a formset so the user can finalize or skip.
     """
@@ -180,7 +190,7 @@ def auto_edit_news(request, event_id):
         if formset.is_valid():
             instances = formset.save(commit=False)
             for news_item in instances:
-               
+
                 news_item.is_published = True
                 news_item.save()
 
@@ -195,7 +205,19 @@ def auto_edit_news(request, event_id):
     })
 
 
-def event_detail(request, event_id):
-    event = get_object_or_404(Event, id=event_id)
-    return render(request, "detail.html", {"event": event})
+def event_list(request):
+    events = Event.objects.exclude(latitude__isnull=True).exclude(longitude__isnull=True)
+    data = [{
+        "name": e.name,
+        "address": e.location,  # Keep as "address" for popup
+        "latitude": e.latitude,
+        "longitude": e.longitude,
+        "event_type": e.event_type,  # Add missing fields
+        "description": e.description,
+        "date": e.date.isoformat()  # Add date for modal formatting
+    } for e in events]
+    return JsonResponse(data, safe=False)
 
+
+def event_map(request):
+    return render(request, "event_map.html")

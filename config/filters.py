@@ -3,7 +3,7 @@ from django.db.models import Q, Count, F, ExpressionWrapper, IntegerField
 from django.utils.timezone import now, timedelta
 from django.db import models
 from apps.societies.models import Society
-from apps.events.models import Event, EVENT_TYPE_CHOICES 
+from apps.events.models import Event, EVENT_TYPE_CHOICES
 from apps.news.models import News
 
 
@@ -40,7 +40,7 @@ class GlobalFilterSet(django_filters.FilterSet):
 
     def filter_is_free(self, queryset, name, value):
         if value:
-            return queryset.filter(fee=0) 
+            return queryset.filter(fee=0)
         return queryset
 
     class Meta:
@@ -60,20 +60,20 @@ class EventFilter(GlobalFilterSet):
                 Q(fee_member__gte=value.start, fee_member__lte=value.stop) |
                 Q(fee_general__gte=value.start, fee_general__lte=value.stop)
             )
-        elif value.start: 
+        elif value.start:
             queryset = queryset.filter(
                 Q(fee__gte=value.start) |
                 Q(fee_member__gte=value.start) |
                 Q(fee_general__gte=value.start)
             )
-        elif value.stop:  
+        elif value.stop:
             queryset = queryset.filter(
                 Q(fee__lte=value.stop) |
                 Q(fee_member__lte=value.stop) |
                 Q(fee_general__lte=value.stop)
             )
         return queryset
-    
+
     def filter_available_slots(self, queryset, name, value):
         queryset = queryset.annotate(
             available_slots=ExpressionWrapper(
@@ -81,11 +81,11 @@ class EventFilter(GlobalFilterSet):
                 output_field=IntegerField()  # 결과를 정수(Integer)로 변환
             )
         )
-        
+
         if value:
             return queryset.filter(available_slots__gt=0)
         return queryset.filter(available_slots__lte=0)
-    
+
     class Meta:
         model = Event
         fields = ['event_type', 'location', 'capacity', 'member_only', 'fee', 'fee_general', 'fee_member']
@@ -120,4 +120,3 @@ class NewsFilter(django_filters.FilterSet):
     class Meta:
         model = News
         fields = ['society', 'society_type', 'date']
-

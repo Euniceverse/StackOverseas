@@ -35,7 +35,7 @@
     {% else %}
         <!-- The user is logged in but not a member yet -->
         <p>You are not a member of this society.</p>
-        <a href="{% url 'join_society' society.id %}" 
+        <a href="{% url 'join_society' society.id %}"
             class="btn btn-primary"
             id="join-society-link">
             Join Society
@@ -93,7 +93,7 @@
         </div>
         <button id="save-order">Save Order</button>
 
-    
+
 {% else %}
         <!-- Normal or not logged in => show widgets, but no drag & drop -->
         <div id="widgets-container">

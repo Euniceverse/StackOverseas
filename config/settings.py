@@ -196,7 +196,7 @@ CACHES = {
 
 
 ALLOWED_HOSTS = [
-    '127.0.0.1', 
+    '127.0.0.1',
     'localhost',
     "stackoverseas.onrender.com",
     os.getenv("RENDER_EXTERNAL_HOSTNAME", ""),

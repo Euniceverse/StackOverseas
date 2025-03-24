@@ -180,6 +180,16 @@
   margin-bottom: 10px;
 }
 
+.news-box a {
+  text-decoration: none;       
+  color: inherit;              
+}
+
+.news-box a:hover {
+  text-decoration: underline;  
+}
+
+
 .news-box h3 {
   font-size: 20px;
   font-weight: bold;

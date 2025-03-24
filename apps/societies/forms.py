@@ -10,11 +10,11 @@ from .models import SocietyRegistration, RequirementType
 
 class NewSocietyForm(forms.ModelForm):
     """Form for creating a new society application."""
-    society_type = forms.ChoiceField( 
+    society_type = forms.ChoiceField(
         choices=SOCIETY_TYPE_CHOICES,
         label="Society Type"
     )
-    
+
     extra_form_needed = forms.BooleanField(
         required=False,
         label="Do you require an extra form for members?",
@@ -30,12 +30,15 @@ class NewSocietyForm(forms.ModelForm):
 
     class Meta:
         model = SocietyRegistration
-        fields = ["name", "description", "society_type", "visibility", "extra_form_needed"]
-        
+        fields = ["name", "description", "society_type", "extra_form_needed"]
+
     def __init__(self, *args, society=None, user=None, **kwargs):
         self.society = society
         self.user = user
         super().__init__(*args, **kwargs)
+        # Set visibility to Private by default and make it non-editable
+        if hasattr(self.instance, 'visibility'):
+            self.instance.visibility = 'Private'
 
     def clean_name(self):
         """Ensure society name is unique"""
@@ -67,7 +70,7 @@ class JoinSocietyForm(forms.Form):
      - quiz: up to 5 yes/no questions
      - manual: essay, optional PDF
     """
-    
+
     essay_text = forms.CharField(
         widget=forms.Textarea, required=False, label="Essay / Statement of Purpose"
     )
@@ -79,7 +82,7 @@ class JoinSocietyForm(forms.Form):
         self.user = user
 
         from .models import SocietyRequirement, RequirementType
-        
+
         self.req = None
 
         if society:
@@ -103,7 +106,7 @@ class JoinSocietyForm(forms.Form):
                 )
 
         elif req_type == RequirementType.MANUAL:
-            # If requires_essay or requires_portfolio, keep the fields visible 
+            # If requires_essay or requires_portfolio, keep the fields visible
             # (We already added essay_text + portfolio_file above)
             if not self.req.requires_essay:
                 self.fields['essay_text'].widget = forms.HiddenInput()
@@ -186,7 +189,7 @@ class JoinSocietyForm(forms.Form):
 
         # If final_status = approved => create or update membership
         # If final_status = rejected => membership won't exist
-        # If final_status = pending => create membership but set status='pending' 
+        # If final_status = pending => create membership but set status='pending'
         if final_status in ['approved', 'pending']:
             # Check if membership already exists
             membership, created = Membership.objects.get_or_create(

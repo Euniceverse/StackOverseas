@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function() {
     // Grab all Create-Event links that have data-create-event-url
     const allCreateEventLinks = document.querySelectorAll(".create-event-link");
-  
+
     allCreateEventLinks.forEach(link => {
       link.addEventListener("click", function(e) {
         e.preventDefault(); // stop normal '#' navigation

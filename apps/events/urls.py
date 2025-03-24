@@ -9,7 +9,7 @@ from .views import (
     event_detail,
   
 )
- 
+
 urlpatterns = [
     path('', eventspage, name='eventspage'),
     path("api/", EventListAPIView.as_view(), name="event-list"),

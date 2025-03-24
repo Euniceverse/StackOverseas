@@ -263,6 +263,7 @@ def create_fake_news():
                 date_posted=now() - timedelta(days=random.randint(1, 30)),
                 views=random.randint(0, 100),  # Randomized views for popularity sorting
                 society=society,  # Properly linking to an approved seeded society
+                is_published=True
             )
         )
 

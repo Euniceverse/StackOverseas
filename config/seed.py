@@ -116,7 +116,8 @@ def create_dummy_societies(users, n=50):
             description=generated_description,
             society_type=society_type,
             status=random.choice([key for key, _ in constants.SOCIETY_STATUS_CHOICES]),
-            manager=random.choice(users)
+            manager=random.choice(users),
+            joining_fee = 5.00
         )
 
         society.location = get_location_from_email(society.manager.email)  # Get location from email

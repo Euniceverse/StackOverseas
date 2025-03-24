@@ -26,19 +26,19 @@
         <!-- 📖 설명 -->
         <div class="event-section">
             <h3>📖 Description</h3>
-            <p id="event-description">Event details will appear here...</p>
+            <p id="event-description">{{ event.description|default:"No description provided." }}</p>
         </div>
 
         <!-- 🏫 주최 동아리 -->
         <div class="event-section">
             <h3>🏫 Hosted By</h3>
-            <p id="event-hosts">Society Name</p>
+            <p id="event-hosts">{{ event.society|default:"TBA" }}</p>
         </div>
 
         <!-- 👥 참여 정보 -->
         <div class="event-info">
             <p id="event-capacity">👥 Capacity: {{ event.capacity|default:"Unlimited" }}</p>
-            <p id="event-fee">💰 Fee: Free</p>
+            <p id="event-fee">💰 Fee: {{ event.fee|default:"Free" }}</p>
             <p id="event-member-only" class="hidden">🔒 Members Only</p>
         </div>
 
@@ -85,7 +85,8 @@
                                 method: "POST",
                                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                                 body: new URLSearchParams({
-                                    event_id: document.getElementById("event-id-input").value,
+                                    type: "event",
+                                    id: document.getElementById("event-id-input").value,
                                     name: document.getElementById("event-name").textContent,
                                     price: document.getElementById("event-price-input").value,
                                     description: document.getElementById("event-description").textContent

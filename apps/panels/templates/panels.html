@@ -1,0 +1,20 @@
+{% load static %}
+
+<body>
+    <h1>Welcome to the Test Page</h1>
+    <p>This is a simple test page rendered by Django views.</p>
+
+    <div id="dynamic-content-container">
+        <!-- 이 곳에 동적 콘텐츠가 로드됩니다 -->
+    </div>
+</body>
+
+
+<script>
+    // Ajax로 동적 콘텐츠를 가져옵니다.
+    fetch('{% url "panels:index" %}')
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('dynamic-content-container').innerHTML = html;
+        });
+</script>

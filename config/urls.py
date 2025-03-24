@@ -31,6 +31,7 @@ urlpatterns = [
     path('events/', include('apps.events.urls')),
     path('news/', include('apps.news.urls')),
     path('societies/', include('apps.societies.urls')),
+    path('panels/', include('apps.panels.urls')),
     path('users/', include('apps.users.urls')),
     path('search/', ai_search, name='ai_search'),
 ]

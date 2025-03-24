@@ -1,0 +1,25 @@
+<!-- templates/polls/create_poll.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Poll</title>
+</head>
+<body>
+    <h1>Create a New Poll</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div>
+            <label for="question_text">Question:</label>
+            {{ form.as_p }}  <!-- QuestionForm 필드를 출력 -->
+        </div>
+        
+        <button type="submit">Create Poll</button>
+    </form>
+
+    <a href="{% url 'panels:index' %}">Back to Poll List</a>
+</body>
+</html>

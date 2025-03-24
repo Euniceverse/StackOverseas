@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ question.question_text }}</title>
+</head>
+<body>
+    <h1>{{ question.question_text }}</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        {% for option in options %}
+            <div>
+                <label>
+                    <input type="radio" name="option" value="{{ option.id }}">
+                    {{ option.option_text }} (Votes: {{ option.option_count }})
+                </label>
+            </div>
+        {% endfor %}
+        <button type="submit">Vote</button>
+    </form>
+
+    <a href="{% url 'panels:index' %}">Back to Poll List</a>
+</body>
+</html>
+

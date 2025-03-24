@@ -439,11 +439,17 @@ class JoinSocietyTest(TestCase):
 
     def test_admin_can_approve_join_request(self):
         membership = Membership.objects.create(user=self.user, society=self.society, status=MembershipStatus.PENDING)
-        response = self.client.post(reverse('approve-membership', args=[membership.id]))
+        response = self.client.post(
+        reverse('update_membership', args=[membership.society.id, membership.user.id]),
+        {'action': 'approve'}
+    )
         membership.refresh_from_db()
         self.assertEqual(membership.status, MembershipStatus.APPROVED)
 
     def test_unauthorized_user_cannot_approve_membership(self):
         membership = Membership.objects.create(user=self.user, society=self.society, status=MembershipStatus.PENDING)
-        response = self.client.post(reverse('approve-membership', args=[membership.id]))
+        response = self.client.post(
+            reverse('update_membership', args=[membership.society.id, membership.user.id]),
+            {'action': 'approve'}
+        )
         self.assertNotEqual(response.status_code, 200)  # Should be forbidden

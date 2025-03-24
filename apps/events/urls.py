@@ -6,7 +6,7 @@ from .views import (
     EventListAPIView,
     delete_event,
     EventDetailAPIView,
-    event_detail,
+
   
 )
 

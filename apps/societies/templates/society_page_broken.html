@@ -52,6 +52,24 @@
         Manage This Society
     </a>
 
+    <form method="post" action="{% url 'update_membership' society.id membership.user.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="promote_co_manager">
+        <button type="submit" class="btn btn-warning">Promote to Co-Manager</button>
+    </form>
+    
+    <form method="post" action="{% url 'update_membership' society.id membership.user.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="promote_editor">
+        <button type="submit" class="btn btn-info">Promote to Editor</button>
+    </form>
+    
+    <form method="post" action="{% url 'update_membership' society.id membership.user.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="remove">
+        <button type="submit" class="btn btn-danger">Remove Member</button>
+    </form>
+
 
     <a href="#" 
     id="createEventLink" 

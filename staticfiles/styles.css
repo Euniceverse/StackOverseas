@@ -1,0 +1,279 @@
+:root {
+  --primary-dark: #190019;
+  --secondary-dark: #2B124C;
+  --accent-purple: #522B5B;
+  --soft-purple: #854F6C;
+  --light-purple: #DFB6B2;
+  --cream: #FBE4D8;
+  --primary-yellow: #FFAF24;
+  --soft-yellow: #FFE2B8;
+}
+
+
+/* Global Styles */
+body {
+  
+  background-color: var(--primary-dark) !important; /* Ensure dark background */
+  color: var(--cream) !important; /* Ensure light text */
+  
+  font-family: Arial, sans-serif;
+}
+
+/* Society Box Styling */
+.society-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.society-box {
+  background-color: var(--secondary-dark);
+  border-radius: 15px;
+  padding: 20px;
+  text-align: center;
+  color: var(--cream);
+  width: 300px; /* Ensures all boxes are the same size */
+  height: 180px; /* Ensures equal height */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--primary-yellow);
+  border-color: var(--primary-yellow);
+  color: #190019;
+}
+
+.btn-primary:hover {
+  background-color: var(--soft-yellow);
+  border-color: var(--soft-yellow);
+}
+
+/* Footer */
+footer {
+  background-color: var(--secondary-dark);
+  color: var(--cream);
+  padding: 20px;
+  text-align: center;
+}
+
+footer a {
+  color: var(--soft-yellow);
+  text-decoration: none;
+}
+footer a:hover {
+  text-decoration: underline;
+}
+
+
+/*-----general-----*/
+*{
+    margin: 0;
+    padding: 0;
+    font-family: 'Kanit', sans-serif;
+  }
+
+  html, body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+  .bg-light{
+    background-color: #D6EEFF;
+  }
+
+
+
+  /*-----header-----*/
+  .header{
+    min-height: auto;
+    background-color: #89b9da;
+  }
+
+  .header-short{
+    min-height: 4vh;
+  }
+
+  .body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+  }
+
+  /*-----search bar-----*/
+  .web-search-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    padding: 10px 20px;
+  }
+
+  .web-container h1 {
+    font-size: 50px;
+    white-space: nowrap;
+  }
+
+  .search-container {
+    width: 250px;
+    position: relative;
+  }
+
+  .search-form {
+    display: flex;
+    align-items: center;
+    background: #FFFFFF;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    height: 40px;
+    overflow: hidden;
+    padding: 0 10px;
+  }
+
+  .search-input {
+    flex-grow: 1;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    outline: none;
+    padding: 10px;
+  }
+
+  .search-button {
+    background: transparent;
+    border: none;
+    cursor: pointer; /* Ensures it's clickable */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 10px;
+  }
+
+  .search-button i {
+      font-size: 18px;
+      color: #252E6B;
+  }
+
+  /*-----navigation bar-----*/
+  nav{
+    padding: 10px;
+    background-color: var(--accent-purple);
+    color: white;
+  }
+
+  .nav-links ul{
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 200px;
+    padding: 10px 0;
+  }
+
+  .nav-links ul li{
+    padding: 8px 12x;
+    position: relative;
+  }
+
+  .nav-links ul li a{
+    color: #fff;
+    text-decoration: none;
+    font-size: 13px;
+  }
+
+  .nav-links ul li::after{
+    content: '';
+    width: 0%;
+    height: 2px;
+    background: #fff;
+    display: block;
+    margin: auto;
+    transition: 0.5s;
+  }
+
+  .nav-links ul li:hover:after{
+    width: 100%;
+  }
+
+  .nav-links ul li {
+    position: relative;
+  }
+
+  .nav-links ul .dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: #8D909B;
+    min-width: 150px;
+    top: 100%;
+    left: 0;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+    z-index: 10000000;
+  }
+
+  .nav-links ul li:hover > .dropdown-menu {
+    display: block;
+  }
+
+  .nav-links ul .dropdown-menu li {
+    display: block;
+    padding: 10px;
+  }
+
+  .nav-links ul .dropdown-menu li:hover {
+    background-color: #6a7e7e;
+  }
+
+  .nav-links ul .dropdown-menu li a {
+    color: white;
+    text-decoration: none;
+    display: block;
+    padding: 8px;
+  }
+
+  /* News Panel */
+.news-panel {
+  min-height: 100vh; 
+  background: #DAE5FF;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+/* News Box */
+.news-box {
+  background: white;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.news-box h3 {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.news-box p {
+  font-size: 14px;
+  color: gray;
+}
+
+/* View More Button */
+.view-more-btn {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.view-more-btn a {
+  display: block;
+  padding: 10px;
+  background: #D9D9D9;
+  text-decoration: none;
+  border-radius: 10px;
+  color: black;
+  font-weight: bold;
+  text-align: center;
+}

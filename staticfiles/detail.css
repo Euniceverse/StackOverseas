@@ -1,0 +1,123 @@
+/* 🌟 모달 배경 */
+.event-modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.5); /* 배경 블러 */
+    z-index: 100000;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+/* 🚀 기본적으로 숨김 */
+.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
+}
+
+
+/* 🌟 모달 내용 */
+.event-modal-content {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* ✨ 닫기 버튼 */
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 1.5rem;
+    color: #666;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+}
+
+.modal-close:hover {
+    color: #333;
+}
+
+/* 📌 제목 스타일 */
+.event-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.event-subtitle {
+    font-size: 1rem;
+    text-align: center;
+    color: #555;
+    margin-bottom: 0.5rem;
+}
+
+/* 📅 기본 정보 */
+.event-info {
+    text-align: center;
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 0.5rem;
+}
+
+/* 📖 섹션 스타일 */
+.event-section {
+    margin-top: 1rem;
+}
+
+.event-section h3 {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.event-section p {
+    font-size: 1rem;
+    color: #555;
+    margin-top: 0.3rem;
+}
+
+/* 📝 참가 버튼 */
+.event-action {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.btn-register {
+    background-color: #007bff;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+}
+
+.btn-register:hover {
+    background-color: #0056b3;
+}
+
+/* ✨ 애니메이션 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

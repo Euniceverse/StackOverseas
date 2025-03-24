@@ -1,3 +1,65 @@
+:root {
+  --primary-dark: #190019 !important;
+  --secondary-dark: #2B124C !important;
+  --accent-purple: #522B5B !important;
+  --soft-purple: #854F6C !important;
+  --light-purple: #DFB6B2 !important;
+  --cream: #FBE4D8 !important;
+  --primary-yellow: #FFAF24 !important;
+  --soft-yellow: #FFE2B8 !important;
+}
+
+/* Apply Purple Background */
+body {
+  background-color: var(--cream) !important;
+  color: var(--cream) !important;
+}
+
+/* Update Navbar */
+nav {
+  background-color: var(--secondary-dark) !important;
+  color: var(--cream) !important;
+}
+
+/* Update Society Boxes */
+.society-box {
+  background-color: var(--soft-purple) !important;
+  color: var(--cream) !important;
+}
+
+/* Update Buttons */
+.btn-primary {
+  background-color: var(--primary-yellow) !important;
+  border-color: var(--primary-yellow) !important;
+  color: #190019 !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--soft-yellow) !important;
+  border-color: var(--soft-yellow) !important;
+}
+
+/* Update Footer */
+footer {
+  background-color: var(--secondary-dark) !important;
+  color: var(--cream) !important;
+}
+
+.container.mt-4 h1, h2, h3 {
+  color: var(--primary-dark) !important; /* Use the color you want */
+}
+
+/* Change paragraph text color */
+.container.mt-4 p {
+  color: var(--cream) !important;
+}
+
+p {
+  color: var(--soft-purple) !important; /* Use theme color */
+  font-size: 16px; /* Adjust size if needed */
+}
+
+
 /*-----general-----*/
 *{
     margin: 0;
@@ -12,7 +74,7 @@
 }
 
   .bg-light{
-    background-color: #D6EEFF;
+    background-color: #854F6C ;
   }
 
 
@@ -20,7 +82,7 @@
   /*-----header-----*/
   .header{
     min-height: auto;
-    background-color: #89b9da;
+    background-color: #854F6C ;
   }
 
   .header-short{
@@ -91,7 +153,7 @@
   nav{
     padding: 10px;
     background-color: #133C55;
-    color: white;
+    color: var(--soft-yellow);
   }
 
   .nav-links ul{
@@ -164,8 +226,8 @@
 
   /* News Panel */
 .news-panel {
-  min-height: 100vh;
-  background: #DAE5FF;
+  min-height: 100vh; 
+  background: #FFE2B8;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -216,3 +278,4 @@
   font-weight: bold;
   text-align: center;
 }
+

@@ -584,6 +584,7 @@ def society_page(request, society_id):
         membership = Membership.objects.filter(society=society, user=request.user).first()
         if membership and membership.status == MembershipStatus.APPROVED:
             is_member = True
+
         if society.manager == request.user:
             is_manager = True
 

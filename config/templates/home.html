@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %} 
 
 {% block title %}
     Home - Student Societies
@@ -6,6 +7,10 @@
 
 
 {% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Welcome to Stack Overseas Societies!</h1>
+    <p class="text-center">Find and join societies that interest you.</p>
+
 <div class="container mt-4">
     <h1 class="text-center mb-4">Welcome to Stack Overseas Societies!</h1>
     <p class="text-center">Find and join societies that interest you.</p>
@@ -73,4 +78,9 @@
 
 {% block news_panel %}
     {% include 'news-panel.html' %}
+{% endblock %}
+
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
 {% endblock %}

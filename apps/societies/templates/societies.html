@@ -1,5 +1,5 @@
 {% extends "home.html" %}
-
+{% load static %} 
 {% block title %}Societies{% endblock %}
 
 {% block content %}
@@ -117,7 +117,7 @@
     <div class="row">
         {% for society in societies %}
         <div class="col-md-4 mb-4">
-            <div class="card shadow-sm">
+            <div class="card society-box">
                 {% if society.image %}
                     <img src="{{ society.image.url }}" class="card-img-top" alt="{{ society.name }}">
                 {% endif %}

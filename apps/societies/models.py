@@ -50,8 +50,7 @@ class Society(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="managed_societies"
-    )
-
+    )   
 
     # Check whether this society is approved and can be customise
     def is_customisable(self):

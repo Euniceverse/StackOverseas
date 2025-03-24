@@ -97,10 +97,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         if not self.annual_verification_date:
             return False
 
-        #one_year_ago = timezone.now() - timedelta(days=365)
-        #five_years_ago = timezone.now() - timedelta(days=1825)  # 5 years
-        one_year_ago = timezone.now() - timedelta(minutes=2)
-        five_years_ago = timezone.now() - timedelta(minutes=8)  # 5 years
+        one_year_ago = timezone.now() - timedelta(days=365)
+        five_years_ago = timezone.now() - timedelta(days=1825)  # 5 years
 
         if self.annual_verification_date <= five_years_ago:
             # Delete account if inactive for 5 years

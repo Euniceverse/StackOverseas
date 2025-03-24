@@ -8,6 +8,8 @@ class EventSerializer(serializers.ModelSerializer):
     start_datetime = serializers.SerializerMethodField()
     end_datetime = serializers.SerializerMethodField()
     event_type = serializers.SerializerMethodField()
+    latitude = serializers.FloatField()  # Add these lines
+    longitude = serializers.FloatField()
 
     society = serializers.PrimaryKeyRelatedField(
         queryset=Society.objects.all(),
@@ -23,12 +25,12 @@ class EventSerializer(serializers.ModelSerializer):
     def get_start_datetime(self, obj):
         """Format start datetime correctly"""
         return f"{obj.date.strftime('%Y-%m-%d')}T{obj.start_time.strftime('%H:%M:%S')}"
-    
+
     def get_end_datetime(self, obj):
         """Format end datetime correctly"""
         if obj.end_time:
             return f"{obj.date.strftime('%Y-%m-%d')}T{obj.end_time.strftime('%H:%M:%S')}"
-        return None 
+        return None
 
     def get_event_type(self, obj):
         event_choices = dict(obj._meta.get_field('event_type').choices)

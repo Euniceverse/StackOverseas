@@ -1,6 +1,6 @@
 from config.constants import (
-    MAX_NAME, MAX_DESCRIPTION, MAX_LOCATION, 
-    EVENT_TYPE_CHOICES
+    MAX_NAME, MAX_DESCRIPTION, MAX_LOCATION,
+    EVENT_TYPE_CHOICES, UNI_CHOICES
 )
 from apps.societies.models import Society
 from django.core.validators import MinValueValidator
@@ -37,13 +37,13 @@ class NewEventForm(forms.Form):
 
     keyword = forms.CharField(
         max_length=50,
-        required=False, 
+        required=False,
     )
 
     location = forms.CharField(
         max_length=MAX_LOCATION,
         required=True,
-        help_text="Enter location such as 'London' or 'Online'."
+        help_text="Start typing your UK address..."
     )
 
     capacity = forms.IntegerField(
@@ -52,7 +52,7 @@ class NewEventForm(forms.Form):
     )
 
     member_only = forms.BooleanField(
-        initial=False, 
+        initial=False,
         required=False,
     )
 
@@ -67,6 +67,9 @@ class NewEventForm(forms.Form):
         initial=True,
         required=False,
     )
+
+    latitude = forms.FloatField(required=True, widget=forms.HiddenInput())
+    longitude = forms.FloatField(required=True, widget=forms.HiddenInput())
 
     # society = forms.ModelMultipleChoiceField(
     #    queryset=Society.objects.all(),
@@ -86,10 +89,13 @@ class NewEventForm(forms.Form):
         cleaned_data = super().clean()
         fee = cleaned_data.get("fee", Decimal("0.00"))
         is_free = cleaned_data.get("is_free", True)
+        latitude = cleaned_data.get("latitude")
+        longitude = cleaned_data.get("longitude")
 
         if fee > Decimal("0.00"):
             cleaned_data["is_free"] = False
 
-        return cleaned_data
-    
+        if not latitude or not longitude:
+            raise forms.ValidationError("Please select a valid address from the suggestions to set the location coordinates.")
 
+        return cleaned_data

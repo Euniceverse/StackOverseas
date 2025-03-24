@@ -2,11 +2,11 @@
 {% load static %}
 
 {% block title %}
-  Create Event for {{ society.name }}
+  Create Society
 {% endblock %}
 
 {% block content %}
-<h2>Create New Event for {{ society.name }}</h2>
+<h2>Create New Society</h2>
 
 {% if messages %}
   {% for message in messages %}
@@ -18,11 +18,11 @@
   {% csrf_token %}
   {{ form.as_p }}
   <button type="submit" class="btn btn-primary" id="createEventSubmitBtn">
-    Create Event
+    Create Society
   </button>
 
   <!-- Cancel button; external JS can confirm or use inline confirmation -->
-  <button type="button" class="btn btn-danger" id="cancelCreateEventBtn" 
+  <button type="button" class="btn btn-danger" id="cancelCreateSocietyBtn"
           onclick="if(confirm('Are you sure you want to cancel?')) { window.history.back(); }">
     Cancel
   </button>
@@ -30,5 +30,5 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<script src="{% static 'js/create_event.js' %}" defer></script>
+<script src="{% static 'js/create_society.js' %}" defer></script>
 {% endblock %}

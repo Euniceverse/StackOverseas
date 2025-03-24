@@ -1,8 +1,7 @@
-
 document.addEventListener("DOMContentLoaded", function() {
     const createBtn = document.getElementById("createEventSubmitBtn");
     const cancelBtn = document.getElementById("cancelCreateEventBtn");
-  
+
     if (createBtn) {
       createBtn.addEventListener("click", function(e) {
         const sure = confirm("Are you sure you want to create this event?");
@@ -11,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
       });
     }
-  
+
     if (cancelBtn) {
       cancelBtn.addEventListener("click", function(e) {
         if (confirm("Are you sure you want to cancel?")) {

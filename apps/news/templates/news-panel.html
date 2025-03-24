@@ -1,18 +1,19 @@
+{% load static %}
+
 <aside class="news-panel">
     <h2>RECENT NEWS</h2>
     {% for news in news_list %}
-        <div class="news-box">
+        <a href="{% url 'news_detail' news.id %}" class="news-box">
             <h5>{{ news.title }}</h5>
             <p class="text-muted">Posted on: {{ news.date_posted }}</p>
             <p>Society: {{ news.society }}</p>
-        </div>
+        </a>
     {% empty %}
         <div class="news-box empty-box">
             <p class="text-muted">No news available.</p>
         </div>
     {% endfor %}
     <div class="view-more-btn">
-        <a href="/news/">View More</a>
+        <a href="{% url 'newspage' %}">View More</a>
     </div>
 </aside>
-

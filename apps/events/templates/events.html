@@ -39,12 +39,12 @@
             <div class="event-view-calendar">
                 {% include "components/calendar.html" %}
             </div>
-            <div class="event-view-map">
-                {% include "components/map.html" %}
-            </div>
         </div>
         <div class="event-details">
             {% include "components/detail.html" %}
+        </div>
+        <div class="event-view-map">
+          {% include "event_map.html" %}
         </div>
     </div>
 {% endblock %}

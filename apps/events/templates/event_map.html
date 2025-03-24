@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+        .map-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="map-container">
+    <h2>Event Locations</h2>
+    <div id="map" style="height: 600px; width: 800px;"></div>
+</div>
+
+<script>
+// Initialize the map
+var map = L.map('map').setView([51.5074, -0.1278], 10);  // Default to London
+var markers = [];  // Array to store markers for easy removal
+
+// Load OpenStreetMap tiles
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+// Function to update and display the event detail modal
+function openEventModal(event) {
+    console.log("Opening modal for event:", event);
+
+    // Update modal fields; adjust property names as needed
+    document.getElementById("event-name").textContent = event.name || "No name provided";
+    document.getElementById("event-type").textContent = event.event_type || "Event Type";
+
+    if (event.start_datetime) {
+        let startDate = new Date(event.start_datetime);
+        document.getElementById("event-date").textContent = "📅 Date: " + startDate.toISOString().split("T")[0];
+        document.getElementById("event-time").textContent = "⏰ Time: " + startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else {
+        document.getElementById("event-date").textContent = "📅 Date: Not specified";
+        document.getElementById("event-time").textContent = "⏰ Time: Not specified";
+    }
+
+    document.getElementById("event-location").textContent = "📍 Location: " + (event.address || "Not specified");
+    document.getElementById("event-fee").textContent = (event.fee && event.fee !== "Free") ? "💰 Fee: " + event.fee + " USD" : "💰 Fee: Free";
+    document.getElementById("event-description").textContent = event.description || "No description available.";
+
+    // Display the modal
+    document.getElementById("event-detail-modal").classList.remove("hidden");
+}
+
+// Function to clear all markers from the map
+function clearMarkers() {
+    markers.forEach(marker => map.removeLayer(marker));
+    markers = [];
+}
+
+// Function to load and display events
+function loadEvents(url) {
+    clearMarkers();
+    fetch(url)
+        .then(response => response.json())
+        .then(events => {
+            console.log("Events loaded:", events);
+            events.forEach(event => {
+                if (event.latitude && event.longitude) {
+                    // Create marker for each event
+                    var marker = L.marker([event.latitude, event.longitude]).addTo(map);
+                    markers.push(marker);  // Store marker reference
+
+                    // Bind a click event to open the event modal
+                    marker.on('click', function() {
+                        console.log("Marker clicked for event:", event);
+                        openEventModal(event);
+                    });
+
+                    // Optionally bind a simple popup
+                    marker.bindPopup(`<b>${event.name}</b><br>${event.address}`);
+                }
+            });
+        })
+        .catch(error => console.error('Error loading events:', error));
+}
+
+// Initial load of all events
+loadEvents('/api/events/');
+
+// Listen for filter updates
+document.addEventListener("filtersUpdated", function(event) {
+    console.log("Filters updated:", event.detail);
+    loadEvents(`/events/api/${event.detail}`);
+});
+</script>
+
+</body>
+</html>

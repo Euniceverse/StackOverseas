@@ -21,8 +21,8 @@ from django.urls import path, include
 from .views import home
 from pathlib import Path
 from .views import ai_search
-
-BASE_DIR = Path(__file__).resolve().parent.parent 
+from apps.events.views import event_map, event_list
+BASE_DIR = Path(__file__).resolve().parent.parent  # ✅ Define BASE_DIR
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -33,6 +33,8 @@ urlpatterns = [
     path('users/', include('apps.users.urls')),
     path('search/', ai_search, name='ai_search'),
     path('widgets/', include('apps.widgets.urls') )
+    path('event-map/', event_map, name='event_map'),
+    path('api/events/', event_list, name='event_list'),
 ]
 
 # Serve media files during development

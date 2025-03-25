@@ -79,7 +79,8 @@ function initializeCalendar() {
       console.log("🖱️ Event clicked:", info.event);
       document.getElementById("event-id-input").value = info.event.id;
       document.getElementById("event-name").textContent = info.event.title;
-      document.getElementById("event-type").textContent = info.event.type;
+      document.getElementById("event-type").textContent =
+        info.event.extendedProps.event_type;
       document.getElementById("event-date").textContent = info.event.start
         .toISOString()
         .split("T")[0];
@@ -92,22 +93,19 @@ function initializeCalendar() {
       document.getElementById("event-location").textContent =
         info.event.extendedProps.location;
 
+      const fee = info.event.extendedProps.fee;
+      const feeText =
+        fee === "Free" || fee === 0 || fee === "0"
+          ? "💰 Fee: Free"
+          : `💰 Fee: £${parseFloat(fee).toFixed(2)}`;
+      document.getElementById("event-fee").textContent = feeText;
+
       let eventFee = info.event.extendedProps.fee;
       document.getElementById("event-price-input").value =
         eventFee !== "Free" && eventFee !== "" ? parseFloat(eventFee) : 0.0;
 
       document.getElementById("event-description").textContent =
         info.event.extendedProps.description;
-      // ✅ Update the Register Button with the correct event ID
-      let registerButton = document.querySelector(".register-button");
-      if (registerButton) {
-        registerButton.href = `/payments/checkout/?type=event&id=${info.event.id}`;
-        registerButton.dataset.eventId = info.event.id;
-        console.log(`🔗 Register Button URL Updated: ${registerButton.href}`);
-      } else {
-        console.error("❌ ERROR: Register button not found!");
-      }
-
       // ✅ Show the modal
       let eventModal = document.getElementById("event-detail-modal");
       if (eventModal) {

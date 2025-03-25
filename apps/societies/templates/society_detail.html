@@ -34,9 +34,15 @@
         {% endif %}
     {% else %}
         {# If user is not in membership, show the Join button #}
-        <a href="{% url 'join_society' society.id %}" class="btn btn-primary">
-          Join Society
-        </a>
+        {% if society.joining_fee > 0 %}
+          <button class="btn btn-primary" id="join-society-button" data-id="{{ society.id }}" data-name="{{ society.name }}" data-price="{{ society.joining_fee }}">
+            Join Society
+          </button>
+        {% else %}
+          <a href="{% url 'join_society' society.id %}" class="btn btn-primary">
+            Join Society
+          </a>
+        {% endif %}
     {% endif %}
     
     {# Show Manage Society if role is manager, co_manager, or editor and they are approved #}
@@ -51,3 +57,46 @@
     <p><a href="{% url 'log_in' %}">Log in</a> to join this society.</p>
 {% endif %}
 {% endblock %}
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+      const joinBtn = document.getElementById("join-society-button");
+  
+      if (joinBtn) {
+          joinBtn.addEventListener("click", function () {
+              const societyId = this.dataset.id;
+              const societyName = this.dataset.name;
+              const joiningFee = this.dataset.price;
+  
+              fetch("{% url 'payments:create_checkout_session' %}", {
+                  method: "POST",
+                  headers: {
+                      "Content-Type": "application/x-www-form-urlencoded",
+                      "X-CSRFToken": "{{ csrf_token }}"
+                  },
+                  body: new URLSearchParams({
+                      type: "society",
+                      id: societyId,
+                      name: societyName,
+                      price: joiningFee,
+                      description: `Joining fee for ${societyName}`
+                  }),
+              })
+              .then(res => res.json())
+              .then(data => {
+                  if (data.url) {
+                      window.location.href = data.url;
+                  } else {
+                      console.error("Stripe Error:", data);
+                      alert("Something went wrong. Please try again.");
+                  }
+              })
+              .catch(err => {
+                  console.error("Request failed:", err);
+                  alert("Error initiating payment.");
+              });
+          });
+      }
+  });
+  </script>

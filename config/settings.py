@@ -218,7 +218,7 @@ ALLOWED_HOSTS = [
     os.getenv("RENDER_EXTERNAL_HOSTNAME", ""),
 ]
 
-DOMAIN_NAME = "127.0.0.1:8000"  # Change this if running on another port
+# DOMAIN_NAME = "127.0.0.1:8000"  # Change this if running on another port
 
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",

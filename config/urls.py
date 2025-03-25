@@ -22,7 +22,7 @@ from .views import home
 from apps.societies.functions import top_societies
 from pathlib import Path
 from .views import ai_search
-from apps.events.views import event_map, event_list
+from apps.events.views import event_list
 BASE_DIR = Path(__file__).resolve().parent.parent  # ✅ Define BASE_DIR
 
 urlpatterns = [
@@ -33,7 +33,6 @@ urlpatterns = [
     path('societies/', include('apps.societies.urls')),
     path('users/', include('apps.users.urls')),
     path('search/', ai_search, name='ai_search'),
-    path('event-map/', event_map, name='event_map'),
     path('api/events/', event_list, name='event_list'),
 ]
 

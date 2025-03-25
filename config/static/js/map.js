@@ -1,171 +1,105 @@
 let mapInitialized = false;
-let map, marker;
+let map;
+let marker; // Used for searched location
 let markers = [];
-const eventDetailModal = document.getElementById("event-detail-modal");
 
-function initializeMap() {
-    if (mapInitialized) return;
-
-    const map = L.map('map').setView([51.5074, -0.1278], 10);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    function loadEvents(url) {
-        fetch(url)
-            .then(response => response.json())
-            .then(events => {
-                events.forEach(event => {
-                    if (event.latitude && event.longitude) {
-                        const marker = L.marker([event.latitude, event.longitude]).addTo(map);
-                        marker.bindPopup(`<b>${event.name}</b><br>${event.address}`);
-                    }
-                });
-            })
-            .catch(error => console.error('Error loading events:', error));
-    }
-
-    loadEvents('/api/events/');
-
-    document.addEventListener("filtersUpdated", function(event) {
-        map.eachLayer((layer) => {
-            if (layer instanceof L.Marker) {
-                map.removeLayer(layer);
-            }
-        });
-        loadEvents(`/events/api/${event.detail}`);
-    });
-
-    mapInitialized = true;
-}
-
-function fetchEventLocations() {
-  fetch('/api/events/')
-      .then(response => {
-          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-          return response.json();
-      })
-      .then(events => {
-          console.log("📍 Events Data:", events);
-          // Check if events is wrapped in a results object
-          const eventsList = events.results || events;
-          eventsList.forEach(event => addEventMarker(event));
-      })
-      .catch(error => console.error("❌ Fetch Error:", error));
-}
-function addEventMarker(event) {
-    if (!map || !event.latitude || !event.longitude) {
-        console.warn("⚠️ Invalid map state or coordinates for event:", event);
-        return;
-    }
-
-    const newMarker = L.marker([event.latitude, event.longitude])
-        .addTo(map)
-        .bindPopup(`<b>${event.name}</b><br>${event.address}`)
-
-
-    markers.push(newMarker);
-
-    newMarker.on("click", () => {
-        console.log("🖱️ Marker Interaction:", event);
-        updateEventModal(event);
-        eventDetailModal.classList.remove("hidden");
-    });
-}
-
-function updateEventModal(event) {
-    const formatDate = (dateStr) =>
-        dateStr ? new Date(dateStr).toLocaleDateString() : "No date";
-
-    const formatTime = (dateStr) =>
-        dateStr ? new Date(dateStr).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit'
-        }) : "No time";
-
-    document.getElementById("event-name").textContent = event.name;
-    document.getElementById("event-type").textContent = event.event_type || "N/A";
-    document.getElementById("event-date").textContent = formatDate(event.date);
-    document.getElementById("event-time").textContent = formatTime(event.date);
-    document.getElementById("event-location").textContent = event.address;  // ✅ Fixed to 'address'
-    document.getElementById("event-fee").textContent =
-        event.fee > 0 ? `£${event.fee}` : "Free";
-    document.getElementById("event-description").textContent =
-        event.description || "No description available";
-}
-
-function updateMapWithFilters(filters) {
-    if (!mapInitialized) {
-        console.warn("⚠️ Map is not initialized yet. Trying again...");
-        initializeMap();
-    }
-
-    console.log("🔄 Updating map with filters:", filters);
-
-    clearMarkers(); // ✅ 기존 마커 삭제
-
-    fetch(`/events/api/${filters}`)  // ✅ 필터가 적용된 데이터 가져오기
-        .then(response => response.json())
-        .then(events => {
-            console.log("📍 Filtered Events Loaded:", events);
-            events.forEach(event => addEventMarker(event));
-        })
-        .catch(error => console.error("❌ Error fetching filtered events:", error));
-}
-
-// 🔹 검색 후 지도 업데이트 함수
-function updateMap() {
-    if (!mapInitialized) {
-        console.warn("⚠️ Map is not initialized yet. Trying again...");
-        initializeMap();
-    }
-
-    clearMarkers();
-
-    const savedLocation = localStorage.getItem("searchedLocation");
-    if (savedLocation) {
-        const { lat, lon, name } = JSON.parse(savedLocation);
-
-        if (map) {
-            map.setView([lat, lon], 15);
-
-            if (marker) {
-                marker.setLatLng([lat, lon]);
-            } else {
-                marker = L.marker([lat, lon]).addTo(map);
-            }
-
-            marker.bindPopup(`<b>${name}</b>`).openPopup();
-        } else {
-            console.error("❌ Map is undefined when trying to update.");
-        }
-    }
-
-    resizeMap();
-}
-
+// Clear all markers from the map
 function clearMarkers() {
-    markers.forEach(marker => {
-        map.removeLayer(marker); // 기존 마커 제거
-    });
-    markers = []; // 배열 초기화
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
 }
 
-// 🔹 지도 크기 조정
-window.resizeMap = function() {
-    setTimeout(() => {
-        if (typeof window.map !== "undefined") {
-            window.map.invalidateSize();
+// Open the event detail modal and update its content
+function openEventModal(event) {
+  document.getElementById("event-name").textContent = event.name || "No name provided";
+  document.getElementById("event-type").textContent = event.event_type || "Event Type";
+
+  if (event.start_datetime) {
+    let startDate = new Date(event.start_datetime);
+    document.getElementById("event-date").textContent = "📅 Date: " + startDate.toISOString().split("T")[0];
+    document.getElementById("event-time").textContent = "⏰ Time: " + startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } else {
+    document.getElementById("event-date").textContent = "📅 Date: Not specified";
+    document.getElementById("event-time").textContent = "⏰ Time: Not specified";
+  }
+
+  document.getElementById("event-location").textContent = "📍 Location: " + (event.address || "Not specified");
+  document.getElementById("event-fee").textContent = (event.fee && event.fee !== "Free") ? "💰 Fee: " + event.fee + " USD" : "💰 Fee: Free";
+  document.getElementById("event-description").textContent = event.description || "No description available.";
+
+  // Show the modal (assumes a modal element with id "event-detail-modal")
+  document.getElementById("event-detail-modal").classList.remove("hidden");
+}
+
+// Load events from the given URL and add markers to the map
+function loadEvents(url) {
+  clearMarkers();
+  fetch(url)
+    .then(response => response.json())
+    .then(events => {
+      events.forEach(event => {
+        if (event.latitude && event.longitude) {
+          let m = L.marker([event.latitude, event.longitude]).addTo(map);
+          markers.push(m);
+          m.on("click", () => openEventModal(event));
+          m.bindPopup(`<b>${event.name}</b><br>${event.address}`);
         }
-    }, 300);
-};
+      });
+    })
+    .catch(error => console.error("Error loading events:", error));
+}
 
-// 🔹 이벤트 리스너 등록
-window.addEventListener("updateMap", updateMap);
+// Initialize the map (runs only once)
+function initializeMap() {
+  if (mapInitialized) return;
 
-document.addEventListener("filtersUpdated", function (event) {
-    console.log("🗺 Map updating with filters:", event.detail);
-    updateMapWithFilters(event.detail); // 필터 적용 후 지도 새로고침
-    resizeMap();
+  // Create the map in the container with id "map"
+  map = L.map("map").setView([51.5074, -0.1278], 10);
+
+  // Add OpenStreetMap tiles
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; OpenStreetMap contributors"
+  }).addTo(map);
+
+  // Load the initial set of event markers
+  loadEvents("/api/events/");
+  mapInitialized = true;
+}
+
+// Update the map using filters (e.g. from a filter component)
+function updateMapWithFilters(filters) {
+  if (!mapInitialized) {
+    initializeMap();
+  }
+  // Update markers based on the filtered events from your API
+  loadEvents(`/events/api/${filters}`);
+}
+
+// Update the map based on a searched location stored in localStorage
+function updateMap() {
+  if (!mapInitialized) {
+    initializeMap();
+  }
+  clearMarkers();
+  const savedLocation = localStorage.getItem("searchedLocation");
+  if (savedLocation) {
+    const { lat, lon, name } = JSON.parse(savedLocation);
+    map.setView([lat, lon], 15);
+    if (marker) {
+      marker.setLatLng([lat, lon]);
+    } else {
+      marker = L.marker([lat, lon]).addTo(map);
+    }
+    marker.bindPopup(`<b>${name}</b>`).openPopup();
+  }
+  // Optionally reload the events after updating the map view
+  loadEvents("/api/events/");
+  setTimeout(() => map.invalidateSize(), 300);
+}
+
+// Event listeners for initializing and updating the map
+document.addEventListener("DOMContentLoaded", initializeMap);
+document.addEventListener("filtersUpdated", function (e) {
+  updateMapWithFilters(e.detail);
 });
+window.addEventListener("updateMap", updateMap);

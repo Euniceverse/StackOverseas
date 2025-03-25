@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from apps.widgets.models import Widget
-from apps.societies.models import Society
+from apps.societies.models import Society,  Membership, MembershipRole, MembershipStatus
 
 @csrf_exempt
 def update_widget_order(request, society_id):
@@ -26,10 +26,27 @@ def update_widget_order(request, society_id):
             return JsonResponse({"error": str(e)}, status=400)
     return JsonResponse({"error": "Invalid request"}, status=400)
 
-def remove_widget(request, widget_id):
+def remove_widget(request, society_id, widget_id):
     widget = get_object_or_404(Widget, id=widget_id)
     society = widget.society
-    if request.user != society.manager:
+    
+    # fetch the user's membership
+    membership = Membership.objects.filter(
+        society=society,
+        user=request.user,
+        status=MembershipStatus.APPROVED
+    ).first()
+    
+    is_authorized = False
+    
+    if request.user == society.manager:
+        is_authorized = True
+    else:
+        if membership and membership.role in [MembershipRole.CO_MANAGER, MembershipRole.EDITOR]:
+            is_authorized = True
+    
+    if not is_authorized:
         return JsonResponse({"error": "Permission denied"}, status=403)
+    
     widget.delete()
     return JsonResponse({"success": True})

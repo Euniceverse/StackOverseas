@@ -25,7 +25,7 @@ def create_checkout_session(request):
             price = float(request.POST.get("price", 0)) * 100
             description = request.POST.get("description")
 
-            success_url = f"http://127.0.0.1:8000/payments/success/?event_id={event_id}"
+            success_url = f"{settings.PROTOCOL}//{settings.DOMAIN_NAME}/payments/success/?event_id={event_id}"
         
         elif payment_type == "society":
             society_id = request.POST.get("id")
@@ -34,7 +34,7 @@ def create_checkout_session(request):
             description = request.POST.get("description")
 
            
-            success_url = f"http://127.0.0.1:8000/payments/success/?type=society&id={society_id}"
+            success_url = f"{settings.PROTOCOL}//{settings.DOMAIN_NAME}/payments/success/?type=society&id={society_id}"
 
         else:
             return JsonResponse({"error": "Invalid payment type"}, status=400)
@@ -55,7 +55,7 @@ def create_checkout_session(request):
                 }],
                 mode="payment",
                 success_url=success_url,
-                cancel_url=f"http://127.0.0.1:8000/payments/cancel/?type={payment_type}&id={request.POST.get('id')}",
+                cancel_url=f"{settings.PROTOCOL}://{settings.DOMAIN_NAME}/payments/cancel/?type={payment_type}&id={request.POST.get('id')}",
             )
 
             if payment_type == "society":

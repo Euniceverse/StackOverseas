@@ -11,10 +11,25 @@
 <p>Type: {{ society.society_type }}</p>
 <p>Members: {{ society.members_count }}</p>
 
+<!-- If user is manager/co_manager/editor + approved, show "Manage Society" and "Create Event" -->
+{% if user_membership and user_membership.role == "manager" or user_membership and user_membership.role == "co_manager" or user_membership and user_membership.role == "editor" or user.is_superuser %}
+    <div class="management-controls">
+    <a href="{% url 'manage_society' society.id %}" class="btn btn-warning">
+        Manage Members
+    </a>
+
+    <a href="{% url 'manage_display' society.id %}" class="btn btn-warning">
+        Manage Display
+    </a>
+
+    <a href="{% url 'event_create' society.id %}" class="btn btn-primary">
+        Create Event
+    </a>
+    </div>
+{% endif %}
+
 {% if user.is_authenticated %}
-
     {% if membership %}
-
         {% if membership.status == 'approved' %}
             <!-- The user is approved and can leave the society -->
             <form action="{% url 'leave_society' society.id %}" method="POST" style="display:inline;">
@@ -50,132 +65,38 @@
   </p>
 {% endif %}
 
-<!-- If user is manager/co_manager/editor + approved, show "Manage Society" and "Create Event" -->
-    {% if user_membership and user_membership.role == "manager" or user_membership and user_membership.role == "co_manager" or user_membership and user_membership.role == "editor" or user.is_superuser %}
-
-       <a href="{% url 'manage_society' society.id %}" class="btn btn-warning">
-            Manage This Society
-        </a>
-
-        <a href="{% url 'event_create' society.id %}"
-            class="btn btn-primary">
-            Create Event
-        </a>
-
-
-        <p>Drag & drop widgets to rearrange them.</p>
-
-        <div id="widgets-container">
-            <ul id="sortable-widgets">
-                {% for widget in widgets %}
-                    <li class="widget ui-state-default" data-widget-id="{{ widget.id }}">
-                        <h3>{{ widget.get_widget_type_display }}</h3>
-                        <div class="widget-content">
-                            {% if widget.widget_type == "announcements" %}
-                                <p>Latest announcements will appear here.</p>
-                            {% elif widget.widget_type == "events" %}
-                                <p>Upcoming events will be displayed here.</p>
-                            {% elif widget.widget_type == "gallery" %}
-                                <p>Photo gallery will be displayed here.</p>
-                            {% elif widget.widget_type == "contacts" %}
-                                <p>Contact information for the society will be displayed here.</p>
-                            {% elif widget.widget_type == "featured" %}
-                                <p>Featured members (president, vice, etc.) will be displayed here.</p>
-                            {% elif widget.widget_type == "leaderboard" %}
-                                <p>Leaderboard will be displayed here.</p>
-                            {% elif widget.widget_type == "news" %}
-                                <p>News will be displayed here.</p>
-                            {% endif %}
-                        </div>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
-        <button id="save-order">Save Order</button>
-
-
-{% else %}
-    <!-- For non-managers, just display the widgets without drag-and-drop -->
-    <div id="widgets-container">
-        <ul id="sortable-widgets">
-            {% for widget in widgets %}
-                <li class="widget">
+<!-- Widget Display: visible to everyone -->
+<div id="widgets-container">
+    <ul id="sortable-widgets">
+        {% for widget in widgets %}
+            <li class="widget">
                 <h3>{{ widget.get_widget_type_display }}</h3>
                     {% if widget.widget_type == "announcements" %}
-                        {% include 'widgets/announcements_widget.html' with widget=widget %}
+                        {% include 'announcements.html' with widget=widget %}
                     {% elif widget.widget_type == "events" %}
-                        {% include 'widgets/events_widget.html' with widget=widget %}
+                        {% include 'events.html' with widget=widget %}
                     {% elif widget.widget_type == "gallery" %}
-                        {% include 'widgets/gallery_widget.html' with widget=widget %}
+                        {% include 'gallery.html' with widget=widget %}
                     {% elif widget.widget_type == "contacts" %}
-                        {% include 'widgets/contacts_widget.html' with widget=widget %}
+                        {% include 'contacts.html' with widget=widget %}
                     {% elif widget.widget_type == "featured" %}
-                        {% include 'widgets/featured_widget.html' with widget=widget %}
+                        {% include 'featured.html' with widget=widget %}
                     {% elif widget.widget_type == "leaderboard" %}
-                        {% include 'widgets/leaderboard_widget.html' with widget=widget %}
+                        {% include 'leaderboard.html' with widget=widget %}
                     {% elif widget.widget_type == "news" %}
-                        {% include 'widgets/news_widget.html' with widget=widget %}
+                        {% include 'news.html' with widget=widget %}
                     {% else %}
                         <div class="default-widget">
                             {{ widget.custom_html|safe }}
                         </div>
                     {% endif %}
-                </li>
+            </li>
             {% endfor %}
         </ul>
     </div>
-{% endif %}
 {% endblock %}
 
 {% block extra_scripts %}
-<!-- jQuery & jQuery UI for drag-and-drop functionality (only loaded if necessary) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-
-<script>
-$(document).ready(function() {
-    if ($("#save-order").length) {
-        // Initialize sortable if the save button exists (manager view)
-        $("#sortable-widgets").sortable({
-            placeholder: "ui-state-highlight",
-            update: function(event, ui) {
-                let order = [];
-                $(".widget").each(function() {
-                    order.push($(this).data("widget-id"));
-                });
-                $("#save-order").data("order", order);
-                console.log("New order:", order);
-            }
-        }).disableSelection();
-
-        $("#save-order").click(function() {
-            let order = $(this).data("order") || [];
-            if (order.length === 0) {
-                alert("Nothing to save!");
-                return;
-            }
-
-            $.ajax({
-                url: "{% url 'update_widget_order' society.id %}",
-                method: "POST",
-                contentType: "application/json",
-                headers: { "X-CSRFToken": "{{ csrf_token }}" },
-                data: JSON.stringify({ widget_order: order }),
-                success: function(response) {
-                    alert("Widget order saved!");
-                    console.log("Server response:", response);
-                },
-                error: function(xhr) {
-                    alert("Error saving order: " + xhr.responseText);
-                    console.error("AJAX error:", xhr.responseText);
-                }
-            });
-        });
-    }
-});
-</script>
-
 <script src="{% static 'js/society_page.js' %}" defer></script>
 <script src="{% static 'js/join_society.js' %}" defer></script>
-
 {% endblock %}

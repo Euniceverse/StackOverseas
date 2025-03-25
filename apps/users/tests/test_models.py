@@ -227,7 +227,7 @@ class CustomUserModelTest(TestCase):
     def test_check_annual_verification_deactivates_user(self):
         """Test that check_annual_verification deactivates the user if annual_verification_date is old."""
         # Set annual_verification_date to more than 2 mins ago -> 3 mins
-        self.user.annual_verification_date = timezone.now() - timedelta(minutes=3)
+        self.user.annual_verification_date = timezone.now() - timedelta(days=366)
         self.user.save()
         result = self.user.check_annual_verification()
         self.assertTrue(result)

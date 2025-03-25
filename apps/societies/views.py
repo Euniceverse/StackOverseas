@@ -586,7 +586,6 @@ def society_page(request, society_id):
     return render(request, "society_page.html", context)
     
    
-
 @login_required
 def leave_society(request, society_id):
     society = get_object_or_404(Society, id=society_id)
@@ -607,3 +606,43 @@ def leave_society(request, society_id):
         return redirect('society_page', society_id=society.id)
 
     return render(request, "confirm_leave.html", {"society": society})
+
+@login_required
+def manage_display(request, society_id):
+    society = get_object_or_404(Society, id=society_id)
+    
+    if request.user != society.manager:
+        membership = Membership.objects.filter(
+            society=society,
+            user=request.user,
+            status=MembershipStatus.APPROVED
+        ).first()
+        if not membership or membership.role not in [MembershipRole.CO_MANAGER, MembershipRole.EDITOR]:
+            messages.error(request, "You do not have permission to manage widget display for this society.")
+            return redirect("society_page", society_id=society.id)
+    
+    if request.method == "POST":
+        if request.content_type == "application/json":
+            try:
+                data = json.loads(request.body)
+                widget_order = data.get("widget_order")
+                if widget_order:
+                    for index, widget_id in enumerate(widget_order):
+                        widget = Widget.objects.get(id=widget_id, society=society)
+                        widget.position = index
+                        widget.save()
+                    return JsonResponse({"status": "success", "message": "Widget order updated."})
+                else:
+                    return JsonResponse({"status": "error", "message": "No widget order provided."}, status=400)
+            except Exception as e:
+                return JsonResponse({"status": "error", "message": str(e)}, status=400)
+        else:
+            widget_type = request.POST.get("widget_type")
+            if widget_type:
+                new_position = Widget.objects.filter(society=society).count()
+                Widget.objects.create(society=society, widget_type=widget_type, position=new_position)
+                messages.success(request, f"Added new widget of type '{widget_type}'.")
+                return redirect("manage_display", society_id=society.id)
+    
+    widgets = Widget.objects.filter(society=society).order_by("position")
+    return render(request, "manage_display.html", {"society": society, "widgets": widgets})

@@ -60,7 +60,7 @@ class EventFilterTests(TestCase):
             )
             EventRegistration.objects.create(
                 event=self.event2,
-                user_id=i+99,  # fake user IDs
+                user=dummy_user,
                 status='accepted'
             )
 
@@ -126,8 +126,8 @@ class EventFilterTests(TestCase):
             password="dummy123"
         )
 
-        EventRegistration.objects.create(event=self.event1, user_id=200, status='accepted')
-        EventRegistration.objects.create(event=self.event1, user_id=201, status='accepted')
+        EventRegistration.objects.create(event=self.event1, user=dummy1, status='accepted')
+        EventRegistration.objects.create(event=self.event1, user=dummy2, status='accepted')
         qs = Event.objects.all()
         data = {"availability": "full"}
         filtered = EventFilter(data=data, queryset=qs).qs
@@ -151,7 +151,7 @@ class EventFilterTests(TestCase):
             
             EventRegistration.objects.create(
                 event=self.event2,
-                user_id=300+i,
+                user=dummy,
                 status='accepted'
             )
         qs = Event.objects.all()

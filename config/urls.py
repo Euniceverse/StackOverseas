@@ -23,7 +23,7 @@ from apps.societies.functions import top_societies
 from pathlib import Path
 from .views import ai_search
 from apps.events.views import event_map, event_list
-BASE_DIR = Path(__file__).resolve().parent.parent  # ✅ Define BASE_DIR
+BASE_DIR = Path(__file__).resolve().parent.parent 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -38,7 +38,6 @@ urlpatterns = [
     path('api/events/', event_list, name='event_list'),
 ]
 
-# Serve media files during development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=BASE_DIR / "config/static")

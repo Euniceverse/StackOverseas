@@ -17,6 +17,7 @@ from .views import *
 #     decide_application,
 # )
 from .functions import top_societies
+from apps.widgets.views import remove_widget
 
 urlpatterns = [
     path('societiespage/', societiespage, name='societiespage'),
@@ -39,7 +40,12 @@ urlpatterns = [
     path('<int:society_id>/admin/', society_admin_view, name='society_admin_view'),
     path('<int:society_id>/leave/', leave_society, name='leave_society'),
     path('<int:society_id>/request-delete/', request_delete_society, name='request_delete_society'),
+    path('<int:society_id>/manage-display/', manage_display, name='manage_display'),
 
+    # widgets
+    path('<int:society_id>/remove-widget/<int:widget_id>/', remove_widget, name='remove_widget'),
+    
+    
     # society_page MUST BE LAST:
     path('<int:society_id>/', society_page, name='society_page'),
 ]

@@ -1,10 +1,12 @@
 from django.shortcuts import render
-import json
+from django.contrib import messages
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render, redirect
 from django.views.decorators.csrf import csrf_exempt
-from apps.widgets.models import Widget
-from apps.societies.models import Society,  Membership, MembershipRole, MembershipStatus
+from .models import Widget
+from .forms import ContactWidgetForm
+from apps.societies.models import Society, Membership, MembershipRole, MembershipStatus
+import json
 
 @csrf_exempt
 def update_widget_order(request, society_id):
@@ -50,3 +52,28 @@ def remove_widget(request, society_id, widget_id):
     
     widget.delete()
     return JsonResponse({"success": True})
+
+def edit_contact_widget(request, society_id, widget_id):
+    widget = get_object_or_404(
+        Widget, id=widget_id, society__id=society_id, widget_type='contacts'
+    )
+    initial_data = widget.data if widget.data else {}
+    
+    if request.method == "POST":
+        form = ContactWidgetForm(request.POST, request.FILES)
+        if form.is_valid():
+            # Save the cleaned data as JSON in widget.data
+            widget.data = form.cleaned_data
+            widget.save()
+            messages.success(request, "Contact information updated successfully!")
+            return redirect("manage_display", society_id=society_id)
+        else:
+            messages.error(request, "There was an error updating the contact information.")
+    else:
+        form = ContactWidgetForm(initial=initial_data)
+    
+    return render(request, "edit_contact_widget.html", {
+        "form": form,
+        "widget": widget,
+        "society_id": society_id,
+    })

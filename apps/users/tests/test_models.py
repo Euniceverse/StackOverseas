@@ -46,8 +46,8 @@ class CustomUserModelTest(TestCase):
         self.assertEqual(self.user.email, "student@university.ac.uk")
         self.assertEqual(self.user.first_name, "John")
         self.assertEqual(self.user.preferred_name, "Johnny")
-        self.assertFalse(self.user.is_staff)  # Regular users are not staff
-        self.assertFalse(self.user.is_superuser)  # Regular users are not superusers
+        self.assertFalse(self.user.is_staff) 
+        self.assertFalse(self.user.is_superuser) 
 
     def test_create_user(self):
         """Test user creation through CustomUserManager."""
@@ -86,13 +86,13 @@ class CustomUserModelTest(TestCase):
                 last_name="Doe",
                 preferred_name="Johnny"
             )
-            invalid_user.full_clean()  # Runs model validation before saving
+            invalid_user.full_clean()  
 
     def test_edge_case_email(self):
         """Test that an email that almost matches .ac.uk (but isn't) is rejected."""
         with self.assertRaises(ValidationError):
             invalid_user = CustomUser(
-                email="student@university.ac.com",  # Incorrect domain
+                email="student@university.ac.com", 
                 first_name="Jane",
                 last_name="Doe",
                 preferred_name="Janey"
@@ -111,25 +111,22 @@ class CustomUserModelTest(TestCase):
 
     def test_preferred_name_change_requires_email_verification(self):
         """Test that users must verify their email before changing their preferred name."""
-        self.user.last_verified_date = timezone.now() - timedelta(days=365)  # Make user eligible
+        self.user.last_verified_date = timezone.now() - timedelta(days=365) 
         self.user.save()
 
         self.assertTrue(self.user.can_change_preferred_name())
 
-        # Attempt to update preferred name (should require verification)
         self.assertFalse(self.user.update_preferred_name("NewJohnny"))
 
-        # Email verification must be confirmed before change
         self.user.confirm_preferred_name_change("NewJohnny")
         self.assertEqual(self.user.preferred_name, "NewJohnny")
-        self.assertFalse(self.user.can_change_preferred_name())  # Now must wait another year
+        self.assertFalse(self.user.can_change_preferred_name()) 
 
     def test_cannot_change_preferred_name_twice_in_one_year(self):
         """Test that users cannot change their preferred name more than once a year."""
-        self.user.last_verified_date = timezone.now() - timedelta(days=365)  # Make user eligible
+        self.user.last_verified_date = timezone.now() - timedelta(days=365) 
         self.user.confirm_preferred_name_change("NewJohnny")
 
-        # Try to change again immediately
         with self.assertRaises(ValidationError):
             self.user.update_preferred_name("AnotherName")
 
@@ -139,7 +136,7 @@ class CustomUserModelTest(TestCase):
         self.user.last_verified_date = old_date
         self.user.save()
 
-        self.user.verify_email()  # Simulate email verification
+        self.user.verify_email()
 
         self.assertNotEqual(self.user.last_verified_date, old_date)
         self.assertGreater(self.user.last_verified_date, old_date)
@@ -147,11 +144,11 @@ class CustomUserModelTest(TestCase):
     def test_request_email_verification(self):
         """Test email verification request function (mocked)."""
         self.user.request_email_verification()
-        self.assertTrue(True)  # Just ensuring function runs without error
+        self.assertTrue(True)
 
     def test_cannot_change_preferred_name_without_waiting_a_year(self):
         """Test that users cannot change their preferred name again within a year."""
-        self.user.last_verified_date = timezone.now()  # Just verified
+        self.user.last_verified_date = timezone.now()
         self.user.save()
 
         self.assertFalse(self.user.can_change_preferred_name())
@@ -226,7 +223,6 @@ class CustomUserModelTest(TestCase):
 
     def test_check_annual_verification_deactivates_user(self):
         """Test that check_annual_verification deactivates the user if annual_verification_date is old."""
-        # Set annual_verification_date to more than 2 mins ago -> 3 mins
         self.user.annual_verification_date = timezone.now() - timedelta(days=366)
         self.user.save()
         result = self.user.check_annual_verification()

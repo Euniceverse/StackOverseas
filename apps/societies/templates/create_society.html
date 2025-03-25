@@ -16,7 +16,60 @@
 
 <form method="post">
   {% csrf_token %}
-  {{ form.as_p }}
+  <div class="container">
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="{{ form.name.id_for_label }}" class="form-label fw-bold">{{ form.name.label }}</label>
+        {{ form.name }}
+        {% for error in form.name.errors %}
+          <div class="text-danger small">{{ error }}</div>
+        {% endfor %}
+      </div>
+      <div class="col-md-6">
+        <label for="{{ form.society_type.id_for_label }}" class="form-label fw-bold">{{ form.society_type.label }}</label>
+        {{ form.society_type }}
+        {% for error in form.society_type.errors %}
+          <div class="text-danger small">{{ error }}</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-12">
+        <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">{{ form.description.label }}</label>
+        {{ form.description }}
+        {% for error in form.description.errors %}
+          <div class="text-danger small">{{ error }}</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="{{ form.tags.id_for_label }}" class="form-label fw-bold">{{ form.tags.label }}</label>
+        {{ form.tags }}
+        {% for error in form.tags.errors %}
+          <div class="text-danger small">{{ error }}</div>
+        {% endfor %}
+        {% if form.tags.help_text %}
+          <div class="form-text text-muted">{{ form.tags.help_text }}</div>
+        {% endif %}
+      </div>
+
+      <div class="col-md-6">
+        <div class="form-check mt-4">
+          {{ form.requires_extra_form }}
+          <label class="form-check-label fw-bold" for="{{ form.requires_extra_form.id_for_label }}">
+            {{ form.requires_extra_form.label }}
+          </label>
+          {% if form.requires_extra_form.help_text %}
+            <div class="form-text text-muted">{{ form.requires_extra_form.help_text }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
   <button type="submit" class="btn btn-primary" id="createEventSubmitBtn">
     Create Society
   </button>

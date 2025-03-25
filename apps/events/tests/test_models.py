@@ -4,13 +4,24 @@ from apps.events.models import Event, EventRegistration, Host
 from django.contrib.auth import get_user_model
 from apps.societies.models import Society
 
+User = get_user_model()
+
 class EventModelTest(TestCase):
     def setUp(self):
+        self.user_mgr = User.objects.create_user(
+            email="manager@example.com",
+            first_name="Manager",
+            last_name="Test",
+            preferred_name="MgrTest",
+            password="pass"
+        )
+        
         self.test_society = Society.objects.create(
             name="Chess Club",
             description="A club for chess lovers",
             society_type="sports",
-            status="approved"
+            status="approved",
+            manager=self.user_mgr
         )
 
         self.event = Event.objects.create(

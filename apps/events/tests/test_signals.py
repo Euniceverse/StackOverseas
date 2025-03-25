@@ -5,6 +5,9 @@ from apps.events.models import Event, Host
 from apps.societies.models import Society
 from apps.news.models import News
 from django.conf import settings
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class EventSignalsTest(TestCase):
     def setUp(self):
@@ -17,7 +20,7 @@ class EventSignalsTest(TestCase):
         )
         self.soc = Society.objects.create(
             name="SignalSoc",
-            manager=user_mgr,
+            manager=self.user_mgr,
             status="approved",
             society_type="arts"
         )

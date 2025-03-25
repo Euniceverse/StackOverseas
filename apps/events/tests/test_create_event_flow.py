@@ -102,7 +102,9 @@ class CreateEventViewTests(TestCase):
             'capacity': '100',
             'member_only': False,
             'fee': '10.00',
-            'is_free': False, 
+            'is_free': False,
+            'latitude': "51.5074",
+            'longitude': "-0.1278",
             'society': [str(self.society.id)]
         }
         response = self.client.post(self.url, data, follow=True)
@@ -132,6 +134,8 @@ class CreateEventViewTests(TestCase):
             'member_only': True,
             'fee': '0.00',
             'is_free': True,
+            'latitude': "51.5074",
+            'longitude': "-0.1278",
             'society': [str(self.society.id)]
         }
         response = self.client.post(self.url, data, follow=True)
@@ -151,6 +155,8 @@ class CreateEventViewTests(TestCase):
             'member_only': False,
             'fee': '0.00',
             'is_free': True,
+            'latitude': "51.5074",
+            'longitude': "-0.1278",
             'society': [str(self.society.id)]
         }
         response = self.client.post(self.url, data, follow=True)

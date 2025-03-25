@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from django.contrib import messages
+from django.forms import formset_factory
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from .models import Widget
-from .forms import ContactWidgetForm
+from .forms import *
 from apps.societies.models import Society, Membership, MembershipRole, MembershipStatus
 import json
 
@@ -54,6 +55,7 @@ def remove_widget(request, society_id, widget_id):
     return JsonResponse({"success": True})
 
 def edit_contact_widget(request, society_id, widget_id):
+    """Allows manager to add/remove contact information for the society."""
     widget = get_object_or_404(
         Widget, id=widget_id, society__id=society_id, widget_type='contacts'
     )
@@ -74,6 +76,43 @@ def edit_contact_widget(request, society_id, widget_id):
     
     return render(request, "edit_contact_widget.html", {
         "form": form,
+        "widget": widget,
+        "society_id": society_id,
+    })
+    
+def edit_featured_members_widget(request, society_id, widget_id):
+    """Allows managers to edit the "featured" widget by adding multiple featured members."""
+    widget = get_object_or_404(Widget, id=widget_id, society__id=society_id, widget_type='featured')
+    FeaturedMemberFormSet = formset_factory(FeaturedMemberForm, extra=1)
+    
+    initial_data = widget.data.get('featured_members', []) if widget.data else []
+    
+    if request.method == "POST":
+        formset = FeaturedMemberFormSet(request.POST, request.FILES)
+        if formset.is_valid():
+            featured_members = []
+            for form in formset:
+                if form.cleaned_data and (form.cleaned_data.get('name') or form.cleaned_data.get('role')):
+                    picture_field = form.cleaned_data.get('picture')
+                    picture_url = picture_field.url if picture_field else ""
+                    featured_members.append({
+                        'name': form.cleaned_data.get('name'),
+                        'role': form.cleaned_data.get('role'),
+                        'picture': picture_url,
+                    })
+            if widget.data is None:
+                widget.data = {}
+            widget.data['featured_members'] = featured_members
+            widget.save()
+            messages.success(request, "Featured members updated successfully!")
+            return redirect("manage_display", society_id=society_id)
+        else:
+            messages.error(request, "There was an error updating featured members.")
+    else:
+        formset = FeaturedMemberFormSet(initial=initial_data)
+    
+    return render(request, "edit_featured_members_widget.html", {
+        "formset": formset,
         "widget": widget,
         "society_id": society_id,
     })

@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 from apps.users.models import CustomUser
 from apps.widgets.models import Widget
-from apps.widgets.forms import ContactWidgetForm
+from apps.widgets.forms import ContactWidgetForm, FeaturedMemberForm
 from django import template
 from config.constants import SOCIETY_TYPE_CHOICES
 
@@ -119,6 +119,9 @@ def edit_widget(request, society_id, widget_id):
     if widget.widget_type == "contacts":
         form_class = ContactWidgetForm
         template_name = "edit_contact_widget.html"
+    elif widget.widget_type == "featured":
+        form_class = FeaturedMemberForm
+        template_name = "edit_featured_widget.html"
     else:
         messages.error(request, "This widget type cannot be edited.")
         return redirect("manage_display", society_id=society_id)

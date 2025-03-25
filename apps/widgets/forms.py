@@ -46,3 +46,22 @@ class ContactWidgetForm(forms.Form):
         label="Additional Information",
         widget=forms.Textarea(attrs={"placeholder": "Any extra details", "rows": 3})
     )
+    
+    
+class FeaturedMemberForm(forms.Form):
+    name = forms.CharField(
+        max_length=100,
+        required=True,
+        label="Name",
+        widget=forms.TextInput(attrs={"placeholder": "Enter name"})
+    )
+    role = forms.CharField(
+        max_length=100,
+        required=True,
+        label="Role",
+        widget=forms.TextInput(attrs={"placeholder": "Enter role (e.g. President)"})
+    )
+    picture = forms.ImageField(
+        required=False,
+        label="Picture"
+    )

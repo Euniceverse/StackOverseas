@@ -1,6 +1,24 @@
 from django import forms
 from .models import Question, Option
 
+#gallery
+from django import forms
+from .models import Gallery, Image
+
+
+class GalleryForm(forms.ModelForm):
+    class Meta:
+        model = Gallery
+        fields = ['title', 'description']
+
+class ImageForm(forms.ModelForm):
+    class Meta:
+        model = Image
+        fields = ['image']
+
+    image = forms.ImageField(required=True)  # 이미지 필드 추가
+
+#poll
 class PollForm(forms.Form):
     question_text = forms.CharField(max_length=255, required=True, widget=forms.TextInput(attrs={'placeholder': 'Enter your question here'}))
     options = forms.CharField(widget=forms.Textarea, required=True, help_text="Enter options, each on a new line")

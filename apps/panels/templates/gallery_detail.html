@@ -1,0 +1,15 @@
+<h1>{{ gallery.title }}</h1>
+<p>{{ gallery.description }}</p>
+
+<!-- 이미지 업로드 폼 -->
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Upload Image</button>
+</form>
+
+<!-- 이미지 목록 -->
+<h2>Images:</h2>
+{% for image in images %}
+    <img src="{{ image.image.url }}" width="200"><br>
+{% endfor %}

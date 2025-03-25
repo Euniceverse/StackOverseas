@@ -1,0 +1,17 @@
+<h1>Gallery List</h1>
+{% for gallery in galleries %}
+    <a href="{% url 'panels:gallery_detail' gallery.id %}">{{ gallery.title }}</a><br>
+{% endfor %}
+
+<h2>Images in this Gallery</h2>
+{% for image in gallery.images.all %}
+    <div>
+        <img src="{{ image.image.url }}" alt="{{ image.title }}" width="100">
+        <p>{{ image.title }}</p>
+        <!-- 이미지 삭제 폼 -->
+        <form action="{% url 'panels:delete_image' image_id=image.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit">Delete</button>
+        </form>
+    </div>
+{% endfor %}

@@ -208,7 +208,7 @@ def auto_edit_news(request, event_id):
             for news_item in instances:
                 news_item.society = society
                 news_item.is_published = True
-                news_item.save()
+                news_item.save(update_fields=['society', 'is_published', 'date_posted'])
 
             messages.success(request, "News updated and published!")
             return redirect('society_page', society_id=society.id)

@@ -37,14 +37,18 @@ def societiespage(request):
         filtered_societies = filtered_societies.order_by("name")
     elif sort_option == "name_desc":
         filtered_societies = filtered_societies.order_by("-name")
-    elif sort_option == "date_created":
+    elif sort_option == "date_newest":
+        filtered_societies = filtered_societies.order_by("-created_at")
+    elif sort_option == "date_oldest":
         filtered_societies = filtered_societies.order_by("created_at")
     elif sort_option == "price_low_high":
-        filtered_societies = filtered_societies.order_by("price_range")
+        filtered_societies = filtered_societies.order_by("joining_fee")
     elif sort_option == "price_high_low":
-        filtered_societies = filtered_societies.order_by("-price_range")
+        filtered_societies = filtered_societies.order_by("-joining_fee")
     elif sort_option == "popularity":
         filtered_societies = filtered_societies.order_by("-members_count")
+    elif sort_option == "availability":
+        filtered_societies = filtered_societies.order_by("members_count")
 
     return render(request, "societies.html", {
         "news_list": recent_news,

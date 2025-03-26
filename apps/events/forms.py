@@ -94,12 +94,16 @@ class NewEventForm(forms.Form):
         is_free = cleaned_data.get("is_free", True)
         latitude = cleaned_data.get("latitude")
         longitude = cleaned_data.get("longitude")
+        capacity = cleaned_data.get("capacity")
 
         if fee > Decimal("0.00"):
             cleaned_data["is_free"] = False
 
         if not latitude or not longitude:
             raise forms.ValidationError("Please select a valid address from the suggestions to set the location coordinates.")
+
+        if capacity is not None and capacity < 1:
+            raise forms.ValidationError("Capacity must be at least 1.")
 
         return cleaned_data
 

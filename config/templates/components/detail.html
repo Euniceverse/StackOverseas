@@ -58,29 +58,29 @@
 
             <script src="https://js.stripe.com/v3/"></script>
             <script>
-                const stripe = Stripe("pk_test_51QviGaE1rp8ABg2BZkClndNES4HcFS2yJVKbc10uIfMf9jF6QuuS1TKZ7SgVKU8DK43TXWzQlS1fGcswox4WFuve00bNqjsbvD"); 
+                const stripe = Stripe("pk_test_51QviGaE1rp8ABg2BZkClndNES4HcFS2yJVKbc10uIfMf9jF6QuuS1TKZ7SgVKU8DK43TXWzQlS1fGcswox4WFuve00bNqjsbvD");
             </script>
             <script>
                 document.addEventListener("DOMContentLoaded", function () {
                     let registerButton = document.querySelector(".register-button");
-                
+
                     if (registerButton) {
                         registerButton.addEventListener("click", function (event) {
                             event.preventDefault();  // Stop default behavior
-                
+
                             // Fetch event details from the modal
                             let eventId = document.getElementById("event-id-input").value.trim();
                             let name = document.getElementById("event-name").textContent.trim();
                             let price = document.getElementById("event-price-input").value.trim();
                             let description = document.getElementById("event-description").textContent.trim();
-                
+
                             if (!eventId || !name || !price) {
                                 console.error("❌ ERROR: Missing event data!");
                                 return;
                             }
-                
+
                             console.log(`📢 Sending data -> ID: ${eventId}, Name: ${name}, Price: ${price}`);
-                
+
                             fetch("{% url 'payments:create_checkout_session' %}", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -109,4 +109,3 @@
         </div>
     </div>
 </div>
-

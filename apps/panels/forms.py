@@ -1,5 +1,14 @@
 from django import forms
-from .models import Question, Option
+from .models import Comment, Poll
+
+#comments
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ['content']
+        widgets = {
+            'content': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Make a comment...'}),
+        }
 
 #gallery
 from django import forms
@@ -11,43 +20,28 @@ class GalleryForm(forms.ModelForm):
         model = Gallery
         fields = ['title', 'description']
 
-class ImageForm(forms.ModelForm):
+class ImageUploadForm(forms.ModelForm):
     class Meta:
         model = Image
         fields = ['image']
 
-    image = forms.ImageField(required=True)  # 이미지 필드 추가
-
 #poll
-class PollForm(forms.Form):
-    question_text = forms.CharField(max_length=255, required=True, widget=forms.TextInput(attrs={'placeholder': 'Enter your question here'}))
-    options = forms.CharField(widget=forms.Textarea, required=True, help_text="Enter options, each on a new line")
+from django.forms import modelformset_factory
+from .models import Poll, Question, Option
 
-    def clean_options(self):
-        options_data = self.cleaned_data['options']
-        options = options_data.splitlines()  # Split the options into a list based on newlines
+class PollForm(forms.ModelForm):
+    class Meta:
+        model = Poll
+        fields = ['title', 'description', 'deadline']
 
-        # Remove leading/trailing whitespaces from each option
-        options = [option.strip() for option in options]
+class QuestionForm(forms.ModelForm):
+    class Meta:
+        model = Question
+        fields = ['question_text']
 
-        # Check if there are at least 2 options
-        if len(options) < 2:
-            raise forms.ValidationError('At least two options are required.')
-
-        return options
-
-    def save(self, user):
-        # Get the cleaned data
-        question_text = self.cleaned_data['question_text']
-
-        # Create and save the Question object
-        question = Question(question_text=question_text)
-        question.created_by = user  # Set the current user as the creator
-        question.save()
-
-        # Get and save the options
-        options = self.cleaned_data['options']
-        for option_text in options:
-            Option.objects.create(question=question, option_text=option_text.strip())
-
-        return question
+OptionFormSet = modelformset_factory(
+    Option,
+    fields=('option_text',),
+    extra=0,  # we’ll set it dynamically in the view
+    can_delete=False
+)

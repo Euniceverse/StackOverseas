@@ -1,61 +1,85 @@
 from django.conf import settings
+from apps.societies.models import Society
 from django.db import models
+from django.utils import timezone
+from datetime import timedelta
+
 from config.constants import MAX_DESCRIPTION
 import os
 
+#comment
+class Comment(models.Model):
+    society = models.ForeignKey(Society, on_delete=models.CASCADE, related_name='comments')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    likes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='liked_comments', blank=True)
+
+    def __str__(self):
+        return f"{self.author.username} @ {self.society.name}: {self.content[:20]}"
+
+    def total_likes(self):
+        return self.likes.count()
+
 #gallery
 def gallery_image_path(instance, filename):
-    """이미지를 저장할 경로 설정: media/gallery/user_{id}/{filename}"""
-    return os.path.join('gallery', f"user_{instance.gallery.owner.id}", filename)
+    return os.path.join('gallery', f"user_{instance.gallery.society.id}", filename)
 
 class Gallery(models.Model):
-    """갤러리 모델 (사용자별 갤러리)"""
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="galleries")
+    society = models.ForeignKey(Society, on_delete=models.CASCADE, null=True, blank=True, related_name="gallery_society")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
 
 class Image(models.Model):
-    """갤러리에 포함된 이미지 모델"""
     gallery = models.ForeignKey(Gallery, on_delete=models.CASCADE, related_name="images")
     image = models.ImageField(upload_to=gallery_image_path)
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+
 
     def __str__(self):
         return f"Image in {self.gallery.title}"
+    
 #poll
+class Poll(models.Model):
+    society = models.ForeignKey(Society, on_delete=models.CASCADE, related_name='poll')
+    title = models.CharField(max_length=255, default='Untitled Poll')
+    description = models.TextField(blank=True)
+    deadline = models.DateTimeField(default=timezone.now() + timedelta(days=7))  
+
+    def is_closed(self):
+        return timezone.now() > self.deadline
+
+    def __str__(self):
+        return f"{self.title} ({self.society.name})"
+
+
 class Question(models.Model):
-    question_text = models.CharField(max_length=MAX_DESCRIPTION)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name="questions")
+    question_text = models.CharField(max_length=255)
 
     def __str__(self):
         return self.question_text
 
+
 class Option(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="options")
-    option_text = models.CharField(max_length=MAX_DESCRIPTION)
+    option_text = models.CharField(max_length=255)
     option_count = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"{self.question.question_text} - {self.option_text}"
-
+    
 class Vote(models.Model):
     option = models.ForeignKey(Option, on_delete=models.CASCADE)
     voted_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['option', 'voted_by'], name='unique_vote_per_option')
-        ]
-    
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        self.option.save()
+        unique_together = ('option', 'voted_by')
 
     def __str__(self):
-        voter = self.voted_by if self.voted_by else "Anonymous"
-        return f"{voter} voted for {self.option.option_text}"
+        return f"{self.voted_by} voted for {self.option.option_text}"

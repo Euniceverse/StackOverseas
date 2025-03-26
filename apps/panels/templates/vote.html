@@ -1,46 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ question.question_text }}</title>
-</head>
-<body>
-    <h1>{{ question.question_text }}</h1>
+<h2>{{ question.question_text }}</h2>
 
-    {% if user_selected_option %}
-        <p>You voted for: <strong>{{ user_selected_option.option_text }}</strong></p>
-        <form action="{% url 'panels:cancel_vote' question_id=question.id %}" method="post">
-            {% csrf_token %}
-            <button type="submit">Cancel Vote</button>
-        </form>
-        <form method="POST">
-            {% csrf_token %}
-            {% for option in options %}
-                <div>
-                    <label>
-                        <input type="radio" name="option" value="{{ option.id }}">
-                        {{ option.option_text }} (Votes: {{ option.option_count }})
-                    </label>
-                </div>
-            {% endfor %}
-            <button type="submit">Vote</button>
-        </form>
-    {% else %}
-        <form method="POST">
-            {% csrf_token %}
-            {% for option in options %}
-                <div>
-                    <label>
-                        <input type="radio" name="option" value="{{ option.id }}">
-                        {{ option.option_text }} (Votes: {{ option.option_count }})
-                    </label>
-                </div>
-            {% endfor %}
-            <button type="submit">Vote</button>
-        </form>
-    {% endif %}
+{% if user_selected_option %}
+  <p>You have already voted for: <strong>{{ user_selected_option.option_text }}</strong></p>
+  <a href="{% url 'panels:cancel_vote' society.id poll.id question.id %}">❌ Cancel Vote</a>
+{% else %}
+  <form method="post">
+    {% csrf_token %}
+    {% for option in options %}
+      <label>
+        <input type="radio" name="option" value="{{ option.id }}">
+        {{ option.option_text }}
+      </label><br>
+    {% endfor %}
+    <button type="submit">Submit Vote</button>
+  </form>
+{% endif %}
 
-    <a href="{% url 'panels:index' %}">Back to Poll List</a>
-</body>
-</html>
+<a href="{% url 'panels:poll_result' society.id poll.id question.id %}">📊 View Results</a><br>
+<a href="{% url 'panels:poll_list' society.id %}">← Back to Poll List</a>

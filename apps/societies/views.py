@@ -50,10 +50,17 @@ def societiespage(request):
     elif sort_option == "availability":
         filtered_societies = filtered_societies.order_by("members_count")
 
-    return render(request, "societies.html", {
-        "news_list": recent_news,
+
+    top_context = top_societies(request.user)
+    recent_news = get_recent_news()
+
+    context = {
         "societies": filtered_societies,
-        })
+        "news_list": recent_news,
+        **top_context
+    }
+
+    return render(request, "societies.html", context)
 
 
 def my_societies(request):

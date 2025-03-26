@@ -208,7 +208,7 @@ def create_dummy_news (events):
 
     # **Step 2: Link the ManyToMany relationships**
     for news_entry, event in zip(created_news, events):
-        news_entry.society.set(event.society)
+        news_entry.society.set(event.society.all())
 
     return created_news
 

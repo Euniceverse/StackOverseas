@@ -122,7 +122,7 @@ MEDIA_ROOT = BASE_DIR / 'config' / 'media'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.environ.get('SQLITE_DB_PATH',  BASE_DIR / 'db.sqlite3'), # for home computer: BASE_DIR / 'db.sqlite3', for render: '/mnt/data/db.sqlite3'
+        'NAME': os.environ.get('SQLITE_DB_PATH',  '/mnt/data/db.sqlite3'), # for home computer: BASE_DIR / 'db.sqlite3', for render: '/mnt/data/db.sqlite3'
     }
 }
 
@@ -214,8 +214,6 @@ ALLOWED_HOSTS = [
     "stackoverseas.onrender.com",
     os.getenv("RENDER_EXTERNAL_HOSTNAME", ""),
 ]
-
-DOMAIN_NAME = "127.0.0.1:8000"  # Change this if running on another port
 
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",

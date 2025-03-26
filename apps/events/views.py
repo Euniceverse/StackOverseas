@@ -23,7 +23,7 @@ import stripe
 from django.conf import settings
 
 
-stripe.api_key = settings.STRIPE_SECRET_KEY 
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 
@@ -63,10 +63,21 @@ def delete_event(request, event_id):
     messages.success(request, "Event deleted successfully.")
     return redirect('eventspage')
 
+@login_required
 def eventspage(request):
     """Events page view"""
-    events = Event.objects.all()
+    my_events_filter = request.GET.get("my_events", False)
+    if my_events_filter:
+        events = Event.objects.filter(
+            registrations__user=request.user,
+            registrations__status='accepted'
+        ).distinct()
+    else:
+        events = Event.objects.all()
+
+    events = EventFilter(request.GET, queryset=events).qs
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
+
     return render(request, "events.html", {"news_list": news_list, "events": events})
 
 class EventListAPIView(generics.ListAPIView):
@@ -156,14 +167,19 @@ def create_event(request, society_id):
                 latitude=form.cleaned_data['latitude'],
                 longitude=form.cleaned_data['longitude'],
             )
-            # Debug logging
-            print("Created event:", event.id, event.latitude, event.longitude)
-
             event.society.add(society)
-            messages.success(request, "Event created successfully!")
+
+            news_item = News.objects.create(
+                event=event,
+                society=society,
+                title=event.name,
+                content=event.description,
+                is_published=False,
+            )
+
+            # messages.success(request, "Event created successfully!")
             return redirect('auto_edit_news', event_id=event.id)
         else:
-            # Debug logging
             print("Form errors:", form.errors)
     else:
         form = NewEventForm()
@@ -182,20 +198,24 @@ def auto_edit_news(request, event_id):
     """
     event = get_object_or_404(Event, id=event_id)
     news_qs = News.objects.filter(event=event)
+    society = event.society.first()
 
-    # If there are multiple news items (e.g. multi societies?), we can use a formset:
     NewsFormSet = modelformset_factory(News, form=NewsForm, extra=0)
     if request.method == 'POST':
         formset = NewsFormSet(request.POST, request.FILES, queryset=news_qs)
         if formset.is_valid():
             instances = formset.save(commit=False)
             for news_item in instances:
-
+                news_item.society = society
                 news_item.is_published = True
                 news_item.save()
 
             messages.success(request, "News updated and published!")
-            return redirect('eventspage')
+            return redirect('society_page', society_id=society.id)
+        else:
+            messages.error(request, "Please fill in all required fields before publishing.")
+            print("Formset errors:", formset.errors)
+
     else:
         formset = NewsFormSet(queryset=news_qs)
 
@@ -205,19 +225,71 @@ def auto_edit_news(request, event_id):
     })
 
 
+@login_required
+def register_for_event(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+
+    # Check if user is already registered
+    if event.is_user_registered(request.user):
+        messages.error(request, "You are already registered for this event.")
+        return redirect('eventspage')
+
+    # Register the user
+    try:
+        status = 'accepted' if not event.is_full() else 'waitlisted'
+        registration = event.register_user(request.user, status=status)
+        messages.success(request, f"You've successfully registered for {event.name}.")
+    except ValueError as e:
+        messages.error(request, str(e))
+
+    return redirect('eventspage')
+
+from django.shortcuts import render, get_object_or_404
+from apps.events.models import Event
+from apps.events.models import EventRegistration
+
+def event_registered_users(request, event_id):
+    # Fetch the event
+    event = get_object_or_404(Event, id=event_id)
+
+    # Get all registered users for the event
+    registered_users = EventRegistration.objects.filter(event=event, status='accepted')
+
+    # Pass the event and registered users to the template
+    return render(request, 'event_registered_users.html', {
+        'event': event,
+        'registered_users': registered_users
+    })
+
+
 def event_list(request):
-    events = Event.objects.exclude(latitude__isnull=True).exclude(longitude__isnull=True)
-    data = [{
-        "name": e.name,
-        "address": e.location,  # Keep as "address" for popup
-        "latitude": e.latitude,
-        "longitude": e.longitude,
-        "event_type": e.event_type,  # Add missing fields
-        "description": e.description,
-        "date": e.date.isoformat()  # Add date for modal formatting
-    } for e in events]
-    return JsonResponse(data, safe=False)
+    print("📍 API Request Query Params:", request.GET)
+    events = Event.objects.filter(date__gte=make_aware(datetime.now())).order_by("date")
 
+    my_events_filter = request.GET.get("my_events", False)
+    print("📍 My Events Filter Value:", my_events_filter)
 
-def event_map(request):
-    return render(request, "event_map.html")
+    if my_events_filter == 'true':
+        events = events.filter(
+            registrations__user=request.user,
+            registrations__status='accepted'
+        ).distinct()
+
+    print("📍 Number of Events After Filtering:", events.count())
+
+    events_data = [{
+        "id": event.id,
+        "name": event.name,
+        "event_type": event.event_type,
+        "start_datetime": event.date,
+        "end_datetime": event.end_time,
+        "address": event.location,
+        "fee": event.fee,
+        "description": event.description,
+        "capacity": event.capacity,
+        "hosts": ", ".join([society.name for society in event.society.all()]),
+        "latitude": event.latitude,
+        "longitude": event.longitude
+    } for event in events]
+
+    return JsonResponse(events_data, safe=False)

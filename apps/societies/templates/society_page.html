@@ -6,10 +6,12 @@
 {% endblock %}
 
 {% block content %}
-<h2>{{ society.name }}</h2>
-<p>{{ society.description }}</p>
-<p>Type: {{ society.society_type }}</p>
-<p>Members: {{ society.members_count }}</p>
+<div class="container my-5" style="max-width: 900px;">
+    <h2 class="fw-bold mb-4">{{ society.name }}</h2>
+    
+    <p>{{ society.description }}</p>
+    <p><strong>Type:</strong> {{ society.society_type }}</p>
+    <p><strong>Members:</strong> {{ society.members_count }}</p>
 
 <!-- If user is manager/co_manager/editor + approved, show "Manage Society" and "Create Event" -->
 {% if user_membership and user_membership.role == "manager" or user_membership and user_membership.role == "co_manager" or user_membership and user_membership.role == "editor" or user.is_superuser %}
@@ -28,42 +30,44 @@
     </div>
 {% endif %}
 
-{% if user.is_authenticated %}
-    {% if membership %}
-        {% if membership.status == 'approved' %}
-            <!-- The user is approved and can leave the society -->
-            <form action="{% url 'leave_society' society.id %}" method="POST" style="display:inline;">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-danger">
-                Leave Society
-              </button>
-            </form>
-            <p>You are a member of this society (Role: {{ membership.get_role_display }}).</p>
+    {% if user.is_authenticated %}
 
-        {% elif membership.status == 'pending' %}
-            <p class="text-muted">Your membership application is pending.</p>
+        {% if membership %}
 
-        {% elif membership.status == 'rejected' %}
-            <p class="text-danger">Your application was rejected.</p>
+            {% if membership.status == 'approved' %}
+                <!-- The user is approved and can leave the society -->
+                <form action="{% url 'leave_society' society.id %}" method="POST" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">
+                    Leave Society
+                </button>
+                </form>
+                <p>You are a member of this society (Role: {{ membership.get_role_display }}).</p>
+
+            {% elif membership.status == 'pending' %}
+                <p class="text-muted">Your membership application is pending.</p>
+
+            {% elif membership.status == 'rejected' %}
+                <p class="text-danger">Your application was rejected.</p>
+            {% endif %}
+
+        {% else %}
+            <!-- The user is logged in but not a member yet -->
+            <p>You are not a member of this society.</p>
+            <a href="{% url 'join_society' society.id %}"
+                class="btn btn-primary"
+                id="join-society-link">
+                Join Society
+            </a>
         {% endif %}
 
     {% else %}
-        <!-- The user is logged in but not a member yet -->
-        <p>You are not a member of this society.</p>
-        <a href="{% url 'join_society' society.id %}"
-            class="btn btn-primary"
-            id="join-society-link">
-            Join Society
-        </a>
+        <!-- The user is not logged in at all -->
+        <p>You are not logged in.
+        <a href="{% url 'log_in' %}?next={% url 'society_page' society.id %}">Log in</a>
+        to join or leave this society.
+        </p>
     {% endif %}
-
-{% else %}
-  <!-- The user is not logged in at all -->
-  <p>You are not logged in.
-     <a href="{% url 'log_in' %}?next={% url 'society_page' society.id %}">Log in</a>
-     to join or leave this society.
-  </p>
-{% endif %}
 
 <!-- Widget Display: visible to everyone -->
 <div id="widgets-container">
@@ -95,6 +99,8 @@
         </ul>
     </div>
 {% endblock %}
+
+
 
 {% block extra_scripts %}
 <script src="{% static 'js/society_page.js' %}" defer></script>

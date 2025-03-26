@@ -13,26 +13,27 @@ function initializeList() {
         return;
     }
 
-    listInitialized = true; 
+    listInitialized = true;
 
     localStorage.removeItem("filterQueryString");
 
     function fetchFilteredEvents(fetchInfo, successCallback, failureCallback) {
         let queryString = localStorage.getItem("filterQueryString") || "";
-    
+        console.log("📋 List - Query String:", queryString);
+
         fetch(`/events/api/${queryString}`)
             .then(response => response.json())
             .then(data => {
-                console.log("🔍 API 응답 확인:", data);
-    
+                console.log("📋 List - Raw Events Data:", data);
+
                 // ✅ API 응답이 배열인지 확인
                 let eventsArray = Array.isArray(data) ? data : data.results;
-    
+
                 if (!eventsArray || !Array.isArray(eventsArray)) {
                     console.error("❌ API 응답 오류: `results` 필드가 없음", data);
                     return;
                 }
-    
+
                 let events = eventsArray.map(event => ({
                     id: event.id,
                     title: event.name,
@@ -48,9 +49,9 @@ function initializeList() {
                         hosts: event.society.join(", ")
                     }
                 }));
-    
+
                 console.log("🎯 필터링된 이벤트 (FullCalendar에 전달될 데이터):", events);
-    
+
                 // ✅ FullCalendar가 데이터를 정상적으로 수신하는지 확인
                 successCallback(events);
             })
@@ -68,7 +69,7 @@ function initializeList() {
         events: fetchFilteredEvents, // Use function to dynamically fetch events
         eventClick: function (info) {
             console.log("🖱️ Event clicked:", info.event);
-        
+
             document.getElementById("event-name").textContent = info.event.title;
             document.getElementById("event-type").textContent = info.event.type;
             document.getElementById("event-date").textContent = info.event.start.toISOString().split("T")[0];
@@ -80,14 +81,14 @@ function initializeList() {
             document.getElementById("event-fee").textContent =
                 info.event.extendedProps.fee !== "Free" ? info.event.extendedProps.fee + " USD" : "Free";
             document.getElementById("event-description").textContent = info.event.extendedProps.description;
-        
+
             // ✅ 모달 보이기
             document.getElementById("event-detail-modal").classList.remove("hidden");
         }
 
-        
+
     });
-    
+
 
     window.list.render();
 
@@ -110,12 +111,12 @@ function initializeList() {
             this.classList.add("hidden");
         }
         event.stopPropagation(); // 🌟 이벤트 전파 차단하여 다른 버튼 클릭 방해 방지
-    });    
+    });
 
     document.addEventListener("filtersUpdated", function (event) {
         console.log("🔄 Calendar updating with filters:", event.detail);
         localStorage.setItem("filterQueryString", event.detail);
-    
+
         if (window.list) {
             console.log("📌 FullCalendar 기존 이벤트 삭제 및 새 데이터 로드!");
             window.list.removeAllEvents(); // ✅ 기존 데이터 삭제
@@ -130,10 +131,9 @@ function initializeList() {
             window.list.updateSize();
         }, 100);
     };
-    
-    
+
+
 }
 
 // 🚀 `window` 객체에 함수 등록하여 `viewSwitcher.js`에서 호출 가능하도록 설정
 window.initializeList = initializeList;
-

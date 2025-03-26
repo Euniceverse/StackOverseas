@@ -40,6 +40,13 @@ class NewSocietyForm(forms.ModelForm):
         if hasattr(self.instance, 'visibility'):
             self.instance.visibility = 'Private'
 
+        for field_name, field in self.fields.items():
+            if isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs['class'] = 'form-check-input'
+            else:
+                field.widget.attrs['class'] = 'form-control'
+
+
     def clean_name(self):
         """Ensure society name is unique"""
         name = self.cleaned_data.get("name")

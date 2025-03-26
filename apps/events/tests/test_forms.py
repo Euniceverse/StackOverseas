@@ -3,6 +3,9 @@ from django import forms
 from apps.events.forms import NewEventForm
 from apps.societies.models import Society
 from decimal import Decimal
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class NewEventFormTests(TestCase):
     def setUp(self):
@@ -53,7 +56,8 @@ class NewEventFormTests(TestCase):
             "member_only": False,
             "fee": "0.00",
             "is_free": True,
-            "society": [self.soc1.id, self.soc2.id]
+            "latitude": "51.5074",
+            "longitude": "-0.1278"
         }
         form = NewEventForm(data=form_data)
         self.assertTrue(form.is_valid(), form.errors)
@@ -76,7 +80,6 @@ class NewEventFormTests(TestCase):
         self.assertIn("date", form.errors)
         self.assertIn("event_type", form.errors)
         self.assertIn("location", form.errors)
-        self.assertIn("society", form.errors)
 
     def test_capacity_min_value(self):
         """capacity must be >= 1 if provided."""
@@ -90,7 +93,6 @@ class NewEventFormTests(TestCase):
             "member_only": True,
             "fee": "0.00",
             "is_free": True,
-            "society": [self.soc1.id],
             "capacity": "0"  # invalid
         }
         form = NewEventForm(data=form_data)
@@ -110,7 +112,6 @@ class NewEventFormTests(TestCase):
             "member_only": False,
             "fee": "0.00",
             "is_free": True,
-            "society": [self.soc1.id]
         }
         form = NewEventForm(data=form_data)
         self.assertFalse(form.is_valid())

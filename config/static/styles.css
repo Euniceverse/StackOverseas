@@ -314,7 +314,7 @@ button:focus-visible,
 }
 
 .society-container {
-  background-color: #f6f0eb; /* replace this with whatever color you prefer */
+  /* background-color: #f6f0eb;  */
   padding: 30px;
   border-radius: 12px;
 }
@@ -358,6 +358,6 @@ button:focus-visible,
 
 .page-container {
   max-width: 800px;
-  margin: 60px auto; /* centers horizontally with spacing above */
-  padding: 0 20px;    /* space on the sides */
+  margin: 60px auto; 
+  padding: 0 20px;   
 }

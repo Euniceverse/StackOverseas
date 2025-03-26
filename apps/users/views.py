@@ -301,10 +301,23 @@ def activate(request, uidb64, token):
 
         # Clear cached data
         cache.delete(token)
-        login(request, user)
-        messages.success(request, "Account activated successfully!")
-        return redirect("home")
+
+        # Authenticate and login the user
+        authenticated_user = authenticate(
+            request,
+            email=user_data['email'],
+            password=user_data['password']
+        )
+        if authenticated_user is not None:
+            login(request, authenticated_user)
+            messages.success(request, "Account activated successfully!")
+            return redirect("home")
+        else:
+            messages.error(request, "Error logging in after activation")
+            return redirect("log_in")
+
     except Exception as e:
+        print(f"Activation error: {str(e)}")  # Add logging for debugging
         return HttpResponse("Activation link is invalid!")
 
 def annual_verify(request, uidb64, token):

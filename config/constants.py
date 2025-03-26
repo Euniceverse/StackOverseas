@@ -151,5 +151,5 @@ WIDGET_TYPES = [
         ("contacts", "Contact Information"),
         ("featured", "Featured Members"),
         ("leaderboard", "Leaderboard"),
-        ("news", "News")
+        ("news", "News"),
     ]

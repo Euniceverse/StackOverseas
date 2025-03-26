@@ -1,0 +1,26 @@
+<h2>Gallery: {{ gallery.title }}</h2>
+<p>{{ gallery.description }}</p>
+
+<a href="{% url 'panels:upload_image' society.id gallery.id %}">+ Upload Image</a>
+
+<hr>
+
+<h3>Images</h3>
+{% if images %}
+  <ul>
+    {% for image in images %}
+      <li>
+        <img src="{{ image.image.url }}" alt="Image" width="200">
+        <p>Uploaded by: {{ image.uploaded_by }}</p>
+        <form method="post" action="{% url 'panels:delete_image' society.id image.id %}">
+          {% csrf_token %}
+          <button type="submit">Delete</button>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No images in this gallery yet.</p>
+{% endif %}
+
+<a href="{% url 'panels:society_gallery_list' society.id %}">← Back to Gallery List</a>

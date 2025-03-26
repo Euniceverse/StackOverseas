@@ -1,0 +1,9 @@
+<h2>Create a New Gallery for {{ society.name }}</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Create Gallery</button>
+</form>
+
+<a href="{% url 'panels:society_gallery_list' society.id %}">← Back to Gallery List</a>

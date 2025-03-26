@@ -8,6 +8,7 @@ from .forms import NewsForm
 from config.filters import NewsFilter
 from config.constants import SOCIETY_TYPE_CHOICES
 from apps.societies.models import Membership, MembershipStatus
+from django.utils import timezone
 
 def newspage(request):
     """News page with filtering and sorting"""
@@ -69,6 +70,7 @@ def create_news(request):
                 messages.success(request, "News saved as draft!")
             elif "post" in request.POST:
                 news.is_published = True
+                news.date_posted = timezone.now()
                 messages.success(request, "News successfully posted!")
 
             news.save()

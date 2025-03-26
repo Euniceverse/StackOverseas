@@ -13,7 +13,7 @@ class News(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
     society = models.ForeignKey(Society, on_delete=models.CASCADE)
-    date_posted = models.DateTimeField(default=timezone.now)
+    date_posted = models.DateTimeField(null=True, blank=True)
     date_updated = models.DateTimeField(auto_now=True)
     image = models.ImageField(upload_to=upload_to, blank=True, null=True)
     is_published = models.BooleanField(default=False)

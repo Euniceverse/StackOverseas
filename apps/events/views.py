@@ -156,14 +156,19 @@ def create_event(request, society_id):
                 latitude=form.cleaned_data['latitude'],
                 longitude=form.cleaned_data['longitude'],
             )
-            # Debug logging
-            print("Created event:", event.id, event.latitude, event.longitude)
-
             event.society.add(society)
-            messages.success(request, "Event created successfully!")
+
+            news_item = News.objects.create(
+                event=event,
+                society=society,
+                title=event.name,
+                content=event.description,
+                is_published=False,
+            )
+
+            # messages.success(request, "Event created successfully!")
             return redirect('auto_edit_news', event_id=event.id)
         else:
-            # Debug logging
             print("Form errors:", form.errors)
     else:
         form = NewEventForm()
@@ -182,20 +187,25 @@ def auto_edit_news(request, event_id):
     """
     event = get_object_or_404(Event, id=event_id)
     news_qs = News.objects.filter(event=event)
+    society = event.society.first()
 
-    # If there are multiple news items (e.g. multi societies?), we can use a formset:
     NewsFormSet = modelformset_factory(News, form=NewsForm, extra=0)
     if request.method == 'POST':
         formset = NewsFormSet(request.POST, request.FILES, queryset=news_qs)
         if formset.is_valid():
             instances = formset.save(commit=False)
             for news_item in instances:
-
+                news_item.society = society
                 news_item.is_published = True
+                news_item.date_posted = timezone.now()
                 news_item.save()
 
             messages.success(request, "News updated and published!")
-            return redirect('eventspage')
+            return redirect('society_page', society_id=society.id)
+        else:
+            messages.error(request, "Please fill in all required fields before publishing.")
+            print("Formset errors:", formset.errors)
+
     else:
         formset = NewsFormSet(queryset=news_qs)
 

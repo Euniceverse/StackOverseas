@@ -12,12 +12,13 @@ def staff_required(user):
 
 def approved_societies(user):
     """Retrieve approved societies, filtering by visibility unless user is superuser."""
-    if hasattr(user, 'user'):
-        user = user.user
-    query = Society.objects.filter(status="approved")
-    if not user.is_superuser:
-        query = query.filter(visibility="Public")
-    return query
+    # if hasattr(user, 'user'):
+    #     user = user.user
+    # query = Society.objects.filter(status="approved")
+    # if not user.is_superuser:
+    #     query = query.filter(visibility="Public")
+    # return query
+    return Society.objects.filter(status="approved")
 
 
 def get_societies(user):

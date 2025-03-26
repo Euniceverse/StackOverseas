@@ -7,7 +7,7 @@ from .models import News
 from .forms import NewsForm
 from config.filters import NewsFilter
 from config.constants import SOCIETY_TYPE_CHOICES
-from apps.societies.models import Membership, MembershipStatus
+from apps.societies.models import Society, Membership, MembershipRole, MembershipStatus
 from django.utils import timezone
 
 def newspage(request):
@@ -25,7 +25,7 @@ def newspage(request):
     elif sort_option == "oldest":
         filtered_news = filtered_news.order_by("date_posted")
     elif sort_option == "popularity":
-        filtered_news = filtered_news.order_by("-views")  # assume: `views` field tracks popularity
+        filtered_news = filtered_news.order_by("-views")
 
     societies = Society.objects.filter(status="approved")
 
@@ -38,8 +38,20 @@ def newspage(request):
 
 def news_list(request):
     """Retrieve latest 10 published news for news-panel.html"""
-    news_queryset = News.objects.filter(is_published=True).order_by("-date_posted")[:5]
-    return render(request, "news-panel.html", {"news_list": news_queryset})
+    news = News.objects.all()
+    filtered_news = NewsFilter(request.GET, queryset=news).qs
+    sort_option = request.GET.get("sort", "newest")
+
+    if sort_option == "newest":
+        filtered_news = filtered_news.order_by("-date_posted")
+    elif sort_option == "oldest":
+        filtered_news = filtered_news.order_by("date_posted")
+    elif sort_option == "popularity":
+        filtered_news = filtered_news.order_by("-views")
+    
+    filtered_news = filtered_news[:5]
+
+    return render(request, "news-panel.html", {"news_list": filtered_news})
 
 @login_required
 def create_news(request):
@@ -79,6 +91,41 @@ def create_news(request):
         form = NewsForm(user=request.user)
 
     return render(request, "create_news.html", {"form": form})
+
+@login_required
+def create_news_for_society(request, society_id):
+    """Create a news post for a given society."""
+    society = get_object_or_404(Society, id=society_id)
+
+    membership = Membership.objects.filter(
+        society=society,
+        user=request.user,
+        status=MembershipStatus.APPROVED
+    ).first()
+
+    allowed_roles = [MembershipRole.MANAGER, MembershipRole.CO_MANAGER, MembershipRole.EDITOR]
+    if not (request.user.is_superuser or (membership and membership.role in allowed_roles)):
+        messages.error(request, "You are not authorized to post news for this society.")
+        return redirect("society_page", society_id=society.id)
+
+    if request.method == "POST":
+        form = NewsForm(request.POST, request.FILES, user=request.user)
+        if form.is_valid():
+            news = form.save(commit=False)
+            news.society = society
+            if "save_draft" in request.POST:
+                news.is_published = False
+                messages.success(request, "News saved as draft!")
+            elif "post" in request.POST:
+                news.is_published = True
+                messages.success(request, "News successfully posted!")
+            news.save()
+            messages.success(request, "News successfully created!")
+            return redirect('society_page', society_id=society.id)
+    else:
+        form = NewsForm(user=request.user)
+
+    return render(request, "create_news.html", {"form": form, "society": society})
 
 @login_required
 def edit_news(request, news_id):

@@ -1,7 +1,7 @@
 {% load static %}
 
 <aside class="news-panel">
-    <h2>RECENT NEWS</h2>
+    <h2>Top News</h2>
     {% for news in news_list %}
         <a href="{% url 'news_detail' news.id %}" class="news-box">
             <h5>{{ news.title }}</h5>

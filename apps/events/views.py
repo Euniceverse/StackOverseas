@@ -217,7 +217,3 @@ def event_list(request):
         "date": e.date.isoformat()  # Add date for modal formatting
     } for e in events]
     return JsonResponse(data, safe=False)
-
-
-def event_map(request):
-    return render(request, "event_map.html")

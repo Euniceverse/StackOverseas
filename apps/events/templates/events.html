@@ -6,6 +6,9 @@
 {% block fullpage %}
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'events.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="{% static 'js/map.js' %}" defer></script>
     <script src="{% static 'js/view-switcher.js' %}" defer></script>
 
     <div class="event-header">
@@ -50,7 +53,7 @@
             {% include "components/detail.html" %}
         </div>
         <div class="event-view-map">
-          {% include "event_map.html" %}
+            <div id="map" style="height: 600px; width: 800px; margin: 0 auto;"></div>
         </div>
     </div>
 {% endblock %}

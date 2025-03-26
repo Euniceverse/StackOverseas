@@ -1,0 +1,48 @@
+<div class="widget-content">
+    <div class="contact-widget">
+      {% if widget.data.instagram_username or widget.data.twitter_username or widget.data.facebook_username or widget.data.discord_invite or widget.data.linkedin_username %}
+        {% if widget.data.instagram_username %}
+          <p>
+            <a href="https://www.instagram.com/{{ widget.data.instagram_username }}" target="_blank">
+              <i class="fab fa-instagram"></i> @{{ widget.data.instagram_username }}
+            </a>
+          </p>
+        {% endif %}
+        
+        {% if widget.data.twitter_username %}
+          <p>
+            <a href="https://twitter.com/{{ widget.data.twitter_username }}" target="_blank">
+              <i class="fab fa-twitter"></i> @{{ widget.data.twitter_username }}
+            </a>
+          </p>
+        {% endif %}
+        
+        {% if widget.data.facebook_username %}
+          <p>
+            <a href="https://www.facebook.com/{{ widget.data.facebook_username }}" target="_blank">
+              <i class="fab fa-facebook"></i> Facebook: {{ widget.data.facebook_username }}
+            </a>
+          </p>
+        {% endif %}
+        
+        {% if widget.data.discord_invite %}
+          <p>
+            <a href="{{ widget.data.discord_invite }}" target="_blank">
+              <i class="fab fa-discord"></i> Join our Discord
+            </a>
+          </p>
+        {% endif %}
+        
+        {% if widget.data.linkedin_username %}
+          <p>
+            <a href="https://www.linkedin.com/in/{{ widget.data.linkedin_username }}" target="_blank">
+              <i class="fab fa-linkedin"></i> LinkedIn: {{ widget.data.linkedin_username }}
+            </a>
+          </p>
+        {% endif %}
+      {% else %}
+        <p>Sorry, no contact information currently available.</p>
+      {% endif %}
+    </div>
+  </div>
+  

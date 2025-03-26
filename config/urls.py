@@ -19,7 +19,6 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 from .views import home
-from apps.societies.functions import top_societies
 from pathlib import Path
 from .views import ai_search
 from apps.events.views import event_map, event_list
@@ -36,6 +35,7 @@ urlpatterns = [
     path('payments/', include('apps.payments.urls')),
     path('event-map/', event_map, name='event_map'),
     path('api/events/', event_list, name='event_list'),
+    path('widgets/', include('apps.widgets.urls') )
 ]
 
 if settings.DEBUG:

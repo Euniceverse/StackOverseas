@@ -59,11 +59,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
 
-
     'apps.events',
     'apps.news',
     'apps.societies',
     'apps.users',
+    'apps.widgets',
     'apps.payments'
 ]
 

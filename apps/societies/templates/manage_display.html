@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+  Manage Widget Display - {{ society.name }}
+{% endblock %}
+
+{% block content %}
+<h2>Manage Widget Display for {{ society.name }}</h2>
+
+<!-- Form for adding a new widget -->
+<form id="add-widget-form" method="post" action="{% url 'manage_display' society.id %}">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="widget_type">Add New Widget:</label>
+      <select name="widget_type" id="widget_type" class="form-control">
+        <option value="announcements">Announcements</option>
+        <option value="events">Events</option>
+        <option value="gallery">Gallery</option>
+        <option value="contacts">Contacts</option>
+        <option value="featured">Featured</option>
+        <option value="leaderboard">Leaderboard</option>
+        <option value="news">News</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-success">Add Widget</button>
+</form>
+  
+<hr>
+
+<p>Drag and drop the widgets below to reorder them. When finished, click "Save Widget Order".</p>
+<div id="widgets-container">
+  <ul id="sortable-widgets" class="list-group">
+    {% for widget in widgets %}
+      <li class="list-group-item widget" data-widget-id="{{ widget.id }}">
+        <strong>{{ widget.get_widget_type_display }}</strong>
+        <a href="{% url 'edit_widget' society.id widget.id %}" 
+            class="btn btn-sm btn-info edit-widget-btn">
+            Edit
+        </a>
+        <a href="{% url 'remove_widget' society.id widget.id %}" 
+           class="btn btn-sm btn-danger remove-widget-btn" 
+           onclick="return confirm('Remove this widget?');">
+           Remove
+        </a>
+      </li>
+    {% empty %}
+      <li class="list-group-item">No widgets have been added yet.</li>
+    {% endfor %}
+  </ul>
+</div>
+
+<button id="save-widget-order" class="btn btn-primary mt-3">Save Widget Order</button>
+<a href="{% url 'society_page' society.id %}" class="btn btn-primary">
+    Back
+</a>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- Pass global variables for JS to use -->
+<script>
+    var manageDisplayUrl = "{% url 'manage_display' society.id %}";
+    var csrfToken = "{{ csrf_token }}";
+</script>
+{% if user.is_authenticated %}
+    <script src="{% static 'js/floatingSidebar.js' %}" defer></script>
+{% endif %}
+{% endblock %}

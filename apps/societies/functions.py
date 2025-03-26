@@ -1,9 +1,11 @@
 '''for society functions'''
 from .models import Society, Membership, SocietyRegistration
 from django.contrib.auth.decorators import user_passes_test
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 from apps.users.models import CustomUser
+from apps.widgets.models import Widget
+from apps.widgets.forms import ContactWidgetForm, FeaturedMemberForm
 from django import template
 from config.constants import SOCIETY_TYPE_CHOICES
 
@@ -110,3 +112,36 @@ def approve_society(request, registration_id):
 
     messages.success(request, f"Society '{new_society.name}' has been approved and created!")
     return redirect("admin_pending_societies")
+
+def edit_widget(request, society_id, widget_id):
+    widget = get_object_or_404(Widget, id=widget_id, society__id=society_id)
+    society = widget.society
+
+    if widget.widget_type == "contacts":
+        form_class = ContactWidgetForm
+        template_name = "edit_contact_widget.html"
+    elif widget.widget_type == "featured":
+        form_class = FeaturedMemberForm
+        template_name = "edit_featured_widget.html"
+    else:
+        messages.error(request, "This widget type cannot be edited.")
+        return redirect("manage_display", society_id=society_id)
+
+    initial_data = widget.data if widget.data else {}
+    if request.method == "POST":
+        form = form_class(request.POST, request.FILES)
+        if form.is_valid():
+            widget.data = form.cleaned_data 
+            widget.save()
+            messages.success(request, "Widget updated successfully!")
+            return redirect("manage_display", society_id=society_id)
+        else:
+            messages.error(request, "There was an error updating the widget.")
+    else:
+        form = form_class(initial=initial_data)
+
+    return render(request, template_name, {
+        "form": form,
+        "widget": widget,
+        "society": society,
+    })

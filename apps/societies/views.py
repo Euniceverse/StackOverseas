@@ -12,6 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.utils.timezone import now, timezone
 
+from apps.users.models import CustomUser
 from .models import Society, SocietyRegistration, Widget
 from .forms import NewSocietyForm
 from apps.news.models import News
@@ -204,12 +205,9 @@ def manage_society(request, society_id):
 
 def view_all_members(request):
     if request.user.is_superuser:
-        # all_members = get_all_users()
-        society = get_object_or_404(Society, id=1)
-        all_members = Membership.objects.select_related("user", "society").all()
-        return render(request, 'manage_society.html', {
-        'society': society,
-        'memberships': all_members,
+        all_members = CustomUser.objects.all()
+        return render(request, 'view_all_users.html', {
+        'users': all_members,
         'user' : request.user
     })
     else:

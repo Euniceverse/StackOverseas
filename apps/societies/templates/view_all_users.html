@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+All Users
+{% endblock %}
+
+{% block content %}
+
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Member Email</th>
+      <th>First Name</th>
+      <th>Last Name</th>
+      <th>Activity Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for u in users %}
+    <tr>
+      <td>{{ u.email }}</td>
+      <td>{{ u.first_name }}</td>
+      <td>{{ u.last_name }}</td>
+      <td>{{ u.is_active }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

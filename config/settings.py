@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from django.contrib.messages import constants as messages
 import os
+import logging
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,16 +26,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-@h)j0-+ym+l*&l)r_qyca^#z3vr-@jawo!sna2^+(u9uy!jfwy'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# For Render Version
-DEBUG = False
-PROTOCOL = "https"
-DOMAIN_NAME = "stackoverseas.onrender.com"
+DEBUG = True
 
-# For Local Version
-# DEBUG = True
-# DOMAIN_NAME = "127.0.0.1:8000"  # For local development
-# PROTOCOL = "http" if "127.0.0.1" in DOMAIN_NAME else "https"
-
+ALLOWED_HOSTS = []
 
 # Email configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -51,7 +45,7 @@ PASSWORD_RESET_TIMEOUT = 14400 # 4 hours
 
 STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY", "pk_test_51QviGaE1rp8ABg2BZkClndNES4HcFS2yJVKbc10uIfMf9jF6QuuS1TKZ7SgVKU8DK43TXWzQlS1fGcswox4WFuve00bNqjsbvD")
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "sk_test_51QviGaE1rp8ABg2B5FjMH41ur4Ud9tVa7ehaWILwhobjmC4SBjWPTYm9a7DDmBPZVMRus3AzzARkpymzj4h2zsWw00Hg0K7rJI")
-
+DOMAIN_NAME = "stackoverseas.onrender.com"
 
 
 
@@ -120,7 +114,7 @@ MEDIA_ROOT = BASE_DIR / 'config' / 'media'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.environ.get('SQLITE_DB_PATH',  '/mnt/data/db.sqlite3'), # for home computer: BASE_DIR / 'db.sqlite3', for render: '/mnt/data/db.sqlite3'
+        'NAME': os.environ.get('SQLITE_DB_PATH',  BASE_DIR / 'db.sqlite3'), # for home computer: BASE_DIR / 'db.sqlite3', for render: '/mnt/data/db.sqlite3'
     }
 }
 
@@ -202,6 +196,9 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 }
+
+
+
 
 ALLOWED_HOSTS = [
     '127.0.0.1',

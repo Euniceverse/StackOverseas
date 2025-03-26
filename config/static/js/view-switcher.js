@@ -5,13 +5,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const listView = document.querySelector(".event-view-list");
     const calendarView = document.querySelector(".event-view-calendar");
+    const mapView = document.querySelector(".event-view-map");
 
     if (!listButton || !calendarButton || !mapButton) {
         console.error("❌ ERROR: One or more buttons are missing!");
         return;
     }
 
-    if (!listView || !calendarView) {
+    if (!listView || !calendarView || !mapView) {
         console.error("❌ ERROR: One or more views are missing!");
         return;
     }
@@ -25,6 +26,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         listView.style.display = "none";
         calendarView.style.display = "none";
+        mapView.style.display = "none";
 
         activeButton.classList.add("active");
         activeView.style.display = "block";
@@ -36,6 +38,9 @@ document.addEventListener("DOMContentLoaded", function () {
         if (activeView === listView) {
             initializeList();
             resizeList();
+        }
+        if (activeView === mapView) {
+            initializeMap();
         }
     }
 
@@ -49,8 +54,7 @@ document.addEventListener("DOMContentLoaded", function () {
         switchView(calendarButton, calendarView);
     });
 
-    // Use the global variable that holds the URL for event_map
     mapButton.addEventListener("click", function () {
-        window.location.href = window.eventMapUrl;
+        switchView(mapButton, mapView);
     });
 });

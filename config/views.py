@@ -21,12 +21,14 @@ def ai_search(request):
     search_type = request.GET.get('search_type', 'societies')
 
     if search_type == 'events':
-        # Handle event search
-        from apps.events.models import Event
-        events = Event.objects.filter(name__icontains=query)
-        return render(request, 'events.html', {
-            'events': events,
-            'page': 'Search Results'
+        # Handle event search using the AI search function
+        from .functions import search_events
+        results, suggestion = search_events(query)
+        return render(request, 'events_search.html', {
+            'events': results,
+            'page': 'Search Results',
+            'suggestion': suggestion,
+            'search_type': 'events'  # Add this to help template distinguish between types
         })
     else:
         # Handle society search (default)

@@ -6,6 +6,9 @@
 {% block fullpage %}
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'events.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="{% static 'js/map.js' %}" defer></script>
     <script src="{% static 'js/view-switcher.js' %}" defer></script>
 
     <div class="event-header">
@@ -33,24 +36,18 @@
             <span id="map-button">MAP</span>
         </div>
         <div class="event-api-views">
-            <div class="event-view-list">
-                {% for event in events %}
-                    <div class="event-item" data-event-id="{{ event.id }}">
-                        <h3>{{ event.name }}</h3>
-                        <p>{{ event.date }}</p>
-                    </div>
-                {% endfor %}
-                {% include "components/list.html" %}
-            </div>
-            <div class="event-view-calendar">
-                {% include "components/calendar.html" %}
-            </div>
+          <div class="event-view-list">
+            {% include "components/list.html" %}
+        </div>
+        <div class="event-view-calendar">
+            {% include "components/calendar.html" %}
+        </div>
         </div>
         <div class="event-details">
             {% include "components/detail.html" %}
         </div>
         <div class="event-view-map">
-          {% include "event_map.html" %}
+            <div id="map" style="height: 600px; width: 800px; margin: 0 auto;"></div>
         </div>
     </div>
 {% endblock %}

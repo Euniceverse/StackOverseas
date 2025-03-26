@@ -255,19 +255,22 @@ class SignUpView(LoginProhibitedMixin, FormView):
         return HttpResponse("Please check your email to confirm your account.")
 
     def send_activation_email(self, activation_token, user_data):
-        activation_link = f"http://{settings.DOMAIN_NAME}{reverse('activate', kwargs={'uidb64': urlsafe_base64_encode(force_bytes(user_data['email'])), 'token': activation_token})}"
+        # Get the current domain from the request
+        current_site = get_current_site(self.request)
+        activation_link = f"http://{current_site.domain}{reverse('activate', kwargs={'uidb64': urlsafe_base64_encode(force_bytes(user_data['email'])), 'token': activation_token})}"
 
         print(f"Generated activation link: {activation_link}")  # Debugging output
 
         mail_subject = "Activate your account"
         message = render_to_string("acc_active_email.html", {
             "user": user_data,
-            "domain": settings.DOMAIN_NAME,
+            "domain": current_site.domain,
             "uid": urlsafe_base64_encode(force_bytes(user_data['email'])),
             "token": activation_token,
         })
         email = EmailMessage(mail_subject, message, to=[user_data['email']])
         email.send()
+
 
 def activate(request, uidb64, token):
     try:

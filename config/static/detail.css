@@ -1,16 +1,16 @@
-/* 🌟 모달 배경 */
+
 .event-modal {
     position: fixed;
     inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgba(0, 0, 0, 0.5); /* 배경 블러 */
+    background-color: rgba(0, 0, 0, 0.5); 
     z-index: 100000;
     transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
 }
 
-/* 🚀 기본적으로 숨김 */
+
 .hidden {
     opacity: 0;
     visibility: hidden;
@@ -19,7 +19,7 @@
 }
 
 
-/* 🌟 모달 내용 */
+
 .event-modal-content {
     background: white;
     padding: 1.5rem;
@@ -31,7 +31,6 @@
     animation: fadeIn 0.3s ease-in-out;
 }
 
-/* ✨ 닫기 버튼 */
 .modal-close {
     position: absolute;
     top: 10px;
@@ -48,7 +47,7 @@
     color: #333;
 }
 
-/* 📌 제목 스타일 */
+
 .event-title {
     font-size: 1.8rem;
     font-weight: bold;
@@ -63,7 +62,7 @@
     margin-bottom: 0.5rem;
 }
 
-/* 📅 기본 정보 */
+
 .event-info {
     text-align: center;
     font-size: 1rem;
@@ -71,7 +70,7 @@
     margin-bottom: 0.5rem;
 }
 
-/* 📖 섹션 스타일 */
+
 .event-section {
     margin-top: 1rem;
 }
@@ -87,7 +86,7 @@
     margin-top: 0.3rem;
 }
 
-/* 📝 참가 버튼 */
+
 .event-action {
     display: flex;
     justify-content: center;
@@ -110,7 +109,7 @@
     background-color: #0056b3;
 }
 
-/* ✨ 애니메이션 */
+
 @keyframes fadeIn {
     from {
         opacity: 0;

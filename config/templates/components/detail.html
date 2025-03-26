@@ -26,19 +26,19 @@
         <!-- 📖 설명 -->
         <div class="event-section">
             <h3>📖 Description</h3>
-            <p id="event-description">Event details will appear here...</p>
+            <p id="event-description">{{ event.description|default:"No description provided." }}</p>
         </div>
 
         <!-- 🏫 주최 동아리 -->
         <div class="event-section">
             <h3>🏫 Hosted By</h3>
-            <p id="event-hosts">Society Name</p>
+            <p id="event-hosts">{{ event.society|default:"TBA" }}</p>
         </div>
 
         <!-- 👥 참여 정보 -->
         <div class="event-info">
             <p id="event-capacity">👥 Capacity: {{ event.capacity|default:"Unlimited" }}</p>
-            <p id="event-fee">💰 Fee: Free</p>
+            <p id="event-fee">💰 Fee: {{ event.fee|default:"Free" }}</p>
             <p id="event-member-only" class="hidden">🔒 Members Only</p>
         </div>
 
@@ -58,34 +58,35 @@
 
             <script src="https://js.stripe.com/v3/"></script>
             <script>
-                const stripe = Stripe("pk_test_51QviGaE1rp8ABg2BZkClndNES4HcFS2yJVKbc10uIfMf9jF6QuuS1TKZ7SgVKU8DK43TXWzQlS1fGcswox4WFuve00bNqjsbvD"); 
+                const stripe = Stripe("pk_test_51QviGaE1rp8ABg2BZkClndNES4HcFS2yJVKbc10uIfMf9jF6QuuS1TKZ7SgVKU8DK43TXWzQlS1fGcswox4WFuve00bNqjsbvD");
             </script>
             <script>
                 document.addEventListener("DOMContentLoaded", function () {
                     let registerButton = document.querySelector(".register-button");
-                
+
                     if (registerButton) {
                         registerButton.addEventListener("click", function (event) {
                             event.preventDefault();  // Stop default behavior
-                
+
                             // Fetch event details from the modal
                             let eventId = document.getElementById("event-id-input").value.trim();
                             let name = document.getElementById("event-name").textContent.trim();
                             let price = document.getElementById("event-price-input").value.trim();
                             let description = document.getElementById("event-description").textContent.trim();
-                
+
                             if (!eventId || !name || !price) {
                                 console.error("❌ ERROR: Missing event data!");
                                 return;
                             }
-                
+
                             console.log(`📢 Sending data -> ID: ${eventId}, Name: ${name}, Price: ${price}`);
-                
+
                             fetch("{% url 'payments:create_checkout_session' %}", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                                 body: new URLSearchParams({
-                                    event_id: document.getElementById("event-id-input").value,
+                                    type: "event",
+                                    id: document.getElementById("event-id-input").value,
                                     name: document.getElementById("event-name").textContent,
                                     price: document.getElementById("event-price-input").value,
                                     description: document.getElementById("event-description").textContent
@@ -108,4 +109,3 @@
         </div>
     </div>
 </div>
-

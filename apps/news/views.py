@@ -8,6 +8,7 @@ from .forms import NewsForm
 from config.filters import NewsFilter
 from config.constants import SOCIETY_TYPE_CHOICES
 from apps.societies.models import Membership, MembershipStatus
+from django.utils import timezone
 
 def newspage(request):
     """News page with filtering and sorting"""
@@ -37,7 +38,7 @@ def newspage(request):
 
 def news_list(request):
     """Retrieve latest 10 published news for news-panel.html"""
-    news_queryset = News.objects.filter(is_published=True).order_by("-date_posted")
+    news_queryset = News.objects.filter(is_published=True).order_by("-date_posted")[:5]
     return render(request, "news-panel.html", {"news_list": news_queryset})
 
 @login_required

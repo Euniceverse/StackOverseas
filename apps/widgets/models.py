@@ -7,7 +7,8 @@ class Widget(models.Model):
     widget_type = models.CharField(max_length=50, choices=WIDGET_TYPES)
     position = models.PositiveIntegerField(default=0) 
     custom_html = models.TextField(blank=True, null=True) 
-
+    data = models.JSONField(blank=True, null=True)
+    
     class Meta:
         ordering = ["position"]
         

@@ -22,16 +22,19 @@ class Society(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     members = models.ManyToManyField(
-        settings.AUTH_USER_MODEL, 
+        settings.AUTH_USER_MODEL,
         through="Membership",
         related_name="societies_joined",
-        blank=True
+        blank=True,
     )
+
+    joining_fee = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
+
 
     location = models.CharField(max_length=255, blank=True, null=True) # Nehir
     latitude = models.FloatField(blank=True, null=True)  # Converted lat
     longitude = models.FloatField(blank=True, null=True)
-    
+
     members_count = models.IntegerField(default=0)
     price_range = models.DecimalField(max_digits=7, decimal_places=2, default=0.00)
 
@@ -77,7 +80,7 @@ class MembershipStatus(models.TextChoices):
 
 class Membership(models.Model):
     """
-    Intermediate table linking CustomUser and Society 
+    Intermediate table linking CustomUser and Society
     so each user in a society can have a role and a status.
     """
     society = models.ForeignKey(Society, on_delete=models.CASCADE, related_name='society_memberships')
@@ -152,7 +155,7 @@ class SocietyQuestion(models.Model):
 class MembershipApplication(models.Model):
     """
     Stores the user's actual application or submission,
-    including quiz answers or essay upload. 
+    including quiz answers or essay upload.
     Managers can view this if manual approval is needed.
     """
     user = models.ForeignKey(
@@ -184,29 +187,29 @@ class MembershipApplication(models.Model):
     def __str__(self):
         return f"Application of {self.user.email} to {self.society.name}"
 
-      
+
 class SocietyRegistration(models.Model):
     applicant = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="society_applications"
     )
-    
+
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField()
     society_type = models.CharField(max_length=100)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     status = models.CharField(
-        max_length=10, 
-        choices=REGISTRATION_STATUS_CHOICES, 
+        max_length=10,
+        choices=REGISTRATION_STATUS_CHOICES,
         default='waitlisted'
     )
 
     extra_form_needed = models.BooleanField(default=False)
-    
+
     extra_form = models.OneToOneField(
         'SocietyExtraForm',
         on_delete=models.SET_NULL,
@@ -215,9 +218,9 @@ class SocietyRegistration(models.Model):
         related_name="registration",
         help_text="Reference to the extra form for society registration."
     )
-    
+
     visibility = models.CharField(
-        max_length=7,  
+        max_length=7,
         choices=VISIBILITY_CHOICES,
         default='Private'
     )
@@ -233,7 +236,7 @@ class SocietyRegistration(models.Model):
     def __str__(self):
         return f"{self.name} ({self.get_status_display()}) - Applicant: {self.applicant.email}"
 
-    
+
 class SocietyExtraForm(models.Model):
     society_registration = models.OneToOneField(
         'SocietyRegistration',

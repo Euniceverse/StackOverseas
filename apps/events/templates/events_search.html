@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Events Search{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Search Events</h2>
+
+    <!-- Toggle Button for Filters -->
+    <div class="text-center mb-3">
+        <button class="btn btn-secondary" onclick="toggleEventFilters()">Filter Events</button>
+    </div>
+
+    <!-- Preserve Existing Filter Values (if needed) -->
+    <input type="hidden" name="location" value="{{ request.GET.location }}">
+    <input type="hidden" name="event_type" value="{{ request.GET.event_type }}">
+    <input type="hidden" name="member_only" value="{{ request.GET.member_only }}">
+    <input type="hidden" name="availability" value="{{ request.GET.availability }}">
+    <input type="hidden" name="price_min" value="{{ request.GET.price_min }}">
+    <input type="hidden" name="price_max" value="{{ request.GET.price_max }}">
+
+    <!-- Filter Form (Hidden by Default) -->
+    <div id="event-filter-form" class="card p-3 mb-5 shadow-sm" style="display: none;">
+        <form method="GET" action="{% url 'ai_search' %}">
+            <div class="row">
+                <!-- Location Input -->
+                <div class="col-md-4">
+                    <label for="location">Location:</label>
+                    <input type="text" name="location" id="location" class="form-control" placeholder="Enter location"
+                        value="{{ request.GET.location }}">
+                </div>
+                <!-- Event Type Dropdown -->
+                <div class="col-md-4">
+                    <label for="event_type">Event Type:</label>
+                    <select name="event_type" id="event_type" class="form-control">
+                        <option value="">All Types</option>
+                        <option value="sports" {% if request.GET.event_type == "sports" %}selected{% endif %}>Sports</option>
+                        <option value="academic" {% if request.GET.event_type == "academic" %}selected{% endif %}>Academic</option>
+                        <option value="arts" {% if request.GET.event_type == "arts" %}selected{% endif %}>Arts</option>
+                        <option value="cultural" {% if request.GET.event_type == "cultural" %}selected{% endif %}>Cultural</option>
+                        <option value="social" {% if request.GET.event_type == "social" %}selected{% endif %}>Social</option>
+                        <option value="other" {% if request.GET.event_type == "other" %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                <!-- Member Only Checkbox -->
+                <div class="col-md-4">
+                    <div class="form-check mt-4">
+                        <input class="form-check-input" type="checkbox" name="member_only" id="member_only"
+                            {% if request.GET.member_only %}checked{% endif %}>
+                        <label class="form-check-label" for="member_only">Members Only</label>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <!-- Availability Checkbox: Only show events with available capacity -->
+                <div class="col-md-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="availability" id="availability"
+                            {% if request.GET.availability %}checked{% endif %}>
+                        <label class="form-check-label" for="availability">Only Events with Available Slots</label>
+                    </div>
+                </div>
+                <!-- Price Range Slider -->
+                <div class="col-md-4">
+                    <label for="price_range">Price Range (£):</label>
+                    <div class="d-flex flex-column align-items-center">
+                        <input type="range" name="price_min" id="price_min" class="form-range" min="0" max="200" step="10"
+                            value="{{ request.GET.price_min|default:0 }}"
+                            oninput="updatePriceRangeEvent()">
+                        <input type="range" name="price_max" id="price_max" class="form-range mt-2" min="0" max="200" step="10"
+                            value="{{ request.GET.price_max|default:200 }}"
+                            oninput="updatePriceRangeEvent()">
+                        <div class="mt-2">
+                            <span id="min_price_event_display">£{{ request.GET.price_min|default:0 }}</span> -
+                            <span id="max_price_event_display">£{{ request.GET.price_max|default:200 }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Sorting Dropdown -->
+    <div class="text-center mb-4 mt-4">
+        <form method="GET" action="{% url 'ai_search' %}">
+            <label for="sort">Sort by:</label>
+            <select name="sort" class="form-select d-inline w-auto" onchange="this.form.submit()">
+                <option value="name_asc" {% if request.GET.sort == "name_asc" %}selected{% endif %}>Alphabetical (A-Z)</option>
+                <option value="name_desc" {% if request.GET.sort == "name_desc" %}selected{% endif %}>Alphabetical (Z-A)</option>
+                <option value="price_low_high" {% if request.GET.sort == "price_low_high" %}selected{% endif %}>Price: Low to High</option>
+                <option value="price_high_low" {% if request.GET.sort == "price_high_low" %}selected{% endif %}>Price: High to Low</option>
+                <option value="availability" {% if request.GET.sort == "availability" %}selected{% endif %}>Availability</option>
+            </select>
+        </form>
+    </div>
+
+    <!-- Events List -->
+    <div class="row">
+        {% if events %}
+            {% for event in events %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ event.name }}</h5>
+                        <div class="event-details">
+                            <p><i class="fas fa-calendar"></i> {{ event.date|date:"F j, Y" }}</p>
+                            {% if event.end_time %}
+                                <p><i class="fas fa-clock"></i> {{ event.date|date:"g:i A" }} - {{ event.end_time|date:"g:i A" }}</p>
+                            {% endif %}
+                            <p><i class="fas fa-map-marker-alt"></i> {{ event.location }}</p>
+                            <p><i class="fas fa-tag"></i> {{ event.event_type }}</p>
+                            <p><i class="fas fa-key"></i> Keyword: {{ event.keyword }}</p>
+                            <p><i class="fas fa-users"></i> Capacity: {{ event.capacity }}</p>
+                            {% if event.member_only %}
+                                <p><i class="fas fa-user-lock"></i> Members Only</p>
+                            {% endif %}
+                            {% if event.is_free %}
+                                <p><i class="fas fa-ticket-alt"></i> Free Event</p>
+                            {% else %}
+                                <p><i class="fas fa-pound-sign"></i> Entry Fee: {{ event.fee }}</p>
+                                {% if event.fee_general %}
+                                    <p><i class="fas fa-pound-sign"></i> General Entry Fee: {{ event.fee_general }}</p>
+                                {% endif %}
+                            {% endif %}
+                            <p><i class="fas fa-building"></i> Hosted by: {{ event.society.all|join:", " }}</p>
+                        </div>
+                        <div class="event-description mt-3">
+                            <h6><i class="fas fa-info-circle"></i> Description</h6>
+                            <p>{{ event.description }}</p>
+                        </div>
+                        {% if event.news_articles.exists %}
+                        <div class="event-news mt-3">
+                            <h6><i class="fas fa-newspaper"></i> Related News</h6>
+                            {% for article in event.news_articles.all %}
+                            <div class="news-item">
+                                <p class="news-title">{{ article.title }}</p>
+                                <small class="text-muted">Posted: {{ article.date_posted|date:"F j, Y" }}</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">
+                No events found matching your search.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function toggleEventFilters() {
+    let filterForm = document.getElementById("event-filter-form");
+    filterForm.style.display = filterForm.style.display === "none" ? "block" : "none";
+}
+
+function updatePriceRangeEvent() {
+    let minPrice = document.getElementById("price_min");
+    let maxPrice = document.getElementById("price_max");
+    let minPriceDisplay = document.getElementById("min_price_event_display");
+    let maxPriceDisplay = document.getElementById("max_price_event_display");
+
+    if (parseInt(minPrice.value) > parseInt(maxPrice.value)) {
+        minPrice.value = maxPrice.value;
+    }
+
+    minPriceDisplay.innerText = "£" + minPrice.value;
+    maxPriceDisplay.innerText = "£" + maxPrice.value;
+}
+</script>
+{% endblock %}

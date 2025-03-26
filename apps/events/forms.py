@@ -66,7 +66,10 @@ class NewEventForm(forms.Form):
     is_free = forms.BooleanField(
         initial=True,
         required=False,
+        widget=forms.CheckboxInput() 
     )
+
+  
 
     latitude = forms.FloatField(required=True, widget=forms.HiddenInput())
     longitude = forms.FloatField(required=True, widget=forms.HiddenInput())
@@ -91,6 +94,7 @@ class NewEventForm(forms.Form):
         is_free = cleaned_data.get("is_free", True)
         latitude = cleaned_data.get("latitude")
         longitude = cleaned_data.get("longitude")
+        capacity = cleaned_data.get("capacity")
 
         if fee > Decimal("0.00"):
             cleaned_data["is_free"] = False
@@ -98,4 +102,15 @@ class NewEventForm(forms.Form):
         if not latitude or not longitude:
             raise forms.ValidationError("Please select a valid address from the suggestions to set the location coordinates.")
 
+        if capacity is not None and capacity < 1:
+            raise forms.ValidationError("Capacity must be at least 1.")
+
         return cleaned_data
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            if isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs['class'] = 'form-check-input'
+            else:
+                field.widget.attrs['class'] = 'form-control'

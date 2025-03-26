@@ -2,33 +2,34 @@
 {% load static %}
 
 {% block title %}
-Join {{ society.name }}
+  Join {{ society.name }}
 {% endblock %}
 
 {% block content %}
-<h2>Join {{ society.name }}</h2>
-<p>Please complete the necessary information to join this society.</p>
+<div class="container mt-5" style="max-width: 900px;">
+  <h2>Join {{ society.name }}</h2>
+  <p>Please complete the necessary information to join this society.</p>
 
-{% if messages %}
-  {% for message in messages %}
-    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-  {% endfor %}
-{% endif %}
-
-<form method="post" enctype="multipart/form-data">
-  {% csrf_token %}
-
-  {% if auto_approve %}
-    {{ form.as_p }}
-    <p>No additional info required. Click 'Submit' to confirm joining this society.</p>
-  {% else %}
-
-    {{ form.as_p }}
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
   {% endif %}
 
-  <button type="submit" class="btn btn-primary">Submit</button>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
 
-  <a href="{% url 'society_page' society.id %}" class="btn btn-secondary">Cancel</a>
-</form>
-</form>
+    {% if auto_approve %}
+      {{ form.as_p }}
+      <p>No additional info required. Click 'Submit' to confirm joining this society.</p>
+    {% else %}
+
+      {{ form.as_p }}
+    {% endif %}
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+
+    <a href="{% url 'society_page' society.id %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
 {% endblock %}

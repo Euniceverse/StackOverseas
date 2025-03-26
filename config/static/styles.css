@@ -181,7 +181,7 @@ nav {
  * 7) BUTTONS
  *****************************************************/
 .btn-primary {
-  background-color: var(--accent-mid) !important;
+  background-color: #fff9c4 !important;
   border-color: var(--primary-dark) !important;
   color: var(--primary-dark) !important;
   font-weight: bold;

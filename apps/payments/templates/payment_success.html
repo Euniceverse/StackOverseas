@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Payment Successful</h2>
-<p>Thank you! Your payment was processed successfully.</p>
-<a href="{% url 'eventspage' %}" class="btn btn-warning">Back to Events</a>
+<div class="page-container">
+  <h2 class="success-title">Payment Successful</h2>
+  <p class="success-description">Thank you! Your payment was processed successfully.</p>
+  <a href="{% url 'eventspage' %}" class="btn btn-warning">Back to Events</a>
+</div>
 {% endblock %}

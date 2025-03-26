@@ -331,3 +331,33 @@ button:focus-visible,
 
 
 
+
+.center-fullscreen {
+  width: 100vw;
+  height: 80vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 0;
+}
+
+.center-content {
+  text-align: center;
+}
+
+.center-page-inside-container {
+  min-height: 70vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.center-content {
+  text-align: center;
+}
+
+.page-container {
+  max-width: 800px;
+  margin: 60px auto; /* centers horizontally with spacing above */
+  padding: 0 20px;    /* space on the sides */
+}

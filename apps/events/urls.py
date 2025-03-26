@@ -5,6 +5,9 @@ from .views import (
     auto_edit_news,
     EventListAPIView,
     delete_event,
+    EventDetailAPIView,
+
+  
 )
 
 urlpatterns = [

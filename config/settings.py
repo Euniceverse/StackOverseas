@@ -38,6 +38,25 @@ EMAIL_HOST_PASSWORD = 'btlmfvczvkrffiiy'
 EMAIL_USE_TLS = True
 PASSWORD_RESET_TIMEOUT = 14400 # 4 hours
 
+# Stripe Payment
+# STRIPE_PUBLIC_KEY = "pk_test_51QviGaE1rp8ABg2BZkClndNES4HcFS2yJVKbc10uIfMf9jF6QuuS1TKZ7SgVKU8DK43TXWzQlS1fGcswox4WFuve00bNqjsbvD"
+# STRIPE_SECRET_KEY = "sk_test_51QviGaE1rp8ABg2B5FjMH41ur4Ud9tVa7ehaWILwhobjmC4SBjWPTYm9a7DDmBPZVMRus3AzzARkpymzj4h2zsWw00Hg0K7rJI"
+
+STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY", "pk_test_51QviGaE1rp8ABg2BZkClndNES4HcFS2yJVKbc10uIfMf9jF6QuuS1TKZ7SgVKU8DK43TXWzQlS1fGcswox4WFuve00bNqjsbvD")
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "sk_test_51QviGaE1rp8ABg2B5FjMH41ur4Ud9tVa7ehaWILwhobjmC4SBjWPTYm9a7DDmBPZVMRus3AzzARkpymzj4h2zsWw00Hg0K7rJI")
+
+DOMAIN_NAME = os.environ.get("DOMAIN_NAME", "127.0.0.1:8000")
+PROTOCOL = "http" if DOMAIN_NAME.startswith("127.") else "https"
+
+# DOMAIN_NAME = "https://stackoverseas.onrender.com"
+
+# DOMAIN_NAME = "http://127.0.0.1:8000"
+
+# if DEBUG:
+#     DOMAIN_NAME = "127.0.0.1:8000"
+# else:
+#     DOMAIN_NAME = "https://stackoverseas.onrender.com"
+
 
 # Application definition
 
@@ -58,6 +77,7 @@ INSTALLED_APPS = [
     'apps.news',
     'apps.societies',
     'apps.users',
+    'apps.payments'
 ]
 
 MIDDLEWARE = [
@@ -102,7 +122,7 @@ MEDIA_ROOT = BASE_DIR / 'config' / 'media'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.environ.get('SQLITE_DB_PATH',  BASE_DIR / 'db.sqlite3'), # for home computer: BASE_DIR / 'db.sqlite3', for render: '/mnt/data/db.sqlite3'
     }
 }
 
@@ -196,3 +216,9 @@ ALLOWED_HOSTS = [
 ]
 
 DOMAIN_NAME = "127.0.0.1:8000"  # Change this if running on another port
+
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:8000",
+    "https://checkout.stripe.com",
+    "https://stackoverseas.onrender.com",
+]

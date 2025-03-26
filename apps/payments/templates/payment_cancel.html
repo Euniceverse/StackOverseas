@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Payment Canceled</h2>
+<p>Your payment was canceled. Please try again.</p>
+
+{% if type == "event" and object %}
+    <a href="{% url 'eventspage' %}" class="btn btn-warning">Back to Event</a>
+{% elif type == "society" and object %}
+    <a href="{% url 'society_page' object.id %}" class="btn btn-warning">Back to Society</a>
+{% else %}
+    <a href="{% url 'home' %}" class="btn btn-secondary">Go Home</a>
+{% endif %}
+{% endblock %}

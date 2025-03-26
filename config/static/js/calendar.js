@@ -3,10 +3,11 @@ let calendarInitialized = false;
 function initializeCalendar() {
     if (calendarInitialized) return;
 
-    let calendarEl = document.getElementById("calendarContainer");
-    let eventCalendar = document.querySelector(".event-calendar");
-    let eventPanel = document.getElementById("event-detail");
-    let closeButton = document.getElementById("event-detail-close");
+    console.log("✅ JS loaded! initializeCalendar() called.");
+
+    const calendarEl = document.getElementById("calendarContainer");
+    const eventCalendar = document.querySelector(".event-calendar");
+    const closeButton = document.getElementById("event-detail-close");
 
     if (!calendarEl) {
         console.error("❌ ERROR: Calendar container is missing!");
@@ -14,7 +15,6 @@ function initializeCalendar() {
     }
 
     calendarInitialized = true;
-
     localStorage.removeItem("filterQueryString");
 
     function fetchFilteredEvents(fetchInfo, successCallback, failureCallback) {
@@ -25,7 +25,6 @@ function initializeCalendar() {
             .then(data => {
                 console.log("🔍 API 응답 확인:", data);
 
-                // ✅ API 응답이 배열인지 확인
                 let eventsArray = Array.isArray(data) ? data : data.results;
 
                 if (!eventsArray || !Array.isArray(eventsArray)) {
@@ -50,13 +49,13 @@ function initializeCalendar() {
                 }));
 
                 console.log("🎯 필터링된 이벤트 (FullCalendar에 전달될 데이터):", events);
-
-                // ✅ FullCalendar가 데이터를 정상적으로 수신하는지 확인
                 successCallback(events);
             })
-            .catch(error => console.error("❌ Error fetching events:", error));
+            .catch(error => {
+                console.error("❌ Error fetching events:", error);
+                failureCallback(error);
+            });
     }
-
 
     window.calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: "dayGridMonth",
@@ -65,62 +64,70 @@ function initializeCalendar() {
             center: "title",
             right: "dayGridMonth,timeGridWeek,timeGridDay",
         },
-        events: fetchFilteredEvents, // Use function to dynamically fetch events
+        events: fetchFilteredEvents,
         eventClick: function (info) {
             console.log("🖱️ Event clicked:", info.event);
 
+            document.getElementById("event-id-input").value = info.event.id;
             document.getElementById("event-name").textContent = info.event.title;
-            document.getElementById("event-type").textContent = info.event.type;
+            document.getElementById("event-type").textContent = info.event.extendedProps.event_type;
             document.getElementById("event-date").textContent = info.event.start.toISOString().split("T")[0];
-            document.getElementById("event-time").textContent =
-                info.event.start
-                    ? info.event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                    : "Time not specified";
+            document.getElementById("event-time").textContent = info.event.start
+                ? info.event.start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                : "Time not specified";
             document.getElementById("event-location").textContent = info.event.extendedProps.location;
-            document.getElementById("event-fee").textContent =
-                info.event.extendedProps.fee !== "Free" ? info.event.extendedProps.fee + " USD" : "Free";
+
+            const fee = info.event.extendedProps.fee;
+            const feeText =
+                fee === "Free" || fee === 0 || fee === "0"
+                    ? "💰 Fee: Free"
+                    : `💰 Fee: £${parseFloat(fee).toFixed(2)}`;
+            document.getElementById("event-fee").textContent = feeText;
+
+            document.getElementById("event-price-input").value =
+                fee !== "Free" && fee !== "" ? parseFloat(fee) : 0.0;
+
             document.getElementById("event-description").textContent = info.event.extendedProps.description;
 
-            // ✅ 모달 보이기
-            document.getElementById("event-detail-modal").classList.remove("hidden");
+            const modal = document.getElementById("event-detail-modal");
+            if (modal) modal.classList.remove("hidden");
         }
-
-
     });
-
 
     window.calendar.render();
 
     if (closeButton) {
         closeButton.addEventListener("click", function () {
-            console.log("🔄 Close button clicked");
-            eventCalendar.classList.remove("active");
+            console.log("🔄 Close button clicked (hiding modal)");
+
+            if (eventCalendar) {
+                eventCalendar.classList.remove("active");
+            }
+
+            const modal = document.getElementById("event-detail-modal");
+            if (modal) modal.classList.add("hidden");
         });
     }
 
-    if (closeButton) {
-        closeButton.addEventListener("click", function () {
-            console.log("🔄 Close button clicked");
-            document.getElementById("event-detail-modal").classList.add("hidden");
+    const modalEl = document.getElementById("event-detail-modal");
+    if (modalEl) {
+        modalEl.addEventListener("click", function (evt) {
+            if (evt.target === this) {
+                this.classList.add("hidden");
+            }
+            evt.stopPropagation();
         });
     }
 
-    document.getElementById("event-detail-modal").addEventListener("click", function (event) {
-        if (event.target === this) { // 모달 바깥 영역 클릭 시 닫기
-            this.classList.add("hidden");
-        }
-        event.stopPropagation(); // 🌟 이벤트 전파 차단하여 다른 버튼 클릭 방해 방지
-    });
-
-    document.addEventListener("filtersUpdated", function (event) {
-        console.log("🔄 Calendar updating with filters:", event.detail);
-        localStorage.setItem("filterQueryString", event.detail);
+    document.addEventListener("filtersUpdated", function (evt) {
+        console.log("🔄 Calendar updating with filters:", evt.detail);
+        localStorage.setItem("filterQueryString", evt.detail);
 
         if (window.calendar) {
-            console.log("📌 FullCalendar 기존 이벤트 삭제 및 새 데이터 로드!");
-            window.calendar.removeAllEvents(); // ✅ 기존 데이터 삭제
-            window.calendar.refetchEvents();   // ✅ 새로운 데이터 요청
-            window.calendar.updateSize();      // ✅ 캘린더 강제 리렌더링
+            console.log("📌 Removing old events & refetching new data");
+            window.calendar.removeAllEvents();
+            window.calendar.refetchEvents();
+            window.calendar.updateSize();
         }
     });
 
@@ -130,9 +137,11 @@ function initializeCalendar() {
             window.calendar.updateSize();
         }, 100);
     };
-
-
 }
 
-// 🚀 `window` 객체에 함수 등록하여 `viewSwitcher.js`에서 호출 가능하도록 설정
 window.initializeCalendar = initializeCalendar;
+
+document.addEventListener("DOMContentLoaded", function () {
+    console.log("✅ DOM fully loaded. Initializing calendar...");
+    initializeCalendar();
+});

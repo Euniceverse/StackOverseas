@@ -6,7 +6,12 @@
         <a href="{% url 'news_detail' news.id %}" class="news-box">
             <h5>{{ news.title }}</h5>
             <p class="text-muted">Posted on: {{ news.date_posted }}</p>
-            <p>Society: {{ news.society }}</p>
+            <p>Societies:</p>
+                <ul>
+                {% for society in news.society.all %}
+                <li>{{ society.name }}</li>
+                {% endfor %}
+                </ul>
         </a>
     {% empty %}
         <div class="news-box empty-box">

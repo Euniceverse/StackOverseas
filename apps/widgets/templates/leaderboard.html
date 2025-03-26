@@ -1,0 +1,24 @@
+<div class="leaderboard-widget">
+    {% if widget.data.points %}
+      {% if widget.data.display_points %}
+        {% with widget.data.points.items|dictsortreversed:"1" as sorted_points %}
+          {% if sorted_points %}
+            <ul class="list-group">
+              {% for item in sorted_points|slice:":widget.data.display_count" %}
+                <li class="list-group-item">
+                  Member ID: {{ item.0 }} – {{ item.1 }} points
+]                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p>No leaderboard data available.</p>
+          {% endif %}
+        {% endwith %}
+      {% else %}
+        <p>Points are hidden.</p>
+      {% endif %}
+    {% else %}
+      <p>No leaderboard data available.</p>
+    {% endif %}
+</div>
+  

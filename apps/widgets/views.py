@@ -170,9 +170,10 @@ def edit_leaderboard_widget(request, society_id, widget_id):
     LeaderboardFormSet = formset_factory(LeaderboardMembershipForm, extra=0)
     initial_data = []
     for membership in memberships:
+        full_name = membership.user.get_full_name() if hasattr(membership.user, "get_full_name") else str(membership.user)
         initial_data.append({
             'membership_id': membership.id,
-            'member_name': membership.user.get_full_name(),
+            'member_name': full_name,
             'points': initial_points.get(str(membership.id), 0),
         })
 
@@ -197,7 +198,10 @@ def edit_leaderboard_widget(request, society_id, widget_id):
             messages.error(request, "There was an error updating the leaderboard.")
     else:
         formset = LeaderboardFormSet(initial=initial_data, prefix='members')
-        settings_form = LeaderboardSettingsForm(initial={'display_points': display_points}, prefix='settings')
+        settings_form = LeaderboardSettingsForm(
+            initial={'display_points': display_points, 'display_count': display_count},
+            prefix='settings'
+        )
     
     return render(request, "edit_leaderboard_widget.html", {
         "formset": formset,

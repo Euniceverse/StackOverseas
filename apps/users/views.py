@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import redirect, render
@@ -115,7 +115,7 @@ class PasswordView(LoginRequiredMixin, View):
         cache.set(cache_key, request.user.email, 3600)  # Store for 1 hour
 
         # Send verification email
-        reset_link = f"http://{settings.DOMAIN_NAME}{reverse('reset_password', kwargs={'token': reset_token})}"
+        reset_link = f"{settings.PROTOCOL}://{settings.DOMAIN_NAME}{reverse('reset_password', kwargs={'token': reset_token})}"
         mail_subject = "Verify Password Change"
         message = render_to_string("password_reset_email.html", {
             "user": request.user,
@@ -149,7 +149,7 @@ class ForgotPasswordView(View):
         cache.set(cache_key, email, 3600)  # Store for 1 hour
 
         # Send reset email
-        reset_link = f"http://{settings.DOMAIN_NAME}{reverse('reset_password', kwargs={'token': reset_token})}"
+        reset_link = f"{settings.PROTOCOL}://{settings.DOMAIN_NAME}{reverse('reset_password', kwargs={'token': reset_token})}"
         mail_subject = "Reset your password"
         message = render_to_string("password_reset_email.html", {
             "user": user,
@@ -255,22 +255,18 @@ class SignUpView(LoginProhibitedMixin, FormView):
         return HttpResponse("Please check your email to confirm your account.")
 
     def send_activation_email(self, activation_token, user_data):
-        # Get the current domain from the request
-        current_site = get_current_site(self.request)
-        activation_link = f"http://{current_site.domain}{reverse('activate', kwargs={'uidb64': urlsafe_base64_encode(force_bytes(user_data['email'])), 'token': activation_token})}"
-
+        activation_link = f"{settings.PROTOCOL}://{settings.DOMAIN_NAME}{reverse('activate', kwargs={'uidb64': urlsafe_base64_encode(force_bytes(user_data['email'])), 'token': activation_token})}"
         print(f"Generated activation link: {activation_link}")  # Debugging output
 
         mail_subject = "Activate your account"
         message = render_to_string("acc_active_email.html", {
             "user": user_data,
-            "domain": current_site.domain,
+            "domain": settings.DOMAIN_NAME,
             "uid": urlsafe_base64_encode(force_bytes(user_data['email'])),
             "token": activation_token,
         })
         email = EmailMessage(mail_subject, message, to=[user_data['email']])
         email.send()
-
 
 def activate(request, uidb64, token):
     try:
@@ -301,24 +297,12 @@ def activate(request, uidb64, token):
 
         # Clear cached data
         cache.delete(token)
-
-        # Authenticate and login the user
-        authenticated_user = authenticate(
-            request,
-            email=user_data['email'],
-            password=user_data['password']
-        )
-        if authenticated_user is not None:
-            login(request, authenticated_user)
-            messages.success(request, "Account activated successfully!")
-            return redirect("home")
-        else:
-            messages.error(request, "Error logging in after activation")
-            return redirect("log_in")
-
+        login(request, user)
+        messages.success(request, "Account activated successfully!")
+        return redirect("home")
     except Exception as e:
-        print(f"Activation error: {str(e)}")  # Add logging for debugging
         return HttpResponse("Activation link is invalid!")
+
 
 def annual_verify(request, uidb64, token):
     try:

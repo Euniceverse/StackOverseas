@@ -27,7 +27,17 @@ SECRET_KEY = 'django-insecure-@h)j0-+ym+l*&l)r_qyca^#z3vr-@jawo!sna2^+(u9uy!jfwy
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# SECURITY WARNING: don't run with debug turned on in production!
+# For Render Version
+DEBUG = False
+PROTOCOL = "https"
+DOMAIN_NAME = "stackoverseas.onrender.com"
+
+# For Local Version
+# DEBUG = True
+# DOMAIN_NAME = "127.0.0.1:8000"  # For local development
+# PROTOCOL = "http" if "127.0.0.1" in DOMAIN_NAME else "https"
+
 
 # Email configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -44,7 +54,7 @@ PASSWORD_RESET_TIMEOUT = 14400 # 4 hours
 
 STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY", "pk_test_51QviGaE1rp8ABg2BZkClndNES4HcFS2yJVKbc10uIfMf9jF6QuuS1TKZ7SgVKU8DK43TXWzQlS1fGcswox4WFuve00bNqjsbvD")
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "sk_test_51QviGaE1rp8ABg2B5FjMH41ur4Ud9tVa7ehaWILwhobjmC4SBjWPTYm9a7DDmBPZVMRus3AzzARkpymzj4h2zsWw00Hg0K7rJI")
-DOMAIN_NAME = "stackoverseas.onrender.com"
+
 
 
 
@@ -195,9 +205,6 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 }
-
-
-
 
 ALLOWED_HOSTS = [
     '127.0.0.1',

@@ -1,18 +1,50 @@
 {% load static %}
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dynamic Society Panel</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
 <body>
-    <h1>Welcome to the Test Page</h1>
-    <p>This is a simple test page rendered by Django views.</p>
+  <h1>Welcome to the Test Page</h1>
+  <p>This is a simple test page rendered by Django views.</p>
 
-    <div id="dynamic-content-container">
-    </div>
+  <h2>📊 Polls</h2>
+  <div id="poll"></div>
+
+  <h2>🖼 Gallery</h2>
+  <div id="gallery"></div>
+
+  <h2>💬 Comments</h2>
+  <div id="comments"></div>
+
+  <script>
+    const societyId = 1;  // 👈 Set dynamically if needed
+
+    $(document).ready(function () {
+      // Load polls
+      $('#poll').load(`/panels/society/${societyId}/polls/`, function(response, status, xhr) {
+        if (status === "error") {
+          $('#poll').html("<p>Error loading polls.</p>");
+        }
+      });
+
+      // Load gallery list
+      $('#gallery').load(`/panels/society/${societyId}/galleries/`, function(response, status, xhr) {
+        if (status === "error") {
+          $('#gallery').html("<p>Error loading galleries.</p>");
+        }
+      });
+
+      // Load comments
+      $('#comments').load(`/panels/society/${societyId}/comments/`, function(response, status, xhr) {
+        if (status === "error") {
+          $('#comments').html("<p>Error loading comments.</p>");
+        }
+      });
+    });
+  </script>
 </body>
-
-
-<script>
-    fetch('{% url "panels:index" %}')
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('dynamic-content-container').innerHTML = html;
-        });
-</script>
+</html>

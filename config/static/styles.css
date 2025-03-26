@@ -1,6 +1,6 @@
-/*****************************************************
+/* ****************************************************
  * 1) RESET & GLOBAL
- *****************************************************/
+ **************************************************** */
  * {
   margin: 0;
   padding: 0;
@@ -10,6 +10,7 @@
 /* Use one main font across site */
 html, body {
   width: 100%;
+  height: 100%;
   margin: 0;
   padding: 0;
   font-family: 'Kanit', sans-serif;
@@ -19,12 +20,13 @@ html, body {
  * 2) COLOR VARIABLES (Your 5-col Palette)
  *****************************************************/
 :root {
-  --primary-dark: #1e1f23;       /* Deep purple / text or nav color */
-  --accent-light: #c992b1;       /* Lighter accent */
-  --accent-mid: #6f4a63;         /* Mid-tone accent (for cards, etc.) */
-  --background-light: #FBE4D8;   /* Light background or highlight color */
-  --background-main: #fff9c4;    /* Main background (light yellow) */
+  --primary-dark: #1e1f23;       
+  --accent-light: #c992b1;      
+  --accent-mid: #6f4a63;         
+  --background-light: #FBE4D8;  
+  --background-main: #fff9c4;   
   --society-box-bg: #d7aec5;
+  --background-main1: #eee2dc !important;
 }
 
 /*****************************************************
@@ -32,11 +34,18 @@ html, body {
  *****************************************************/
 /* Overall page background & default text color */
 body {
-  background-color: var(--background-main);
+  background-color: var(--background-main1) !important;
   color: var(--primary-dark);
-  /* If you prefer a different font: 
-     font-family: 'Oswald', sans-serif; */
-  /* font-family: 'Oswald', sans-serif; */
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  height: auto;
+
+}
+
+main {
+  flex: 1;
+  padding-bottom: 100px;
 }
 
 /*****************************************************
@@ -166,15 +175,15 @@ nav {
  * 7) BUTTONS
  *****************************************************/
 .btn-primary {
-  background-color: var(--accent-light);
-  border-color: var(--accent-light);
-  color: var(--primary-dark);
+  background-color: var(--accent-mid) !important;
+  border-color: var(--primary-dark) !important;
+  color: var(--primary-dark) !important;
   font-weight: bold;
   transition: background-color 0.3s;
 }
 .btn-primary:hover {
-  background-color: var(--accent-mid);
-  border-color: var(--accent-mid);
+  background-color: var(--accent-mid) !important;
+  border-color: var(--primary-dark) !important;
   color: #fff;
 }
 
@@ -196,7 +205,13 @@ nav {
   padding: 1rem;
   border-radius: 8px;
 }
-
+.card-header {
+  background-color: var(--background-light); /* soft pink */
+  color: var(--primary-dark);
+  text-align: center;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
 /*****************************************************
  * 9) NEWS PANEL
  *****************************************************/
@@ -253,6 +268,8 @@ nav {
   padding: 2rem 0;
   background-color: var(--primary-dark);
   color: #fff;
+  position: relative;
+  z-index: 10;
 }
 
 input, select, textarea {
@@ -284,3 +301,33 @@ input:focus, select:focus, textarea:focus {
   position: sticky;
   top: 0;
 }
+
+button:focus, 
+button:active, 
+button:focus-visible,
+.btn:focus,
+.btn:active,
+.btn:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+
+.society-container {
+  background-color: #f6f0eb; /* replace this with whatever color you prefer */
+  padding: 30px;
+  border-radius: 12px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

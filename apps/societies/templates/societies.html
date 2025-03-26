@@ -4,7 +4,7 @@
 {% block title %}Societies{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container society-container py-4">
     <h2 class="text-center mb-4">{{page}} Societies</h2>
     <div class="row">
     <!-- Toggle Button -->
@@ -122,7 +122,7 @@
                 {% if society.image %}
                     <img src="{{ society.image.url }}" class="card-img-top" alt="{{ society.name }}">
                 {% endif %}
-                <div class="card-body">
+                <div class="card p-3 shadow-sm">
                     <h5 class="card-title">{{ society.name }}</h5>
 
                     {% if user.is_superuser %}
@@ -180,9 +180,6 @@
 {% endblock %}
 
 
-{% block news_panel %}
-  {% include "news-panel.html" %}
-{% endblock %}
 
 <!-- JavaScript -->
 <script>
@@ -228,5 +225,6 @@
 </script>
 
 
-
-
+{% block news_panel %}
+    {% include 'news-panel.html' %}
+{% endblock %}

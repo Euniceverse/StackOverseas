@@ -197,7 +197,6 @@ def auto_edit_news(request, event_id):
             for news_item in instances:
                 news_item.society = society
                 news_item.is_published = True
-                news_item.date_posted = timezone.now()
                 news_item.save()
 
             messages.success(request, "News updated and published!")

@@ -38,7 +38,7 @@ def newspage(request):
 
 def news_list(request):
     """Retrieve latest 10 published news for news-panel.html"""
-    news_queryset = News.objects.filter(is_published=True).order_by("-date_posted")
+    news_queryset = News.objects.filter(is_published=True).order_by("-date_posted")[:5]
     return render(request, "news-panel.html", {"news_list": news_queryset})
 
 @login_required
@@ -70,7 +70,6 @@ def create_news(request):
                 messages.success(request, "News saved as draft!")
             elif "post" in request.POST:
                 news.is_published = True
-                news.date_posted = timezone.now()
                 messages.success(request, "News successfully posted!")
 
             news.save()

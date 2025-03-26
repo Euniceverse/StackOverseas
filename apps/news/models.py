@@ -27,7 +27,12 @@ class News(models.Model):
     )
     
     views = models.PositiveIntegerField(default=0)  # Track number of views
-
+    
+    def save(self, *args, **kwargs):
+        if not self.date_posted:
+            self.date_posted = timezone.now()
+        super().save(*args, **kwargs)
+    
     def get_event(self):
         Event = apps.get_model("events", "Event")
         return Event.objects.filter(news_articles=self)

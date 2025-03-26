@@ -33,7 +33,6 @@ urlpatterns = [
     path('societies/', include('apps.societies.urls')),
     path('users/', include('apps.users.urls')),
     path('search/', ai_search, name='ai_search'),
-    path('payments/', include('apps.payments.urls')),
     path('api/events/', event_list, name='event_list'),
 ]
 

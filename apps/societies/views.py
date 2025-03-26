@@ -310,8 +310,6 @@ def join_society(request, society_id):
     req_type = requirement.requirement_type if requirement else RequirementType.NONE
 
     if req_type == RequirementType.NONE:
-        if society.joining_fee > 0:
-             return render(request, "confirm_join_payment.html", {"society": society})
         if request.method == 'POST':
 
             form = JoinSocietyForm(society=society, user=request.user, data=request.POST, files=request.FILES)

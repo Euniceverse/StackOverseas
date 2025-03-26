@@ -8,6 +8,8 @@ import constants
 from ai_seed import generate_society_description, generate_society_name 
 from ai_seed import generate_event_location
 from django.utils import timezone
+from django.utils.timezone import now
+from datetime import timedelta
 
 # Set up the project base directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,6 +22,7 @@ django.setup()
 from apps.users.models import CustomUser
 from apps.societies.models import Society, Membership, MembershipRole, MembershipStatus
 from apps.events.models import Event, EventRegistration
+from apps.news.models import News
 
 
 def random_location():
@@ -186,6 +189,30 @@ def create_dummy_events(societies, n=70):
         events.append(event)
     return events
 
+def create_dummy_news (events):
+    fake_news_entries = []
+
+    for event in events:  # Creating 20 fake news entries
+
+        news_entry = News(
+            title=event.name,
+            content=f"New {event.name} event!\nHosted by {', '.join([s.name for s in event.society.all()])}\nOn {event.date}",
+            date_posted=now() - timedelta(days=random.randint(1, 30)),
+            views=random.randint(0, 100),
+            is_published=True
+        )
+        fake_news_entries.append(news_entry)
+
+    # **Step 1: Bulk create News objects (now they have IDs)**
+    created_news = News.objects.bulk_create(fake_news_entries)
+
+    # **Step 2: Link the ManyToMany relationships**
+    for news_entry, event in zip(created_news, events):
+        news_entry.society.set(event.society)
+
+    return created_news
+
+
 def create_dummy_event_registrations(users, events, n=20):
     """Creates dummy event registrations."""
     for _ in range(n):
@@ -234,6 +261,9 @@ if __name__ == "__main__":
     events = create_dummy_events(societies, 30)
     print(f"Created {len(events)} events.")
 
+    news = create_dummy_news(events)
+    print(f"Created {len(news)} news.")
+
     # Generate event registrations
     create_dummy_event_registrations(users, events, 40)
     print("Dummy event registrations created.")
@@ -241,6 +271,7 @@ if __name__ == "__main__":
     print("Seeding complete!")
 
 
+'''
 from django.utils.timezone import now
 import random
 from datetime import timedelta
@@ -280,4 +311,5 @@ def create_fake_news():
     print(f"Successfully created {len(fake_news_entries)} fake news articles!")
 
 # Call the function when seeding
-create_fake_news()
+# create_fake_news()
+'''

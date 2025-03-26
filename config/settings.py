@@ -112,7 +112,8 @@ MEDIA_ROOT = BASE_DIR / 'config' / 'media'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.environ.get('SQLITE_DB_PATH',  '/mnt/data/db.sqlite3'), # for home computer: BASE_DIR / 'db.sqlite3', for render: '/mnt/data/db.sqlite3'
+        # 'NAME': os.environ.get('SQLITE_DB_PATH',  '/mnt/data/db.sqlite3'), # for home computer: BASE_DIR / 'db.sqlite3', for render: '/mnt/data/db.sqlite3'
+        'NAME': BASE_DIR / "db.sqlite3",
     }
 }
 

@@ -124,9 +124,6 @@ def edit_widget(request, society_id, widget_id):
     elif widget.widget_type == "featured":
         form_class = FeaturedMemberForm
         template_name = "edit_featured_widget.html"
-    elif widget.widget_type == "gallery":
-        form_class = FeaturedMemberForm
-        template_name = "edit_featured_widget.html"
     elif widget.widget_type == "announcements":
         form_class = AnnouncementForm
         template_name = "edit_announcements_widget.html"

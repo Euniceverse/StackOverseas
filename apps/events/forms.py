@@ -66,7 +66,10 @@ class NewEventForm(forms.Form):
     is_free = forms.BooleanField(
         initial=True,
         required=False,
+        widget=forms.CheckboxInput() 
     )
+
+  
 
     latitude = forms.FloatField(required=True, widget=forms.HiddenInput())
     longitude = forms.FloatField(required=True, widget=forms.HiddenInput())
@@ -99,3 +102,11 @@ class NewEventForm(forms.Form):
             raise forms.ValidationError("Please select a valid address from the suggestions to set the location coordinates.")
 
         return cleaned_data
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            if isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs['class'] = 'form-check-input'
+            else:
+                field.widget.attrs['class'] = 'form-control'

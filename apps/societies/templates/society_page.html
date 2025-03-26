@@ -57,9 +57,6 @@
                   {{ widget.custom_html|safe }}
               </div>
           {% endif %}
-          {% if can_manage %}
-              <a href="{% url 'edit_widget' society.id widget.id %}" class="btn btn-sm btn-info">Edit</a>
-          {% endif %}
       </li>
     {% endfor %}
   </ul>

@@ -32,17 +32,20 @@ def societiespage(request):
         filtered_societies = filtered_societies.order_by("name")
     elif sort_option == "name_desc":
         filtered_societies = filtered_societies.order_by("-name")
-    elif sort_option == "date_created":
+    elif sort_option == "date_newest":
+        filtered_societies = filtered_societies.order_by("-created_at")
+    elif sort_option == "date_oldest":
         filtered_societies = filtered_societies.order_by("created_at")
     elif sort_option == "price_low_high":
-        filtered_societies = filtered_societies.order_by("price_range")
+        filtered_societies = filtered_societies.order_by("joining_fee")
     elif sort_option == "price_high_low":
-        filtered_societies = filtered_societies.order_by("-price_range")
+        filtered_societies = filtered_societies.order_by("-joining_fee")
     elif sort_option == "popularity":
         filtered_societies = filtered_societies.order_by("-members_count")
+    elif sort_option == "availability":
+        filtered_societies = filtered_societies.order_by("members_count")
 
-
-    top_context = top_societies(request.user)  # returns dict with keys "top_overall_societies" and "top_societies_per_type"
+    top_context = top_societies(request.user)
     context = {"societies": filtered_societies, **top_context}
 
     return render(request, "societies.html", context)

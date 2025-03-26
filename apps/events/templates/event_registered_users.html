@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Registered Users for {{ event.name }}</h2>
+
+{% if registered_users %}
+    <ul>
+        {% for registration in registered_users %}
+            <li>{{ registration.user.first_name }} {{ registration.user.last_name }} - {{ registration.user.email }}</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No users have registered for this event yet.</p>
+{% endif %}
+
+<a href="{% url 'eventspage' %}" class="btn btn-warning">Back to Events</a>
+{% endblock %}

@@ -17,45 +17,49 @@ function initializeCalendar() {
     calendarInitialized = true;
     localStorage.removeItem("filterQueryString");
 
-    function fetchFilteredEvents(fetchInfo, successCallback, failureCallback) {
-        let queryString = localStorage.getItem("filterQueryString") || "";
+function fetchFilteredEvents(fetchInfo, successCallback, failureCallback) {
+    let queryString = localStorage.getItem("filterQueryString") || "";
 
-        fetch(`/events/api/${queryString}`)
-            .then(response => response.json())
-            .then(data => {
-                console.log("🔍 API 응답 확인:", data);
-
-                let eventsArray = Array.isArray(data) ? data : data.results;
-
-                if (!eventsArray || !Array.isArray(eventsArray)) {
-                    console.error("❌ API 응답 오류: `results` 필드가 없음", data);
-                    return;
-                }
-
-                let events = eventsArray.map(event => ({
-                    id: event.id,
-                    title: event.name,
-                    start: event.start_datetime,
-                    end: event.end_datetime,
-                    extendedProps: {
-                        event_type: event.event_type.split(",")[0].trim().replace("(", "").replace("'", ""),
-                        location: event.location || "Not specified",
-                        fee: event.fee || "Free",
-                        description: event.description || "No description available.",
-                        capacity: event.capacity || "Unlimited",
-                        member_only: event.member_only,
-                        hosts: event.society.join(", ")
-                    }
-                }));
-
-                console.log("🎯 필터링된 이벤트 (FullCalendar에 전달될 데이터):", events);
-                successCallback(events);
-            })
-            .catch(error => {
-                console.error("❌ Error fetching events:", error);
-                failureCallback(error);
-            });
+    // Add the my_events filter if it's set
+    const myEventsFilter = new URLSearchParams(window.location.search).get('my_events');
+    if (myEventsFilter === "true") {
+        queryString += (queryString ? '&' : '?') + 'my_events=true';
     }
+
+    fetch(`/events/api/${queryString}`)
+        .then(response => response.json())
+        .then(data => {
+            let eventsArray = Array.isArray(data) ? data : data.results;
+
+            if (!eventsArray || !Array.isArray(eventsArray)) {
+                console.error("❌ API response error: `results` field missing", data);
+                return;
+            }
+
+            let events = eventsArray.map(event => ({
+                id: event.id,
+                title: event.name,
+                start: event.start_datetime,
+                end: event.end_datetime,
+                extendedProps: {
+                    event_type: event.event_type.split(",")[0].trim().replace("(", "").replace("'", ""),
+                    location: event.location || "Not specified",
+                    fee: event.fee || "Free",
+                    description: event.description || "No description available.",
+                    capacity: event.capacity || "Unlimited",
+                    member_only: event.member_only,
+                    hosts: event.society.join(", ")
+                }
+            }));
+
+            successCallback(events);
+        })
+        .catch(error => {
+            console.error("❌ Error fetching events:", error);
+            failureCallback(error);
+        });
+}
+
 
     window.calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: "dayGridMonth",

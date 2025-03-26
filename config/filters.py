@@ -16,6 +16,7 @@ DATE_FILTER_CHOICES = {
 
 class GlobalFilterSet(django_filters.FilterSet):
     """Global filters applied to all models."""
+    my_events = django_filters.BooleanFilter(method='filter_my_events')
     has_space = django_filters.BooleanFilter(method='filter_has_space')
     location = django_filters.CharFilter(lookup_expr='icontains')
     society = django_filters.ModelChoiceFilter(
@@ -41,6 +42,11 @@ class GlobalFilterSet(django_filters.FilterSet):
     def filter_is_free(self, queryset, name, value):
         if value:
             return queryset.filter(fee=0)
+        return queryset
+
+    def filter_my_events(self, queryset, name, value):
+        if value and self.request and self.request.user.is_authenticated:
+            return queryset.filter(registrations__user=self.request.user)
         return queryset
 
     class Meta:

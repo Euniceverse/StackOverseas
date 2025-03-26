@@ -19,11 +19,12 @@ function initializeList() {
 
     function fetchFilteredEvents(fetchInfo, successCallback, failureCallback) {
         let queryString = localStorage.getItem("filterQueryString") || "";
+        console.log("📋 List - Query String:", queryString);
 
         fetch(`/events/api/${queryString}`)
             .then(response => response.json())
             .then(data => {
-                console.log("🔍 API 응답 확인:", data);
+                console.log("📋 List - Raw Events Data:", data);
 
                 // ✅ API 응답이 배열인지 확인
                 let eventsArray = Array.isArray(data) ? data : data.results;

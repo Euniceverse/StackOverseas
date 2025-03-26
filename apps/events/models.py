@@ -90,11 +90,30 @@ class Event(models.Model):
         validators=[MinValueValidator(Decimal("0.00"))]
     )
 
+
     is_free = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.name} - {self.event_type}"
 
+    def is_full(self):
+        """Check if the event is full based on its capacity."""
+        return self.registrations.count() >= self.capacity if self.capacity else False
+
+    def is_user_registered(self, user):
+        """Check if the user is already registered for this event."""
+        return self.registrations.filter(user=user).exists()
+
+    def register_user(self, user, status='accepted'):
+        """Register a user for this event if possible."""
+        if self.is_user_registered(user):
+            raise ValueError("User is already registered for this event.")
+        if self.is_full():
+            raise ValueError("Event is full.")
+
+        # Create registration
+        registration = EventRegistration.objects.create(event=self, user=user, status=status)
+        return registration
 class Host(models.Model):
     """Model for Host of Event as many-to-many relationship between Event and Society."""
 

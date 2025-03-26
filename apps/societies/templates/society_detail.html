@@ -25,7 +25,7 @@
 {% if user.is_authenticated %}
     {# Use the custom filter to retrieve the membership for request.user #}
     {% with my_membership=user_membership %}
-  
+
     {% if my_membership %}
         {% if my_membership.status == 'approved' %}
             <p>You are a member of this society (Role: {{ my_membership.get_role_display }}).</p>
@@ -44,14 +44,14 @@
           </a>
         {% endif %}
     {% endif %}
-    
+
     {# Show Manage Society if role is manager, co_manager, or editor and they are approved #}
     {% if my_membership and my_membership.status == 'approved' and my_membership.role in 'manager co_manager editor' %}
       <a href="{% url 'manage_society' society.id %}" class="btn btn-warning">
         Manage This Society
       </a>
     {% endif %}
-    
+
     {% endwith %}
 {% else %}
     <p><a href="{% url 'log_in' %}">Log in</a> to join this society.</p>
@@ -62,13 +62,13 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
       const joinBtn = document.getElementById("join-society-button");
-  
+
       if (joinBtn) {
           joinBtn.addEventListener("click", function () {
               const societyId = this.dataset.id;
               const societyName = this.dataset.name;
               const joiningFee = this.dataset.price;
-  
+
               fetch("{% url 'payments:create_checkout_session' %}", {
                   method: "POST",
                   headers: {

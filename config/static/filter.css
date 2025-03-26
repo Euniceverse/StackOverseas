@@ -98,6 +98,7 @@
     display: flex;
     align-items: center;
 }
+   
 
 .range-slider .slider-track {
     position: absolute;
@@ -110,6 +111,8 @@
     border-radius: 5px;
     /* z-index: 0; */
 }
+
+
 
 .range-slider input[type="range"] {
     position: absolute;
@@ -196,7 +199,7 @@
     max-width: 1200px;
 }
 
-/* Style the fee slider container to display horizontally */
+
 .custom-slider-container {
     display: flex;
     align-items: center;
@@ -208,12 +211,40 @@
     border-radius: 2rem;
 }
 
-/* Optional: make sliders smaller and consistent */
+
+
+
+
 .custom-slider-container input[type="range"] {
     width: 120px;
     height: 6px;
     accent-color: #854f6c;
     margin: 0;
+    background: transparent;
+    appearance: none;
+    -webkit-appearance: none;
+    position: relative;
+
+}
+
+
+.custom-slider-container input[type="range"]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 6px;
+    background: #dcdcdc; 
+    border-radius: 3px;
+    border: none;
+}
+
+
+.custom-slider-container input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 18px;
+    width: 18px;
+    background-color: #854f6c;
+    border-radius: 50%;
+    margin-top: -6px; 
+    cursor: pointer;
 }
 
 .custom-slider-container .slider-label {
@@ -228,9 +259,11 @@
     text-align: center;
 }
 
-/* Optional: tweak dropdown appearance for consistency */
+
 .custom-dropdown {
     background-color: #f7f1f0;
     padding: 0.6rem 1rem;
     border-radius: 2rem;
 }
+
+

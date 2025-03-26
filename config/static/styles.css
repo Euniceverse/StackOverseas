@@ -22,10 +22,11 @@ html, body {
 :root {
   --primary-dark: #1e1f23;       
   --accent-light: #c992b1;      
-  --accent-mid: #6f4a63;         
+  /* --accent-mid: #6f4a63;          */
+  --accent-mid: #6f4a63;  
   --background-light: #FBE4D8;  
   --background-main: #fff9c4;   
-  --society-box-bg: #d7aec5;
+  --society-box-bg: #d6cde1;
   --background-main1: #eee2dc !important;
 }
 

@@ -37,12 +37,6 @@
         </div>
         <div class="event-api-views">
             <div class="event-view-list">
-                {% for event in events %}
-                    <div class="event-item" data-event-id="{{ event.id }}">
-                        <h3>{{ event.name }}</h3>
-                        <p>{{ event.date }}</p>
-                    </div>
-                {% endfor %}
                 {% include "components/list.html" %}
             </div>
             <div class="event-view-calendar">

@@ -25,11 +25,8 @@ class Society(models.Model):
         settings.AUTH_USER_MODEL, 
         through="Membership",
         related_name="societies_joined",
-        blank=True,
+        blank=True
     )
-
-    joining_fee = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
-    
 
     location = models.CharField(max_length=255, blank=True, null=True) # Nehir
     latitude = models.FloatField(blank=True, null=True)  # Converted lat

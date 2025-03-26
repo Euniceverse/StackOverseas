@@ -621,7 +621,7 @@ def manage_display(request, society_id):
             user=request.user,
             status=MembershipStatus.APPROVED
         ).first()
-        if not membership or membership.role not in [MembershipRole.CO_MANAGER, MembershipRole.EDITOR]:
+        if not membership or (membership.role not in [MembershipRole.CO_MANAGER, MembershipRole.EDITOR] and not user.is_superuser):
             messages.error(request, "You do not have permission to manage widget display for this society.")
             return redirect("society_page", society_id=society.id)
     

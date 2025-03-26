@@ -44,18 +44,9 @@ PASSWORD_RESET_TIMEOUT = 14400 # 4 hours
 
 STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY", "pk_test_51QviGaE1rp8ABg2BZkClndNES4HcFS2yJVKbc10uIfMf9jF6QuuS1TKZ7SgVKU8DK43TXWzQlS1fGcswox4WFuve00bNqjsbvD")
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "sk_test_51QviGaE1rp8ABg2B5FjMH41ur4Ud9tVa7ehaWILwhobjmC4SBjWPTYm9a7DDmBPZVMRus3AzzARkpymzj4h2zsWw00Hg0K7rJI")
+DOMAIN_NAME = "stackoverseas.onrender.com"
 
-DOMAIN_NAME = os.environ.get("DOMAIN_NAME", "127.0.0.1:8000")
-PROTOCOL = "http" if DOMAIN_NAME.startswith("127.") else "https"
 
-# DOMAIN_NAME = "https://stackoverseas.onrender.com"
-
-# DOMAIN_NAME = "http://127.0.0.1:8000"
-
-# if DEBUG:
-#     DOMAIN_NAME = "127.0.0.1:8000"
-# else:
-#     DOMAIN_NAME = "https://stackoverseas.onrender.com"
 
 
 # Application definition

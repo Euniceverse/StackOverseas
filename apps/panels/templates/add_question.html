@@ -1,17 +1,22 @@
-<form method="post">
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container mt-4">
+  <form method="post">
     {% csrf_token %}
     {{ q_form.as_p }}
-  
-    <h3>Options</h3>
+
+    <h3 class="mt-4">Options</h3>
     {{ o_formset.management_form }}
     {% for form in o_formset %}
       {{ form.as_p }}
     {% endfor %}
-  
-    <button type="submit">Save Question</button>
+
+    <button type="submit" class="btn btn-primary mt-3">Save Question</button>
   </form>
-  
-  <!-- Link to reload page with more empty option fields -->
-  <a href="?extra={{ extra_forms|add:'1' }}">+ Add another option</a><br>
-  <a href="{% url 'panels:poll_list' society.id %}">← Back to Poll List</a>
-  
+
+  <a class="btn btn-link mt-3" href="?extra={{ extra_forms|add:'1' }}">+ Add another option</a><br>
+  <a class="btn btn-secondary mt-2" href="{% url 'panels:poll_list' society.id %}">← Back to Poll List</a>
+</div>
+
+{% endblock %}

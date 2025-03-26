@@ -1,27 +1,35 @@
-<h2>Polls in {{ society.name }}</h2>
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Polls in {{ society.name }}</h2>
 
-<ul>
-  {% for poll in polls %}
-    <li>
-      <strong>{{ poll.title }}</strong><br>
-      {{ poll.description }}<br>
-      Deadline: {{ poll.deadline|date:"Y-m-d H:i" }}
-      <ul>
-        {% for question in poll.questions.all %}
-          <li>
-            {{ question.question_text }}
-            |
-            <a href="{% url 'panels:vote' society.id poll.id question.id %}">Vote</a>
-            |
-            <a href="{% url 'panels:poll_result' society.id poll.id question.id %}">View Results</a>
-          </li>
-        {% endfor %}
-      </ul>
-      <a href="{% url 'panels:add_question' society.id poll.id %}">+ Add Question</a>
-    </li>
-  {% empty %}
-    <li>No polls have been created yet.</li>
-  {% endfor %}
-</ul>
+  {% if polls %}
+    <ul class="list-group mb-4">
+      {% for poll in polls %}
+        <li class="list-group-item">
+          <h5>{{ poll.title }}</h5>
+          <p>{{ poll.description }}</p>
+          <p class="text-muted">🗓️ Deadline: {{ poll.deadline|date:"Y-m-d H:i" }}</p>
+          <ul class="mb-2">
+            {% for question in poll.questions.all %}
+              <li>
+                {{ question.question_text }}
+                |
+                <a href="{% url 'panels:vote' society.id poll.id question.id %}">Vote</a>
+                |
+                <a href="{% url 'panels:poll_result' society.id poll.id question.id %}">View Results</a>
+              </li>
+            {% endfor %}
+          </ul>
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'panels:add_question' society.id poll.id %}">+ Add Question</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No polls have been created yet.</p>
+  {% endif %}
 
-<a href="{% url 'panels:create_poll' society.id %}">+ Create New Poll</a>
+  <a class="btn btn-primary" href="{% url 'panels:create_poll' society.id %}">+ Create New Poll</a>
+</div>
+{% endblock %}

@@ -36,12 +36,14 @@
 
             {% if membership.status == 'approved' %}
                 <!-- The user is approved and can leave the society -->
-                <form action="{% url 'leave_society' society.id %}" method="POST" style="display:inline;" class="d-inline-block ms-2 mt-4">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-danger">
-                    Leave Society
-                </button>
-                </form>
+                <div class="management-controls d-flex flex-wrap gap-2 mt-3 mb-4">
+                    <form action="{% url 'leave_society' society.id %}" method="POST" class="d-inline-block">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            Leave Society
+                        </button>
+                    </form>
+                </div>
                 <p>You are a member of this society (Role: {{ membership.get_role_display }}).</p>
 
             {% elif membership.status == 'pending' %}

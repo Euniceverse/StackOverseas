@@ -267,3 +267,20 @@ input:focus, select:focus, textarea:focus {
   border-color: var(--accent-light);
   box-shadow: 0 0 0 0.2rem rgba(201, 146, 177, 0.25);
 }
+
+
+.fixed-news-panel {
+  position: fixed;
+  top: 100px; /* adjust depending on your navbar height */
+  right: 20px;
+  width: 300px; /* set fixed width */
+  z-index: 1000;
+}
+
+.news-panel {
+  min-height: 100vh;
+  background: var(--background-light);
+  padding: 20px;
+  position: sticky;
+  top: 0;
+}

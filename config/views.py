@@ -20,6 +20,12 @@ def ai_search(request):
     query = request.GET.get('q', '')
     search_type = request.GET.get('search_type', 'societies')
 
+    # Initialize top_context at the start
+    top_context = {
+        'query': query,
+        'search_type': search_type
+    }
+
     if search_type == 'events':
         # Handle event search using the AI search function
         from .functions import search_events

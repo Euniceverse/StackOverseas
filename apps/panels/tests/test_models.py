@@ -13,6 +13,8 @@ from apps.societies.models import Society
 User = get_user_model()
 
 class PanelsModelsTests(TestCase):
+    """Tests for Panels Model"""
+    
     def setUp(self):
         # Create two users: one to be used as society manager, and another as a regular member.
         self.manager = User.objects.create_user(

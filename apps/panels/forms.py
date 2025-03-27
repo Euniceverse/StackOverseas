@@ -46,9 +46,27 @@ class QuestionForm(forms.ModelForm):
         model = Question
         fields = ['question_text']
 
-OptionFormSet = modelformset_factory(
+class OptionForm(forms.ModelForm):
+    class Meta:
+        model = Option
+        fields = ('option_text',)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['option_text'].required = True
+
+    def clean_option_text(self):
+        data = self.cleaned_data.get('option_text', "").strip()
+        if not data:
+            raise forms.ValidationError("This field is required.")
+        return data
+
+OptionFormSet = forms.modelformset_factory(
     Option,
+    form=OptionForm,  
     fields=('option_text',),
-    extra=0, 
+    extra=1,
+    min_num=1,
+    validate_min=True,
     can_delete=False
 )

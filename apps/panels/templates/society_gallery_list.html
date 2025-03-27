@@ -20,9 +20,11 @@
         <li class="list-group-item text-muted">No galleries yet.</li>
       {% endfor %}
     </ul>
-    <div class="mt-3 text-end">
-      <a href="{% url 'panels:create_gallery' society.id %}" class="btn btn-primary">+ Create New Gallery</a>
+  {% if user_membership and user_membership.role == "manager" or user_membership and user_membership.role == "co_manager" or user_membership and user_membership.role == "editor" or user.is_superuser %}    <div class="mt-3 text-end">
+          <a href="{% url 'panels:create_gallery' society.id %}" class="btn btn-primary">+ Create New Gallery</a>
     </div>
   </div>
 </div>
+  {% endif %}
+  <a class="btn btn-primary" href="{% url 'society_page' society.id %}">Back</a>
 {% endblock %}

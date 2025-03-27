@@ -24,13 +24,16 @@ import json
 def societiespage(request):
     societies = approved_societies(request.user)
 
-    # Apply filters
+    search_type = request.session.get('search_type', None) 
+    search_ids = request.session.get('search_ids', [])
+
+    if search_type == 'societies' and search_ids:
+        societies = societies.filter(id__in=search_ids) 
+    
     filtered_societies = SocietyFilter(request.GET, queryset=societies, request=request).qs
 
-    # Sorting
     sort_option = request.GET.get("sort", "name_asc")
     
-    # news panel news
     recent_news = get_recent_news()
 
     if sort_option == "name_asc":

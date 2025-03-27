@@ -24,17 +24,34 @@ def ai_search(request):
         # Handle event search using the AI search function
         from .functions import search_events
         results, suggestion = search_events(query)
+
+        request.session['search_type'] = 'events' 
+        request.session['search_ids'] = [e.id for e in results]
+
+        recent_news = get_recent_news()
+
         return render(request, 'events_search.html', {
             'events': results,
             'page': 'Search Results',
             'suggestion': suggestion,
-            'search_type': 'events'  # Add this to help template distinguish between types
+            'search_type': 'events',
+            'news_list': recent_news,
+            **top_context,
         })
     else:
         # Handle society search (default)
         results, suggestion = search_societies(query)
+
+        request.session['search_type'] = 'societies'  # changed
+        request.session['search_ids'] = [s.id for s in results]
+
+        recent_news = get_recent_news()
+        top_context = top_societies(request.user)
+
         return render(request, 'societies.html', {
             'societies': results,
             'page': 'Search',
-            'suggestion': suggestion
+            'suggestion': suggestion,
+            'news_list': recent_news,
+            **top_context,
         })

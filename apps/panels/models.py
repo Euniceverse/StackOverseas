@@ -4,8 +4,55 @@ from django.db import models
 from django.utils import timezone
 from datetime import timedelta
 
+
 from config.constants import MAX_DESCRIPTION
 import os
+
+#ranking
+class MemberRating(models.Model):
+    society = models.ForeignKey(Society, on_delete=models.CASCADE, related_name='rank')
+    member = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    rating = models.IntegerField(default=1000)
+
+    class Meta:
+        unique_together = ('society', 'member')
+        ordering = ['-rating']
+
+    def __str__(self):
+        full_name = f"{self.member.first_name} {self.member.last_name}".strip()
+        return f"{full_name or self.member.email} — {self.rating} pts"
+
+
+class Match(models.Model):
+    society = models.ForeignKey(Society, on_delete=models.CASCADE)
+    player1 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='match_as_p1')
+    player2 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='match_as_p2')
+    winner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='match_wins', null=True, blank=True)
+    player1_delta = models.IntegerField(default=0)
+    player2_delta = models.IntegerField(default=0)
+    notes = models.TextField(blank=True)
+    played_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        p1 = f"{self.player1.first_name} {self.player1.last_name}".strip() or self.player1.email
+        p2 = f"{self.player2.first_name} {self.player2.last_name}".strip() or self.player2.email
+        win = f"{self.winner.first_name} {self.winner.last_name}".strip() if self.winner else 'Draw'
+        return f"{p1} vs {p2} — Winner: {win}"
+
+
+class HallOfFame(models.Model):
+    society = models.ForeignKey(Society, on_delete=models.CASCADE)
+    member = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    season = models.CharField(max_length=20)  # e.g. "2025-Q1", "2024-Winter"
+    highest_rating = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('society', 'season')
+
+    def __str__(self):
+        name = f"{self.member.first_name} {self.member.last_name}".strip() or self.member.email
+        return f"{name} - {self.season} ({self.highest_rating} pts)"
 
 #comment
 class Comment(models.Model):

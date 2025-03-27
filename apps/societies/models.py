@@ -62,9 +62,16 @@ class Society(models.Model):
         Event = apps.get_model("events", "Event")
         return Event.objects.filter(host__society=self)
 
+    def approved_members(self):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        return User.objects.filter(
+            user_memberships__society=self,
+            user_memberships__status=MembershipStatus.APPROVED
+        )
+
     def __str__(self):
         return f"{self.name} ({self.get_status_display()})"
-
 
 # should be in constants
 class MembershipRole(models.TextChoices):

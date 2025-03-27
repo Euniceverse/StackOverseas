@@ -13,6 +13,20 @@ from .forms import CommentForm
 from apps.societies.models import Society
 from .models import Gallery, Image
 from .forms import *
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
+from .models import Match, MemberRating
+from apps.societies.models import Society
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
+from apps.societies.models import Society
+from .models import Match, MemberRating
+from django.http import HttpResponseForbidden
+from .models import HallOfFame, MemberRating
+from django.utils.timezone import now
+
 
 
 def panels(request):
@@ -304,3 +318,103 @@ def toggle_like_comment(request, society_id, comment_id):
         comment.likes.add(request.user)
 
     return redirect('panels:society_comment_feed', society_id=society.id)
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
+from django.utils.timezone import now
+from .models import Match, MemberRating, HallOfFame
+from apps.societies.models import Society, Membership, MembershipRole
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+def has_society_permission(user, society):
+    if user.is_superuser:
+        return True
+    try:
+        membership = Membership.objects.get(user=user, society=society)
+        return membership.role in [
+            MembershipRole.MANAGER,
+            MembershipRole.CO_MANAGER,
+            MembershipRole.EDITOR
+        ]
+    except Membership.DoesNotExist:
+        return False
+
+@login_required
+def record_match(request, society_id):
+    society = get_object_or_404(Society, id=society_id)
+
+    if not has_society_permission(request.user, society):
+        return HttpResponseForbidden("You do not have permission.")
+
+    members = society.approved_members()
+    member_ids = list(members.values_list('id', flat=True))
+
+    if request.method == 'POST':
+        player1_id = int(request.POST['player1'])
+        player2_id = int(request.POST['player2'])
+        winner_id = request.POST.get('winner')
+        delta1 = int(request.POST.get('player1_delta', 0))
+        delta2 = int(request.POST.get('player2_delta', 0))
+        notes = request.POST.get('notes', '')
+
+        if player1_id not in member_ids or player2_id not in member_ids:
+            return HttpResponseForbidden("Invalid member.")
+
+        player1 = get_object_or_404(User, id=player1_id)
+        player2 = get_object_or_404(User, id=player2_id)
+        winner = get_object_or_404(User, id=winner_id) if winner_id else None
+
+        Match.objects.create(
+            society=society, player1=player1, player2=player2,
+            winner=winner, player1_delta=delta1, player2_delta=delta2, notes=notes
+        )
+
+        p1_rating, _ = MemberRating.objects.get_or_create(society=society, member=player1)
+        p2_rating, _ = MemberRating.objects.get_or_create(society=society, member=player2)
+        p1_rating.rating += delta1
+        p2_rating.rating += delta2
+        p1_rating.save()
+        p2_rating.save()
+
+        update_hall_of_fame(society)
+        return redirect('panels:society_ranking', society_id=society.id)
+
+    return render(request, 'record_match.html', {'society': society, 'members': members})
+
+@login_required
+def society_ranking(request, society_id):
+    society = get_object_or_404(Society, id=society_id)
+    rankings = MemberRating.objects.filter(society=society).order_by('-rating')
+    return render(request, 'ranking.html', {'society': society, 'rankings': rankings})
+
+@login_required
+def hall_of_fame(request, society_id):
+    society = get_object_or_404(Society, id=society_id)
+    hof_entries = HallOfFame.objects.filter(society=society).order_by('-season')
+    return render(request, 'hall_of_fame.html', {'society': society, 'hof_entries': hof_entries})
+
+def get_current_season(mode='quarter'):
+    today = now()
+    year = today.year
+    if mode == 'quarter':
+        quarter = (today.month - 1) // 3 + 1
+        return f"{year}-Q{quarter}"
+    return f"{year}"
+
+def update_hall_of_fame(society, mode='quarter'):
+    season = get_current_season(mode)
+    top = MemberRating.objects.filter(society=society).order_by('-rating').first()
+    if top:
+        HallOfFame.objects.update_or_create(
+            society=society, season=season,
+            defaults={'member': top.member, 'highest_rating': top.rating}
+        )
+
+@login_required
+def update_hall_of_fame_view(request, society_id):
+    society = get_object_or_404(Society, id=society_id)
+    update_hall_of_fame(society)
+    return redirect('panels:hall_of_fame', society_id=society.id)

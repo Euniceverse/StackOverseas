@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{{ society.name }} - Hall of Fame 🏆</h2>
+
+<a href="{% url 'panels:update_hall_of_fame' society.id %}" class="btn btn-primary">🔄 Update</a>
+<a href="{% url 'panels:society_ranking' society.id %}" class="btn btn-outline-secondary">📊 Rankings</a>
+
+<table>
+  <thead>
+    <tr>
+      <th>Season</th>
+      <th>Top Member</th>
+      <th>Rating</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for hof in hof_entries %}
+      <tr>
+        <td>{{ hof.season }}</td>
+        <td>{{ hof.member.preferred_name }}</td>
+        <td>{{ hof.highest_rating }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="3">No data yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

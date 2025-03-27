@@ -31,5 +31,11 @@ urlpatterns = [
     path('comment/<int:society_id>/comments/<int:comment_id>/edit/', views.edit_comment, name='edit_comment'),
     path('comment/<int:society_id>/comments/<int:comment_id>/delete/', views.delete_comment, name='delete_comment'),
     path('comment/<int:society_id>/comments/<int:comment_id>/like/', views.toggle_like_comment, name='like_comment'),
+
+    path('society/<int:society_id>/match/record/', views.record_match, name='record_match'),
+    path('society/<int:society_id>/ranking/', views.society_ranking, name='society_ranking'),
+    path('society/<int:society_id>/hall-of-fame/', views.hall_of_fame, name='hall_of_fame'),
+    path('society/<int:society_id>/hall-of-fame/update/', views.update_hall_of_fame_view, name='update_hall_of_fame'),
+
 ] 
 # + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

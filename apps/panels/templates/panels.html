@@ -20,8 +20,11 @@
   <h2>💬 Comments</h2>
   <div id="comments"></div>
 
+  <h2>📊 Ranking</h2>
+  <div id="ranking"></div>
+
   <script>
-    const societyId = 1;  // 👈 Set dynamically if needed
+    const societyId = 1;
 
     $(document).ready(function () {
       // Load polls
@@ -42,6 +45,12 @@
       $('#comments').load(`/panels/society/${societyId}/comments/`, function(response, status, xhr) {
         if (status === "error") {
           $('#comments').html("<p>Error loading comments.</p>");
+        }
+      });
+
+      $('#ranking').load(`/panels/society/${societyId}/hall-of-fame/`, function(response, status, xhr) {
+        if (status === "error") {
+          $('#ranking').html("<p>Error loading ranking.</p>");
         }
       });
     });

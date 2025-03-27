@@ -48,12 +48,12 @@ STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY", "pk_test_51QviGaE1rp8ABg
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "sk_test_51QviGaE1rp8ABg2B5FjMH41ur4Ud9tVa7ehaWILwhobjmC4SBjWPTYm9a7DDmBPZVMRus3AzzARkpymzj4h2zsWw00Hg0K7rJI")
 
 DEBUG = True
-#PROTOCOL = "https"
-#DOMAIN_NAME = "stackoverseas.onrender.com"
+PROTOCOL = "https"
+DOMAIN_NAME = "stackoverseas.onrender.com"
 
 # For local version
-PROTOCOL = "http"
-DOMAIN_NAME = "127.0.0.1:8000"
+# PROTOCOL = "http"
+# DOMAIN_NAME = "127.0.0.1:8000"
 
 
 # Application definition

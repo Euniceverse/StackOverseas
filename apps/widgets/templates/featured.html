@@ -1,21 +1,20 @@
 <div class="widget-content" style="padding: 1rem 2rem;">
   <div class="featured-member" style="margin-bottom: 1rem;">
-        <h3>Featured Members</h3>
-        {% if widget.data.featured_members %}
-          <div class="featured-members">
-            {% for member in widget.data.featured_members %}
-              <div class="featured-member">
-                {% if member.picture %}
-                  <img src="{{ member.picture }}" alt="{{ member.name }}" style="max-width:100px;"/>
-                {% endif %}
-                <p><strong>{{ member.name }}</strong></p>
-                <p>{{ member.role }}</p>
-              </div>
+    <h3>Featured Members</h3>
+    {% if widget.data.featured_members %}
+        <ul class="list-group">
+            {% for featured in widget.data.featured_members %}
+                <li class="list-group-item">
+                    {% if featured.picture %}
+                        <img src="{{ featured.picture }}" alt="{{ featured.member }}" style="max-width:100px;">
+                    {% endif %}
+                    <p><strong>{{ featured.member }}</strong></p>
+                    <p>{{ featured.role }}</p>
+                </li>
             {% endfor %}
-          </div>
-        {% else %}
-          <p>No featured members set.</p>
-        {% endif %}
-      </div>      
+        </ul>
+    {% else %}
+        <p>No featured members available.</p>
+    {% endif %}
+  </div>
 </div>
-  

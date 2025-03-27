@@ -1,0 +1,13 @@
+<div class="gallery-summary">
+    {% if gallery %}
+      <h4>{{ gallery.title }}</h4>
+      <div class="gallery-thumbnails">
+        {% for image in gallery.images.all|slice:":3" %}
+          <img src="{{ image.image.url }}" alt="{{ gallery.title }}" style="max-width:100px;">
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>No gallery available.</p>
+    {% endif %}
+  </div>
+  

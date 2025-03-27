@@ -1,5 +1,11 @@
-<h2>{{ society.name }} Galleries</h2>
+{% extends "base.html" %}
+{% load static %}
 
+{% block title %}
+<h2>{{ society.name }} Galleries</h2>
+{% endblock %}
+
+{% block content %}
 <ul>
   {% for gallery in galleries %}
     <li>
@@ -13,3 +19,4 @@
 </ul>
 
 <a href="{% url 'panels:create_gallery' society.id %}">+ Create New Gallery</a>
+{% endblock %}

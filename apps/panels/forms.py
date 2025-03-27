@@ -1,5 +1,6 @@
 from django import forms
-from .models import Comment, Poll
+from django.forms import modelformset_factory
+from .models import Comment, Poll, Gallery, Image, Question, Option
 
 #comments
 class CommentForm(forms.ModelForm):
@@ -11,10 +12,6 @@ class CommentForm(forms.ModelForm):
         }
 
 #gallery
-from django import forms
-from .models import Gallery, Image
-
-
 class GalleryForm(forms.ModelForm):
     class Meta:
         model = Gallery
@@ -26,9 +23,6 @@ class ImageUploadForm(forms.ModelForm):
         fields = ['image']
 
 #poll
-from django.forms import modelformset_factory
-from .models import Poll, Question, Option
-
 class PollForm(forms.ModelForm):
     class Meta:
         model = Poll

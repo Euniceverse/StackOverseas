@@ -55,11 +55,9 @@ class ContactWidgetForm(forms.Form):
             })
     
 class FeaturedMemberForm(forms.Form):
-    name = forms.CharField(
-        max_length=100,
+    member = forms.ChoiceField(
         required=True,
-        label="Name",
-        widget=forms.TextInput(attrs={"placeholder": "Enter name"})
+        label="Member"
     )
     role = forms.CharField(
         max_length=100,
@@ -70,4 +68,46 @@ class FeaturedMemberForm(forms.Form):
     picture = forms.ImageField(
         required=False,
         label="Picture"
+    )
+
+    def __init__(self, *args, **kwargs):
+        members_choices = kwargs.pop('members_choices', [])
+        super().__init__(*args, **kwargs)
+        self.fields['member'].choices = [("", "Select a member")] + [(name, name) for name in members_choices]
+        
+class AnnouncementForm(forms.Form):
+    title = forms.CharField(
+        max_length=200,
+        required=True,
+        label="Announcement Title",
+        widget=forms.TextInput(attrs={"placeholder": "Enter announcement title"})
+    )
+    message = forms.CharField(
+        required=True,
+        label="Message",
+        widget=forms.Textarea(attrs={"placeholder": "Enter announcement message", "rows": 3})
+    )
+    date = forms.DateField(
+        required=False,
+        label="Date",
+        widget=forms.DateInput(attrs={"type": "date"})
+    )
+    
+
+class LeaderboardMembershipForm(forms.Form):
+    membership_id = forms.IntegerField(widget=forms.HiddenInput)
+    member_name = forms.CharField(label="Member", required=False, disabled=True)
+    points = forms.IntegerField(label="Points", required=False)
+    
+    
+class LeaderboardSettingsForm(forms.Form):
+    display_count = forms.ChoiceField(
+        choices=[('3', 'Top 3'), ('5', 'Top 5'), ('10', 'Top 10')],
+        required=True,
+        label="Number of Top Entries to Display",
+        initial='3'
+    )
+    display_points = forms.BooleanField(
+        label="Display Points", 
+        required=False
     )

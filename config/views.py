@@ -25,7 +25,7 @@ def ai_search(request):
         from .functions import search_events
         results, suggestion = search_events(query)
 
-        request.session['search_type'] = 'events' 
+        request.session['search_type'] = 'events'
         request.session['search_ids'] = [e.id for e in results]
 
         recent_news = get_recent_news()

@@ -3,14 +3,14 @@ let calendarInitialized = false;
 function initializeCalendar() {
     if (calendarInitialized) return;
 
-    console.log("✅ JS loaded! initializeCalendar() called.");
+    console.log("JS loaded! initializeCalendar() called.");
 
     const calendarEl = document.getElementById("calendarContainer");
     const eventCalendar = document.querySelector(".event-calendar");
     const closeButton = document.getElementById("event-detail-close");
 
     if (!calendarEl) {
-        console.error("❌ ERROR: Calendar container is missing!");
+        console.error("ERROR: Calendar container is missing!");
         return;
     }
 
@@ -20,7 +20,6 @@ function initializeCalendar() {
 function fetchFilteredEvents(fetchInfo, successCallback, failureCallback) {
     let queryString = localStorage.getItem("filterQueryString") || "";
 
-    // Add the my_events filter if it's set
     const myEventsFilter = new URLSearchParams(window.location.search).get('my_events');
     if (myEventsFilter === "true") {
         queryString += (queryString ? '&' : '?') + 'my_events=true';
@@ -32,7 +31,7 @@ function fetchFilteredEvents(fetchInfo, successCallback, failureCallback) {
             let eventsArray = Array.isArray(data) ? data : data.results;
 
             if (!eventsArray || !Array.isArray(eventsArray)) {
-                console.error("❌ API response error: `results` field missing", data);
+                console.error("API response error: `results` field missing", data);
                 return;
             }
 
@@ -48,14 +47,14 @@ function fetchFilteredEvents(fetchInfo, successCallback, failureCallback) {
                     description: event.description || "No description available.",
                     capacity: event.capacity || "Unlimited",
                     member_only: event.member_only,
-                    hosts: event.society.join(", ")
-                }
+                    hosts: event.society.join(", "),
+                    society_names: event.society_names                }
             }));
 
             successCallback(events);
         })
         .catch(error => {
-            console.error("❌ Error fetching events:", error);
+            console.error("Error fetching events:", error);
             failureCallback(error);
         });
 }
@@ -92,7 +91,11 @@ function fetchFilteredEvents(fetchInfo, successCallback, failureCallback) {
                 fee !== "Free" && fee !== "" ? parseFloat(fee) : 0.0;
 
             document.getElementById("event-description").textContent = info.event.extendedProps.description;
-
+            document.getElementById("event-hosts").textContent =
+            info.event.extendedProps.society_names?.join(", ") || "TBA";
+            document.getElementById("event-capacity").textContent =
+            "👥 Capacity: " + (info.event.extendedProps.capacity || "Unlimited");
+            
             const modal = document.getElementById("event-detail-modal");
             if (modal) modal.classList.remove("hidden");
         }
@@ -137,7 +140,7 @@ function fetchFilteredEvents(fetchInfo, successCallback, failureCallback) {
 
     window.resizeCalendar = function () {
         setTimeout(() => {
-            console.log("✅ FullCalendar resizing...");
+            console.log("FullCalendar resizing");
             window.calendar.updateSize();
         }, 100);
     };
@@ -146,6 +149,6 @@ function fetchFilteredEvents(fetchInfo, successCallback, failureCallback) {
 window.initializeCalendar = initializeCalendar;
 
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("✅ DOM fully loaded. Initializing calendar...");
+    console.log("DOM fully loaded. Initializing calendar...");
     initializeCalendar();
 });

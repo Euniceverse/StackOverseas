@@ -33,7 +33,6 @@ def user_can_delete_event(user, event):
     if user.is_superuser:
         return True
 
-    # The event may belong to multiple societies (m2m)
     societies = event.society.all()
     allowed_roles = [MembershipRole.MANAGER, MembershipRole.CO_MANAGER, MembershipRole.EDITOR]
 
@@ -53,12 +52,10 @@ def delete_event(request, event_id):
     """Delete an event if user is manager/co_manager/editor or superuser."""
     event = get_object_or_404(Event, id=event_id)
 
-    # Check permission
     if not user_can_delete_event(request.user, event):
         messages.error(request, "You do not have permission to delete this event.")
         return redirect('eventspage')
 
-    # If authorized, delete the event
     event.delete()
     messages.success(request, "Event deleted successfully.")
     return redirect('eventspage')
@@ -91,29 +88,28 @@ class EventListAPIView(generics.ListAPIView):
     ordering = ["date"]
 
     def get_queryset(self):
-        print("Filter-api-request:", self.request.GET)  # 🔥 디버깅 로그 추가
+        print("Filter-api-request:", self.request.GET)  
 
         queryset = Event.objects.filter(date__gte=make_aware(datetime.now())).order_by("date")
 
-        # ✅ 숫자로 변환하여 필터 적용
         fee_min = self.request.GET.get("fee_min", None)
         fee_max = self.request.GET.get("fee_max", None)
 
-        print(f"📌 Before Conversion: fee_min={fee_min}, fee_max={fee_max}")  # 🔥 변환 전 로그 추가
+        print(f"📌 Before Conversion: fee_min={fee_min}, fee_max={fee_max}") 
 
         try:
-            fee_min = int(fee_min) if fee_min and fee_min.isdigit() else 0  # `None` 또는 `""`이면 기본값 0
-            fee_max = int(fee_max) if fee_max and fee_max.isdigit() else 999999  # `None` 또는 `""`이면 큰 값으로 처리
+            fee_min = int(fee_min) if fee_min and fee_min.isdigit() else 0 
+            fee_max = int(fee_max) if fee_max and fee_max.isdigit() else 999999  
         except ValueError:
-            fee_min, fee_max = 0, 999999  # 잘못된 값이면 기본값으로 설정
+            fee_min, fee_max = 0, 999999 
 
-        print(f"📌 After Conversion: fee_min={fee_min}, fee_max={fee_max}")  # 🔥 변환 후 로그 추가
+        print(f"📌 After Conversion: fee_min={fee_min}, fee_max={fee_max}")  
 
         queryset = queryset.filter(fee__gte=fee_min, fee__lte=fee_max)
 
         filtered_queryset = EventFilter(self.request.GET, queryset=queryset).qs
 
-        print(f"🎯 Filtered-api-num: {filtered_queryset.count()}")  # 🔥 필터링된 이벤트 개수 출력
+        print(f"🎯 Filtered-api-num: {filtered_queryset.count()}") 
 
         return filtered_queryset
 
@@ -133,7 +129,6 @@ def create_event(request, society_id):
     """
     society = get_object_or_404(Society, id=society_id)
 
-    # Check user membership role:
     membership = Membership.objects.filter(
         society=society,
         user=request.user,
@@ -177,7 +172,6 @@ def create_event(request, society_id):
                 is_published=False,
             )
 
-            # messages.success(request, "Event created successfully!")
             return redirect('auto_edit_news', event_id=event.id)
         else:
             print("Form errors:", form.errors)

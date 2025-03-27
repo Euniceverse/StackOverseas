@@ -1,17 +1,9 @@
-from django.shortcuts import render, redirect
-from .forms import PollForm
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404
-from .models import Question, Option, Vote, Poll
-from django.contrib.auth.decorators import login_required
+from .models import Question, Option, Vote, Poll, Comment, Gallery, Image
 import os
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Comment
-from .forms import CommentForm
 from apps.societies.models import Society
-from .models import Gallery, Image
 from .forms import *
 
 

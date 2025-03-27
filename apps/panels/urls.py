@@ -15,11 +15,7 @@ urlpatterns = [
     path('society/<int:society_id>/poll/<int:poll_id>/question/add/', views.add_question, name='add_question'),
     path('society/<int:society_id>/poll/<int:poll_id>/question/<int:question_id>/vote/', views.vote, name='vote'),
     path('society/<int:society_id>/poll/<int:poll_id>/question/<int:question_id>/result/', views.poll_result, name='poll_result'),
-    path(
-    'society/<int:society_id>/poll/<int:poll_id>/question/<int:question_id>/cancel/',
-    views.cancel_vote,
-    name='cancel_vote'
-    ),
+    path('society/<int:society_id>/poll/<int:poll_id>/question/<int:question_id>/cancel/', views.cancel_vote, name='cancel_vote'),
     
     path('society/<int:society_id>/galleries/', views.society_gallery_list, name='society_gallery_list'),
     path('society/<int:society_id>/gallery/create/', views.create_gallery, name='create_gallery'),

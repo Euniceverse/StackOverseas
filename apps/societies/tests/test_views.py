@@ -8,8 +8,9 @@ from unittest.mock import patch
 import json
 
 from apps.societies import views
-from apps.societies.models import Society, SocietyRegistration, Membership, MembershipRole, MembershipStatus, MembershipApplication, Widget
+from apps.societies.models import Society, SocietyRegistration, Membership, MembershipRole, MembershipStatus, MembershipApplication
 from apps.news.models import News
+from apps.widgets.models import Widget
 from apps.societies.functions import get_societies, manage_societies, get_all_users
 
 class SocietiesViewsTest(TestCase):
@@ -844,36 +845,13 @@ class SocietyDeletionAndWidgetsTest(TestCase):
             preferred_name="Another"
         )
         self.client.login(email="another@uni.ac.uk", password="pass")
-        response = self.client.get(reverse("society_admin_view", args=[self.society.id]))
-        self.assertEqual(response.status_code, 302)  # Redirect due to permission error
-    
-    def test_remove_widget_success(self):
-        response = self.client.post(reverse("remove_widget", args=[self.society.id, self.widget.id]))
-        self.assertFalse(Widget.objects.filter(id=self.widget.id).exists())
-        self.assertRedirects(response, reverse("society_admin_view", args=[self.society.id]))
-    
-    def test_remove_widget_no_permission(self):
-        another_user = get_user_model().objects.create_user(
-            email="another2@uni.ac.uk", 
-            password="pass",
-            first_name="Another",
-            last_name="User",
-            preferred_name="Another"
-        )
-        self.client.login(email="another2@uni.ac.uk", password="pass")
-        response = self.client.post(reverse("remove_widget", args=[self.society.id, self.widget.id]))
+        response = self.client.get(reverse("society_admin", args=[self.society.id]))
         self.assertEqual(response.status_code, 302)  # Redirect due to permission error
     
     def test_society_page_view(self):
         response = self.client.get(reverse("society_page", args=[self.society.id]))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "society_page.html")
-    
-    def test_update_widget_order_success(self):
-        self.client.post(reverse("update_widget_order", args=[self.society.id]), data=json.dumps({"widget_order": [self.widget.id]}), content_type="application/json")
-        self.widget.refresh_from_db()
-        self.assertEqual(self.widget.position, 0)
-
 
 class MySocietiesViewTest(TestCase):
 
@@ -1387,42 +1365,7 @@ class SocietyAdminViewTest(TestCase):
         self.assertNotEqual(response.status_code, 200)
         self.assertIn(response.status_code, [302, 403])
 
-class RemoveWidgetTest(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.user = User.objects.create_user(
-            email="widgetremover@uni.ac.uk",
-            password="pass",
-            first_name="Widget",
-            last_name="Remover",
-            preferred_name="Widget"
-        )
-        self.society = Society.objects.create(
-            name="Widget Society",
-            status="approved",
-            manager=self.user
-        )
-        self.widget = Widget.objects.create(society=self.society, widget_type="events")
-        self.create_url = reverse("remove_widget", args=[self.society.id, self.widget.id])
-    
-    def test_remove_widget_authorized(self):
-        self.client.login(email="widgetremover@uni.ac.uk", password="pass")
-        response = self.client.post(self.create_url)
-        self.assertFalse(Widget.objects.filter(id=self.widget.id).exists())
-        self.assertRedirects(response, reverse("society_admin_view", args=[self.society.id]))
-    
-    def test_remove_widget_unauthorized(self):
-        other = User.objects.create_user(
-            email="otherwidget@uni.ac.uk", 
-            password="pass",
-            first_name="Other",
-            last_name="Widget",
-            preferred_name="Other"
-        )
-        self.client.login(email="otherwidget@uni.ac.uk", password="pass")
-        response = self.client.post(self.create_url)
-        self.assertIn(response.status_code, [302, 403])
-        self.assertTrue(Widget.objects.filter(id=self.widget.id).exists())
+
 
 class SocietyPageViewTest(TestCase):
     def setUp(self):
@@ -1460,59 +1403,6 @@ class SocietyPageViewTest(TestCase):
         # Check that if the logged-in user is a member, user_membership is in context
         self.assertIn("user_membership", response.context)
     
-    def test_society_page_excludes_member_only_widgets_for_non_members(self):
-        # Create a widget of type 'discussion' that should be excluded for non-members
-        Widget.objects.create(society=self.society, widget_type="discussion", position=1)
-        response = self.client.get(self.create_url)
-        # Assuming non-members should not see 'discussion' widget:
-        self.assertNotIn("discussion", [w.widget_type for w in response.context["widgets"]])
-
-
-class UpdateWidgetOrderViewTest(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.manager = User.objects.create_user(
-            email="order@uni.ac.uk", 
-            password="pass",
-            first_name="Order",
-            last_name="Test",
-            preferred_name="Order"
-        )
-        self.society = Society.objects.create(
-            name="Order Society",
-            society_type="sports",
-            status="approved",
-            manager=self.manager
-        )
-        self.widget1 = Widget.objects.create(society=self.society, widget_type="events", position=0)
-        self.widget2 = Widget.objects.create(society=self.society, widget_type="news", position=1)
-        self.create_url = reverse("update_widget_order", args=[self.society.id])
-    
-    def test_update_widget_order_authorized(self):
-        self.client.login(email="order@uni.ac.uk", password="pass")
-        new_order = [self.widget2.id, self.widget1.id]
-        response = self.client.post(self.create_url, data=json.dumps({"widget_order": new_order}),
-                                    content_type="application/json")
-        self.assertEqual(response.status_code, 200)
-        self.widget1.refresh_from_db()
-        self.widget2.refresh_from_db()
-        self.assertEqual(self.widget2.position, 0)
-        self.assertEqual(self.widget1.position, 1)
-    
-    def test_update_widget_order_unauthorized(self):
-        other = User.objects.create_user(
-            email="otherorder@uni.ac.uk", 
-            password="pass",
-            first_name="Other",
-            last_name="Order",
-            preferred_name="Other"
-        )
-        self.client.login(email="otherorder@uni.ac.uk", password="pass")
-        new_order = [self.widget2.id, self.widget1.id]
-        response = self.client.post(self.create_url, data=json.dumps({"widget_order": new_order}),
-                                    content_type="application/json")
-        self.assertEqual(response.status_code, 403)
-
 
 class LeaveSocietyViewTest(TestCase):
     def setUp(self):
@@ -1635,25 +1525,6 @@ class ExtraViewsTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "update_membership.html")
-
-    def test_update_widget_order_invalid_method(self):
-        """
-        Test that a GET request to update_widget_order returns an error.
-        """
-        self.client.login(email="manager@example.com", password="managerpass")
-        url = reverse("update_widget_order", args=[self.society.id])
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 400)  # Invalid request (only POST accepted)
-
-    def test_update_widget_order_invalid_json(self):
-        """
-        Test that a POST with invalid JSON returns a 400 error.
-        """
-        self.client.login(email="manager@example.com", password="managerpass")
-        url = reverse("update_widget_order", args=[self.society.id])
-        response = self.client.post(url, data="not json", content_type="application/json")
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("error", response.json())
 
     def test_view_manage_societies_empty_news(self):
         """

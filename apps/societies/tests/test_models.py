@@ -2,8 +2,9 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from apps.societies.models import (
     Society, Membership, MembershipApplication, SocietyRequirement, SocietyQuestion,
-    RequirementType, SocietyRegistration, SocietyExtraForm, Widget
+    RequirementType, SocietyRegistration, SocietyExtraForm
 )
+from apps.widgets.models import Widget
 from apps.users.models import CustomUser
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone

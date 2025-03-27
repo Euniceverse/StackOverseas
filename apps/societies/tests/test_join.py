@@ -359,7 +359,7 @@ class ManageButtonVisibilityTest(TestCase):
 
         self.client.login(email='mgr@uni.ac.uk', password='mgrpass')
         response = self.client.get(self.detail_url)
-        self.assertContains(response, 'Manage This Society')
+        self.assertContains(response, 'Manage Members')
 
     def test_editor_sees_button(self):
         Membership.objects.create(
@@ -370,7 +370,7 @@ class ManageButtonVisibilityTest(TestCase):
         )
         self.client.login(email='editor@uni.ac.uk', password='editorpass')
         response = self.client.get(self.detail_url)
-        self.assertContains(response, 'Manage This Society')
+        self.assertContains(response, 'Manage Members')
 
     def test_pending_editor_cannot_see_button(self):
         """
@@ -384,7 +384,7 @@ class ManageButtonVisibilityTest(TestCase):
         )
         self.client.login(email='editor@uni.ac.uk', password='editorpass')
         response = self.client.get(self.detail_url)
-        self.assertContains(response, 'Manage This Society')
+        self.assertContains(response, 'Manage Members')
 
     def test_normal_member_cannot_see_button(self):
         """

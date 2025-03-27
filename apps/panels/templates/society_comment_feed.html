@@ -1,0 +1,39 @@
+<h2>Comments for {{ society.name }}</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Post Comment</button>
+</form>
+
+<hr>
+
+{% if comments %}
+  <ul>
+    {% for comment in comments %}
+      <li>
+        <p><strong>{{ comment.author }}</strong> said:</p>
+        <p>{{ comment.content }}</p>
+        <small>{{ comment.created_at|date:"Y-m-d H:i" }}</small><br>
+
+        <!-- Like toggle -->
+        <a href="{% url 'panels:like_comment' society.id comment.id %}">
+          {% if user in comment.likes.all %}
+            ❤️ Unlike
+          {% else %}
+            🤍 Like
+          {% endif %}
+          ({{ comment.likes.count }})
+        </a>
+
+        {% if comment.author == user %}
+          | <a href="{% url 'panels:edit_comment' society.id comment.id %}">✏️ Edit</a>
+          | <a href="{% url 'panels:delete_comment' society.id comment.id %}">🗑 Delete</a>
+        {% endif %}
+      </li>
+      <hr>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No comments yet. Be the first!</p>
+{% endif %}

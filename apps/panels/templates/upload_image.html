@@ -1,0 +1,9 @@
+<h2>Upload an Image to "{{ gallery.title }}"</h2>
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Upload</button>
+</form>
+
+<a href="{% url 'panels:gallery_detail' society.id gallery.id %}">← Back to Gallery</a>

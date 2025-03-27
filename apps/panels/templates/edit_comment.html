@@ -1,0 +1,9 @@
+<h2>Edit Comment</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Save Changes</button>
+</form>
+
+<a href="{% url 'panels:society_comment_feed' society.id %}">← Back to Comments</a>

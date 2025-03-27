@@ -1,0 +1,13 @@
+<h2>Results: {{ question.question_text }}</h2>
+
+<ul>
+    {% for option in options %}
+      <li>
+        {{ option.option_text }} — {{ option.option_count }} votes
+      </li>
+    {% endfor %}
+  </ul>
+  
+  <a href="{% url 'panels:vote' society.id poll.id question.id %}">← Back to Vote</a><br>
+  <a href="{% url 'panels:poll_list' society.id %}">← Back to Poll List</a>
+  

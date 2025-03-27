@@ -1,0 +1,15 @@
+<h2>{{ society.name }} Galleries</h2>
+
+<ul>
+  {% for gallery in galleries %}
+    <li>
+      <a href="{% url 'panels:gallery_detail' society.id gallery.id %}">
+        {{ gallery.title }}
+      </a>
+    </li>
+  {% empty %}
+    <li>No galleries yet.</li>
+  {% endfor %}
+</ul>
+
+<a href="{% url 'panels:create_gallery' society.id %}">+ Create New Gallery</a>

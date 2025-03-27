@@ -49,11 +49,9 @@ class ContactWidgetForm(forms.Form):
     
     
 class FeaturedMemberForm(forms.Form):
-    name = forms.CharField(
-        max_length=100,
+    member = forms.ChoiceField(
         required=True,
-        label="Name",
-        widget=forms.TextInput(attrs={"placeholder": "Enter name"})
+        label="Member"
     )
     role = forms.CharField(
         max_length=100,
@@ -65,8 +63,12 @@ class FeaturedMemberForm(forms.Form):
         required=False,
         label="Picture"
     )
-    
 
+    def __init__(self, *args, **kwargs):
+        members_choices = kwargs.pop('members_choices', [])
+        super().__init__(*args, **kwargs)
+        self.fields['member'].choices = [("", "Select a member")] + [(name, name) for name in members_choices]
+        
 class AnnouncementForm(forms.Form):
     title = forms.CharField(
         max_length=200,

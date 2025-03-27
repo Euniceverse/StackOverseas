@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from django.contrib import messages
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 from django.forms import formset_factory
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
@@ -56,15 +58,12 @@ def remove_widget(request, society_id, widget_id):
 
 def edit_contact_widget(request, society_id, widget_id):
     """Allows manager to add/remove contact information for the society."""
-    widget = get_object_or_404(
-        Widget, id=widget_id, society__id=society_id, widget_type='contacts'
-    )
+    widget = get_object_or_404(Widget, id=widget_id, society__id=society_id, widget_type='contacts')
     initial_data = widget.data if widget.data else {}
     
     if request.method == "POST":
         form = ContactWidgetForm(request.POST, request.FILES)
         if form.is_valid():
-            # Save the cleaned data as JSON in widget.data
             widget.data = form.cleaned_data
             widget.save()
             messages.success(request, "Contact information updated successfully!")
@@ -81,23 +80,58 @@ def edit_contact_widget(request, society_id, widget_id):
     })
     
 def edit_featured_members_widget(request, society_id, widget_id):
-    """Allows managers to edit the "featured" widget by adding multiple featured members."""
+    """Allows managers to edit the 'featured' widget by adding multiple featured members."""
     widget = get_object_or_404(Widget, id=widget_id, society__id=society_id, widget_type='featured')
     FeaturedMemberFormSet = formset_factory(FeaturedMemberForm, extra=1)
-    
-    initial_data = widget.data.get('featured_members', []) if widget.data else []
-    
+    society = widget.society
+
+    raw_initial_data = widget.data.get('featured_members', []) if widget.data else []
+    initial_data = []
+    for item in raw_initial_data:
+        member_value = item.get('member')
+        if isinstance(member_value, int):
+            try:
+                m = Membership.objects.get(society=society, id=member_value)
+                member_name = m.user.get_full_name() if hasattr(m.user, "get_full_name") else str(m.user)
+            except Membership.DoesNotExist:
+                member_name = ""
+        else:
+            member_name = member_value
+        initial_data.append({
+            'member': member_name, 
+            'role': item.get('role'),
+            'picture': item.get('picture'),
+        })
+
+    memberships = Membership.objects.filter(society=society, status=MembershipStatus.APPROVED)
+    members_choices = [
+        m.user.get_full_name() if hasattr(m.user, 'get_full_name') else str(m.user)
+        for m in memberships
+    ]
+
+    formset = None
+
     if request.method == "POST":
-        formset = FeaturedMemberFormSet(request.POST, request.FILES)
+        formset = FeaturedMemberFormSet(request.POST, request.FILES, form_kwargs={'members_choices': members_choices})
         if formset.is_valid():
             featured_members = []
-            for form in formset:
-                if form.cleaned_data and (form.cleaned_data.get('name') or form.cleaned_data.get('role')):
-                    picture_field = form.cleaned_data.get('picture')
-                    picture_url = picture_field.url if picture_field else ""
+            for i, form in enumerate(formset):
+                cd = form.cleaned_data
+                if cd and cd.get('member', "").strip() != "" and cd.get('role', "").strip() != "":
+                    picture_field = cd.get('picture')
+                    if picture_field:
+                        from django.core.files.storage import default_storage
+                        from django.core.files.base import ContentFile
+                        filename = default_storage.save(f"featured_members/{picture_field.name}", ContentFile(picture_field.read()))
+                        picture_url = default_storage.url(filename)
+                    else:
+                        if initial_data and len(initial_data) > i and initial_data[i].get('picture'):
+                            picture_url = initial_data[i].get('picture')
+                        else:
+                            picture_url = ""
                     featured_members.append({
-                        'name': form.cleaned_data.get('name'),
-                        'role': form.cleaned_data.get('role'),
+                        'member': cd.get('member'),
+                        'role': cd.get('role'),
                         'picture': picture_url,
                     })
             if widget.data is None:
@@ -109,14 +143,14 @@ def edit_featured_members_widget(request, society_id, widget_id):
         else:
             messages.error(request, "There was an error updating featured members.")
     else:
-        formset = FeaturedMemberFormSet(initial=initial_data)
-    
-    return render(request, "edit_featured_members_widget.html", {
+        formset = FeaturedMemberFormSet(initial=initial_data, form_kwargs={'members_choices': members_choices})
+
+    return render(request, "edit_featured_widget.html", {
         "formset": formset,
         "widget": widget,
         "society_id": society_id,
     })
-    
+
 def edit_announcements_widget(request, society_id, widget_id):
     """Allows managers to make announcements."""
     widget = get_object_or_404(Widget, id=widget_id, society__id=society_id, widget_type='announcements')

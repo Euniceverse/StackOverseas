@@ -6,7 +6,7 @@ from django.contrib import messages
 from apps.users.models import CustomUser
 from apps.widgets.models import Widget
 from apps.widgets.forms import ContactWidgetForm, FeaturedMemberForm, AnnouncementForm
-from apps.widgets.views import edit_leaderboard_widget
+from apps.widgets.views import edit_leaderboard_widget, edit_featured_members_widget
 from django import template
 from config.constants import SOCIETY_TYPE_CHOICES
 
@@ -122,8 +122,7 @@ def edit_widget(request, society_id, widget_id):
         form_class = ContactWidgetForm
         template_name = "edit_contact_widget.html"
     elif widget.widget_type == "featured":
-        form_class = FeaturedMemberForm
-        template_name = "edit_featured_widget.html"
+        return edit_featured_members_widget(request, society_id, widget.id)
     elif widget.widget_type == "announcements":
         form_class = AnnouncementForm
         template_name = "edit_announcements_widget.html"

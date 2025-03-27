@@ -18,7 +18,7 @@ class MemberRating(models.Model):
         unique_together = ('society', 'member')
         ordering = ['-rating']
 
-    def _str_(self):
+    def __str__(self):
         full_name = f"{self.member.first_name} {self.member.last_name}".strip()
         return f"{full_name or self.member.email} — {self.rating} pts"
 
@@ -33,7 +33,7 @@ class Match(models.Model):
     notes = models.TextField(blank=True)
     played_at = models.DateTimeField(auto_now_add=True)
 
-    def _str_(self):
+    def __str__(self):
         p1 = f"{self.player1.first_name} {self.player1.last_name}".strip() or self.player1.email
         p2 = f"{self.player2.first_name} {self.player2.last_name}".strip() or self.player2.email
         win = f"{self.winner.first_name} {self.winner.last_name}".strip() if self.winner else 'Draw'
@@ -50,7 +50,7 @@ class HallOfFame(models.Model):
     class Meta:
         unique_together = ('society', 'season')
 
-    def _str_(self):
+    def __str__(self):
         name = f"{self.member.first_name} {self.member.last_name}".strip() or self.member.email
         return f"{name} - {self.season} ({self.highest_rating} pts)"
 
@@ -64,7 +64,8 @@ class Comment(models.Model):
     likes = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='liked_comments', blank=True)
 
     def __str__(self):
-        return f"{self.author.username} @ {self.society.name}: {self.content[:20]}"
+        full_name = self.author.get_full_name() if hasattr(self.author, 'get_full_name') else self.author.email
+        return f"{full_name} @ {self.society.name}: {self.content[:20]}"
 
     def total_likes(self):
         return self.likes.count()

@@ -6,6 +6,7 @@ from apps.societies.models import Society, Membership, MembershipRole, Membershi
 from apps.users.models import CustomUser
 
 class WidgetViewsTests(TestCase):
+    """Tests for Widgets View"""
     def setUp(self):
         # Create test users: a manager and a regular (co-manager) user.
         self.manager = CustomUser.objects.create_user(

@@ -8,7 +8,6 @@ User = get_user_model()
 
 class WidgetModelTests(TestCase):
     """Tests for the Widget model"""
-
     def setUp(self):
         # Create a manager for the society.
         self.manager = User.objects.create_user(

@@ -2,11 +2,11 @@ import json
 from django.test import TestCase, RequestFactory
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.utils import timezone
 from unittest.mock import patch, MagicMock
-
-# Import the views module from your payments app
 from apps.payments import views
-
+from apps.events.models import Event
+from django.contrib.auth import get_user_model
 
 class PaymentsViewsTests(TestCase):
     def setUp(self):
@@ -14,12 +14,10 @@ class PaymentsViewsTests(TestCase):
 
     @patch('apps.payments.views.stripe.checkout.Session.create')
     def test_create_checkout_session_event_success(self, mock_session_create):
-        # Simulate a session object with a url attribute
         mock_session = MagicMock()
         mock_session.url = 'http://dummy-session-url.com'
         mock_session_create.return_value = mock_session
 
-        # Create a POST request for an 'event' payment
         post_data = {
             'type': 'event',
             'id': '123',
@@ -29,17 +27,14 @@ class PaymentsViewsTests(TestCase):
         }
         request = self.factory.post('/payments/create/', data=post_data)
 
-        # Call the view
         response = views.create_checkout_session(request)
 
-        # Assert that the response is a JsonResponse with the session URL
         self.assertEqual(response.status_code, 200)
         response_data = json.loads(response.content.decode())
         self.assertIn('url', response_data)
         self.assertEqual(response_data['url'], mock_session.url)
 
-        # Verify that stripe.checkout.Session.create was called with expected parameters\n
-        expected_success_url = f"http://127.0.0.1:8000/payments/success/?event_id=123"
+        expected_success_url = f"https://stackoverseas.onrender.com/payments/success/?type=event&id=123"
         mock_session_create.assert_called_once()
         call_args = mock_session_create.call_args[1]
         self.assertEqual(call_args.get('mode'), 'payment')
@@ -47,12 +42,10 @@ class PaymentsViewsTests(TestCase):
 
     @patch('apps.payments.views.stripe.checkout.Session.create')
     def test_create_checkout_session_society_success(self, mock_session_create):
-        # Simulate a session object with a url attribute
         mock_session = MagicMock()
         mock_session.url = 'http://dummy-session-url.com'
         mock_session_create.return_value = mock_session
 
-        # Create a POST request for a 'society' payment
         post_data = {
             'type': 'society',
             'id': '456',
@@ -65,11 +58,11 @@ class PaymentsViewsTests(TestCase):
         # Call the view
         response = views.create_checkout_session(request)
 
-        # For society payments, the view should return a redirect\n
+        # For society payments, the view should return a redirect
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, mock_session.url)
 
-        expected_success_url = f"http://127.0.0.1:8000/payments/success/?type=society&id=456"
+        expected_success_url = f"https://stackoverseas.onrender.com/payments/success/?type=society&id=456"
         mock_session_create.assert_called_once()
         call_args = mock_session_create.call_args[1]
         self.assertEqual(call_args.get('success_url'), expected_success_url)
@@ -122,6 +115,29 @@ class PaymentsViewsTests(TestCase):
         self.assertEqual(response_data['error'], 'Stripe error')
 
     def test_payment_success(self):
+        event = Event.objects.create(
+            id=123,
+            name="Test Event",
+            description="Test Description",
+            date=timezone.now(),
+            event_type="test",
+            keyword="test",
+            location="Test Location",
+            capacity=100,
+            member_only=False,
+            fee=0,
+            is_free=True
+        )
+        User = get_user_model()
+        user = User.objects.create_user(
+            email="testuser@example.ac.uk",
+            password="password123",
+            first_name="Test",
+            last_name="User",
+            preferred_name="Tester"
+        )
+        self.client.login(email="testuser@example.ac.uk", password="password123")
+    
         response = self.client.get('/payments/success/', {'type': 'event', 'id': '123'})
         
         self.assertEqual(response.status_code, 200)

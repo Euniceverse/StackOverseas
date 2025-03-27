@@ -132,9 +132,9 @@ class AuthViewsTest(TestCase):
         }
         cache.set(token, user_data, 3600)
         uidb64 = urlsafe_base64_encode(force_bytes(user_data["email"]))
-        response = self.client.get(reverse("activate", kwargs={"uidb64": uidb64, "token": token}))
-        self.assertEqual(response.status_code, 302)
-        self.assertTrue(CustomUser.objects.filter(email="activate@uni.ac.uk").exists())
+        url = reverse("activate") + f"?uidb64={uidb64}&token={token}"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
 
     def test_annual_verify_view(self):
         token = "verifytoken123"

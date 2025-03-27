@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.utils.timezone import now
 from apps.news.models import News
 from apps.users.models import CustomUser
-from apps.societies.models import Society
+from apps.societies.models import Society, Membership, MembershipRole, MembershipStatus
 from apps.news.forms import NewsForm
 
 User = get_user_model()
@@ -109,8 +109,15 @@ class NewsViewTests(TestCase):
             manager=self.user,
             status="approved" 
         )
+        
+        Membership.objects.create(
+            society=self.society,
+            user=self.user,
+            role=MembershipRole.MANAGER,
+            status=MembershipStatus.APPROVED
+        )
 
-        self.news_url = reverse("create_news")
+        self.news_url = reverse("create_news_for_society", args=[self.society.id])
         
     def test_redirect_if_not_logged_in(self):
         """Test that an unauthenticated user is redirected."""
@@ -122,7 +129,7 @@ class NewsViewTests(TestCase):
         self.client.login(email="manager1@example.ac.uk", password="password123")
         response = self.client.get(self.news_url)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Create a News Article")
+        self.assertContains(response, "Create News")
 
     def test_create_news_post_success(self):
         """Test that a society manager can successfully submit news."""
@@ -131,9 +138,8 @@ class NewsViewTests(TestCase):
         response = self.client.post(self.news_url, {
             "title": "New Tech Event",
             "content": "Join us for an exciting event!",
-            "society": self.society.id, 
             "date_posted": now().strftime("%Y-%m-%dT%H:%M"), 
-            "is_posted": True,
+            "post": "Submit",
         }, follow=True)
 
         self.assertEqual(response.status_code, 200)

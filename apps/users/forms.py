@@ -30,7 +30,7 @@ class LogInForm(forms.Form):
     def get_user(self):
         """Return the authenticated user if possible."""
         return getattr(self, "user", None)
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for visible in self.visible_fields():
@@ -133,7 +133,7 @@ class SignUpForm(forms.ModelForm):
         user.set_password(self.cleaned_data["new_password"])
         user.is_active = False
         return user
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for visible in self.visible_fields():

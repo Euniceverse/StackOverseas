@@ -21,10 +21,7 @@
             <a href="{% url 'manage_society' society.id %}" class="btn btn-warning">Manage Members</a>
             <a href="{% url 'manage_display' society.id %}" class="btn btn-warning">Manage Display</a>
             <a href="{% url 'event_create' society.id %}" class="btn btn-primary">Create Event</a>
-      
-    <a href="{% url 'create_news_for_society' society.id %}" class="btn btn-primary">
-        Create News
-    </a>
+            <a href="{% url 'create_news_for_society' society.id %}" class="btn btn-primary">Create News</a>
 
     </div>
         {% endif %}

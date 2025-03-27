@@ -6,100 +6,86 @@
 {% endblock %}
 
 {% block content %}
-<div class="container my-5" style="max-width: 900px;">
-    <h2 class="fw-bold mb-4">{{ society.name }}</h2>
-    
-    <p>{{ society.description }}</p>
-    <p><strong>Type:</strong> {{ society.society_type }}</p>
-    <p><strong>Members:</strong> {{ society.members_count }}</p>
+<main class="flex-grow-1">
+  <div class="container-fluid px-4 my-4">
+    <div class="row">
+      <div class="col-lg-9 col-md-10 mx-auto">
 
-<!-- If user is manager/co_manager/editor + approved, show "Manage Society" and "Create Event" -->
-{% if user_membership and user_membership.role == "manager" or user_membership and user_membership.role == "co_manager" or user_membership and user_membership.role == "editor" or user.is_superuser %}
-    <div class="management-controls d-flex flex-wrap gap-2 mt-3 mb-4">
-        <a href="{% url 'manage_society' society.id %}" class="btn btn-warning">
-            Manage Members
-        </a>
+        <h2 class="fw-bold mb-4">{{ society.name }}</h2>
+        <p>{{ society.description }}</p>
+        <p><strong>Type:</strong> {{ society.society_type }}</p>
+        <p><strong>Members:</strong> {{ society.members_count }}</p>
 
-        <a href="{% url 'manage_display' society.id %}" class="btn btn-warning">
-            Manage Display
-        </a>
-
-        <a href="{% url 'event_create' society.id %}" class="btn btn-primary">
-            Create Event
-        </a>
-    </div>
-{% endif %}
-
-    {% if user.is_authenticated %}
-
-        {% if membership %}
-
-            {% if membership.status == 'approved' %}
-                <!-- The user is approved and can leave the society -->
-                <div class="management-controls d-flex flex-wrap gap-2 mt-3 mb-4">
-                    <form action="{% url 'leave_society' society.id %}" method="POST" class="d-inline-block">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">
-                            Leave Society
-                        </button>
-                    </form>
-                </div>
-                <p>You are a member of this society (Role: {{ membership.get_role_display }}).</p>
-
-            {% elif membership.status == 'pending' %}
-                <p class="text-muted">Your membership application is pending.</p>
-
-            {% elif membership.status == 'rejected' %}
-                <p class="text-danger">Your application was rejected.</p>
-            {% endif %}
-
-        {% else %}
-            <!-- The user is logged in but not a member yet -->
-            <p>You are not a member of this society.</p>
-            <a href="{% url 'join_society' society.id %}"
-                class="btn btn-primary"
-                id="join-society-link">
-                Join Society
-            </a>
+        {% if user_membership and user_membership.role == "manager" or user_membership and user_membership.role == "co_manager" or user_membership and user_membership.role == "editor" or user.is_superuser %}
+          <div class="management-controls d-flex flex-wrap gap-2 mt-3 mb-4">
+            <a href="{% url 'manage_society' society.id %}" class="btn btn-warning">Manage Members</a>
+            <a href="{% url 'manage_display' society.id %}" class="btn btn-warning">Manage Display</a>
+            <a href="{% url 'event_create' society.id %}" class="btn btn-primary">Create Event</a>
+          </div>
         {% endif %}
 
-    {% else %}
-        <!-- The user is not logged in at all -->
-        <p>You are not logged in.
-        <a href="{% url 'log_in' %}?next={% url 'society_page' society.id %}">Log in</a>
-        to join or leave this society.
-        </p>
-    {% endif %}
+        {% if user.is_authenticated %}
+          {% if membership %}
+            {% if membership.status == 'approved' %}
+              <div class="management-controls d-flex flex-wrap gap-2 mt-3 mb-4">
+                <form action="{% url 'leave_society' society.id %}" method="POST" class="d-inline-block">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger">Leave Society</button>
+                </form>
+              </div>
+              <p>You are a member of this society (Role: {{ membership.get_role_display }}).</p>
 
-<!-- Widget Display: visible to everyone -->
-<div id="widgets-container">
-    <ul id="sortable-widgets">
-        {% for widget in widgets %}
-            <li class="widget">
+            {% elif membership.status == 'pending' %}
+              <p class="text-muted">Your membership application is pending.</p>
+
+            {% elif membership.status == 'rejected' %}
+              <p class="text-danger">Your application was rejected.</p>
+            {% endif %}
+          {% else %}
+            <p>You are not a member of this society.</p>
+            <a href="{% url 'join_society' society.id %}" class="btn btn-primary" id="join-society-link">
+              Join Society
+            </a>
+          {% endif %}
+        {% else %}
+          <p>You are not logged in.
+            <a href="{% url 'log_in' %}?next={% url 'society_page' society.id %}">Log in</a>
+            to join or leave this society.
+          </p>
+        {% endif %}
+
+        <!-- Widget Display -->
+        <div id="widgets-container">
+          <ul id="sortable-widgets">
+            {% for widget in widgets %}
+              <li class="widget">
                 <h3>{{ widget.get_widget_type_display }}</h3>
-                    {% if widget.widget_type == "announcements" %}
-                        {% include 'announcements.html' with widget=widget %}
-                    {% elif widget.widget_type == "events" %}
-                        {% include 'events.html' with widget=widget %}
-                    {% elif widget.widget_type == "gallery" %}
-                        {% include 'gallery.html' with widget=widget %}
-                    {% elif widget.widget_type == "contacts" %}
-                        {% include 'contacts.html' with widget=widget %}
-                    {% elif widget.widget_type == "featured" %}
-                        {% include 'featured.html' with widget=widget %}
-                    {% elif widget.widget_type == "leaderboard" %}
-                        {% include 'leaderboard.html' with widget=widget %}
-                    {% elif widget.widget_type == "news" %}
-                        {% include 'news.html' with widget=widget %}
-                    {% else %}
-                        <div class="default-widget">
-                            {{ widget.custom_html|safe }}
-                        </div>
-                    {% endif %}
-            </li>
+                {% if widget.widget_type == "announcements" %}
+                  {% include 'announcements.html' with widget=widget %}
+                {% elif widget.widget_type == "events" %}
+                  {% include 'events.html' with widget=widget %}
+                {% elif widget.widget_type == "gallery" %}
+                  {% include 'gallery.html' with widget=widget %}
+                {% elif widget.widget_type == "contacts" %}
+                  {% include 'contacts.html' with widget=widget %}
+                {% elif widget.widget_type == "featured" %}
+                  {% include 'featured.html' with widget=widget %}
+                {% elif widget.widget_type == "leaderboard" %}
+                  {% include 'leaderboard.html' with widget=widget %}
+                {% elif widget.widget_type == "news" %}
+                  {% include 'news.html' with widget=widget %}
+                {% else %}
+                  <div class="default-widget">{{ widget.custom_html|safe }}</div>
+                {% endif %}
+              </li>
             {% endfor %}
-        </ul>
+          </ul>
+        </div>
+
+      </div>
     </div>
+  </div>
+</main>
 {% endblock %}
 
 

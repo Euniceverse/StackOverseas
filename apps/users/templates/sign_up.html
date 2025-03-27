@@ -3,15 +3,15 @@
 {% block title %}Sign Up{% endblock %}
 
 {% block content %}
+{% include 'components/terms_modal.html' %}
+
 <div class="container">
     <div class="row">
         <div class="col-sm-12 col-md-6 offset-md-3">
             <h1>Sign up</h1>
             {% if messages %}
                 {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }}">
-                        {{ message }}
-                    </div>
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
                 {% endfor %}
             {% endif %}
             <form action="{% url 'sign_up' %}" method="post">
@@ -27,9 +27,48 @@
                         {% endif %}
                     </div>
                 {% endfor %}
-                <input type="submit" value="Sign up" class="btn btn-primary">
+
+                <!-- Terms and Conditions Checkbox -->
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="terms-accept" name="terms_accepted" required>
+                        <label class="form-check-label" for="terms-accept">
+                            I accept the <a href="#" id="show-terms">Terms and Conditions</a>
+                        </label>
+                    </div>
+                </div>
+
+                <input type="submit" value="Sign up" class="btn btn-primary mt-4 mb-5">
             </form>
         </div>
     </div>
 </div>
+
+<script>
+const modal = document.getElementById('terms-modal');
+const showTerms = document.getElementById('show-terms');
+const closeBtn = document.querySelector('.close');
+
+showTerms.onclick = function(e) {
+    e.preventDefault();
+    modal.style.display = "block";
+}
+
+closeBtn.onclick = function() {
+    modal.style.display = "none";
+}
+
+window.onclick = function(e) {
+    if (e.target == modal) {
+        modal.style.display = "none";
+    }
+}
+
+document.querySelector('form').addEventListener('submit', function(e) {
+    if (!document.getElementById('terms-accept').checked) {
+        e.preventDefault();
+        alert('Please accept the Terms and Conditions to continue.');
+    }
+});
+</script>
 {% endblock %}

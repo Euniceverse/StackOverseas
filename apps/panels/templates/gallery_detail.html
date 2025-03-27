@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+<div class="bg-light p-4 rounded shadow-sm mb-4">
+  <h2 class="mb-1">Gallery: {{ gallery.title }}</h2>
+  <p class="text-muted">{{ gallery.description }}</p>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <a href="{% url 'panels:upload_image' society.id gallery.id %}" class="btn btn-success">+ Upload Image</a>
+</div>
+
+<hr>
+
+  <h2 class="mb-1">Gallery: {{ gallery.title }}</h2>
+  <p class="text-muted">{{ gallery.description }}</p>
+
+<h4 class="mb-3">Images</h4>
+{% if images %}
+  <div class="row">
+    {% for image in images %}
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          <img src="{{ image.image.url }}" class="card-img-top" alt="Image">
+          <div class="card-body">
+            <p class="card-text text-muted">Uploaded by: {{ image.uploaded_by }}</p>
+            <form method="post" action="{% url 'panels:delete_image' society.id image.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="text-muted">No images in this gallery yet.</p>
+{% endif %}
+
+<a href="{% url 'panels:society_gallery_list' society.id %}" class="btn btn-outline-secondary">← Back to Gallery List</a>
+{% endblock %}

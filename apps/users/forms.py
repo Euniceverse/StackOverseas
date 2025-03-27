@@ -9,7 +9,7 @@ class UserForm(forms.ModelForm):
     class Meta:
         """Form options."""
         model = CustomUser
-        fields = ['email', 'first_name', 'last_name', 'preferred_name']
+        fields = ['first_name', 'last_name', 'preferred_name']
 
 class LogInForm(forms.Form):
     email = forms.EmailField(label="Email")  # Use EmailField for validation
@@ -30,6 +30,11 @@ class LogInForm(forms.Form):
     def get_user(self):
         """Return the authenticated user if possible."""
         return getattr(self, "user", None)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
 
 class NewPasswordMixin(forms.Form):
     """Form mixin for new_password and password_confirmation fields."""
@@ -128,3 +133,8 @@ class SignUpForm(forms.ModelForm):
         user.set_password(self.cleaned_data["new_password"])
         user.is_active = False
         return user
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'

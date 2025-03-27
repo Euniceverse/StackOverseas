@@ -17,42 +17,35 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    // ✅ Function to switch active view
     function switchView(activeButton, activeView) {
         console.log(`🔄 Switching to: ${activeButton.id}`);
 
-        // 🔥 Remove "active" class from all buttons
         listButton.classList.remove("active");
         calendarButton.classList.remove("active");
         mapButton.classList.remove("active");
 
-        // 🔥 Hide all views
         listView.style.display = "none";
         calendarView.style.display = "none";
         mapView.style.display = "none";
 
-        // 🔥 Show selected view and highlight button
         activeButton.classList.add("active");
         activeView.style.display = "block";
 
-        if (activeView === mapView) {
-            initializeMap(); // 🌍 지도 최초 로드
-            resizeMap();
-        }
         if (activeView === calendarView) {
-            initializeCalendar(); // 🌍 지도 최초 로드
-            resizeCalendar();     // 🌍 지도 크기 재조정
+            initializeCalendar();
+            resizeCalendar();
         }
         if (activeView === listView) {
-            initializeList(); // 🌍 지도 최초 로드
-            resizeList();     // 🌍 지도 크기 재조정
+            initializeList();
+            resizeList();
+        }
+        if (activeView === mapView) {
+            initializeMap();
         }
     }
 
-    // ✅ Default view: CALENDAR
     switchView(calendarButton, calendarView);
 
-    // ✅ Event listeners for each button
     listButton.addEventListener("click", function () {
         switchView(listButton, listView);
     });
@@ -65,4 +58,3 @@ document.addEventListener("DOMContentLoaded", function () {
         switchView(mapButton, mapView);
     });
 });
-

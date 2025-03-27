@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+  <h2 class="my-4 text-center">Galleries</h2>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 700px;">
+  <div class="card shadow-sm p-4 mb-4">
+    <h2>{{ society.name }} Galleries</h2>
+    <ul class="list-group list-group-flush">
+      {% for gallery in galleries %}
+        <li class="list-group-item">
+          <a href="{% url 'panels:gallery_detail' society.id gallery.id %}">
+            {{ gallery.title }}
+          </a>
+        </li>
+      {% empty %}
+        <li class="list-group-item text-muted">No galleries yet.</li>
+      {% endfor %}
+    </ul>
+  {% if user_membership and user_membership.role == "manager" or user_membership and user_membership.role == "co_manager" or user_membership and user_membership.role == "editor" or user.is_superuser %}    <div class="mt-3 text-end">
+          <a href="{% url 'panels:create_gallery' society.id %}" class="btn btn-primary">+ Create New Gallery</a>
+    </div>
+  </div>
+</div>
+  {% endif %}
+  <a class="btn btn-outline-secondary" href="{% url 'society_page' society.id %}"> ← Back</a>
+{% endblock %}

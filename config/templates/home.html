@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base_with_news.html' %}
 
 {% block title %}
     Home - Student Societies
@@ -65,7 +65,7 @@
     {% endfor %}
 
     <!-- Button to View All Societies -->
-    <div class="text-center mt-4">
+    <div class="text-center mt-5 mb-5">
         <a href="{% url 'societiespage' %}" class="btn btn-primary">View All Societies</a>
     </div>
 </div>

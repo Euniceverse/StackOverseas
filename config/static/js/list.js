@@ -9,30 +9,37 @@ function initializeList() {
     let closeButton = document.getElementById("event-detail-close");
 
     if (!listEl) {
-        console.error("❌ ERROR: List container is missing!");
+        console.error("ERROR: List container is missing!");
         return;
     }
 
-    listInitialized = true; 
+    listInitialized = true;
 
     localStorage.removeItem("filterQueryString");
 
+
     function fetchFilteredEvents(fetchInfo, successCallback, failureCallback) {
         let queryString = localStorage.getItem("filterQueryString") || "";
-    
+        
+        const myEventsFilter = new URLSearchParams(window.location.search).get('my_events');
+        if (myEventsFilter === "true") {
+            queryString += (queryString ? '&' : '?') + 'my_events=true';
+        }
+        
+        console.log("📋 List - Query String:", queryString);
+
         fetch(`/events/api/${queryString}`)
             .then(response => response.json())
             .then(data => {
-                console.log("🔍 API 응답 확인:", data);
-    
-                // ✅ API 응답이 배열인지 확인
+                console.log("📋 List - Raw Events Data:", data);
+
                 let eventsArray = Array.isArray(data) ? data : data.results;
-    
+
                 if (!eventsArray || !Array.isArray(eventsArray)) {
-                    console.error("❌ API 응답 오류: `results` 필드가 없음", data);
+                    console.error("API Not Responding: No field name `results`", data);
                     return;
                 }
-    
+
                 let events = eventsArray.map(event => ({
                     id: event.id,
                     title: event.name,
@@ -45,30 +52,29 @@ function initializeList() {
                         description: event.description || "No description available.",
                         capacity: event.capacity || "Unlimited",
                         member_only: event.member_only,
-                        hosts: event.society.join(", ")
+                        hosts: event.society.join(", "),
+                        society_names: event.society_names
                     }
                 }));
-    
-                console.log("🎯 필터링된 이벤트 (FullCalendar에 전달될 데이터):", events);
-    
-                // ✅ FullCalendar가 데이터를 정상적으로 수신하는지 확인
+
+                console.log("Filtered Event (FullCalendar):", events);
+
                 successCallback(events);
             })
-            .catch(error => console.error("❌ Error fetching events:", error));
+            .catch(error => console.error("Error fetching events:", error));
     }
-
 
     window.list = new FullCalendar.Calendar(listEl, {
         initialView: "listWeek",
         headerToolbar: {
             left: "prev,next today",
             center: "title",
-            right: "listWeek",
+            right: "listWeek"
         },
-        events: fetchFilteredEvents, // Use function to dynamically fetch events
+        events: fetchFilteredEvents,
         eventClick: function (info) {
-            console.log("🖱️ Event clicked:", info.event);
-        
+          console.log("🖱️ Event clicked:", info.event);
+
             document.getElementById("event-name").textContent = info.event.title;
             document.getElementById("event-type").textContent = info.event.type;
             document.getElementById("event-date").textContent = info.event.start.toISOString().split("T")[0];
@@ -80,16 +86,20 @@ function initializeList() {
             document.getElementById("event-fee").textContent =
                 info.event.extendedProps.fee !== "Free" ? info.event.extendedProps.fee + " USD" : "Free";
             document.getElementById("event-description").textContent = info.event.extendedProps.description;
-        
-            // ✅ 모달 보이기
+            document.getElementById("event-hosts").textContent =
+            info.event.extendedProps.society_names?.join(", ") || "TBA";
+            document.getElementById("event-capacity").textContent =
+            "👥 Capacity: " + (info.event.extendedProps.capacity || "Unlimited");
+
             document.getElementById("event-detail-modal").classList.remove("hidden");
         }
 
-        
+
     });
-    
 
     window.list.render();
+
+    window.list.refetchEvents();
 
     if (closeButton) {
         closeButton.addEventListener("click", function () {
@@ -106,34 +116,30 @@ function initializeList() {
     }
 
     document.getElementById("event-detail-modal").addEventListener("click", function (event) {
-        if (event.target === this) { // 모달 바깥 영역 클릭 시 닫기
+        if (event.target === this) { 
             this.classList.add("hidden");
         }
-        event.stopPropagation(); // 🌟 이벤트 전파 차단하여 다른 버튼 클릭 방해 방지
-    });    
+        event.stopPropagation(); 
+    });
 
     document.addEventListener("filtersUpdated", function (event) {
         console.log("🔄 Calendar updating with filters:", event.detail);
         localStorage.setItem("filterQueryString", event.detail);
-    
+
         if (window.list) {
-            console.log("📌 FullCalendar 기존 이벤트 삭제 및 새 데이터 로드!");
-            window.list.removeAllEvents(); // ✅ 기존 데이터 삭제
-            window.list.refetchEvents();   // ✅ 새로운 데이터 요청
-            window.list.updateSize();      // ✅ 캘린더 강제 리렌더링
+            console.log("FullCalendar Reload!");
+            window.list.removeAllEvents(); 
+            window.list.refetchEvents();  
+            window.list.updateSize();  
         }
     });
 
     window.resizeList = function () {
         setTimeout(() => {
-            console.log("✅ FullCalendar resizing...");
+            console.log("FullCalendar resizing...");
             window.list.updateSize();
         }, 100);
     };
-    
-    
 }
 
-// 🚀 `window` 객체에 함수 등록하여 `viewSwitcher.js`에서 호출 가능하도록 설정
 window.initializeList = initializeList;
-

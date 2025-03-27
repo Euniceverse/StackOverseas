@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+  Manage Widget Display - {{ society.name }}
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">Manage Widget Display for {{ society.name }}</h2>
+
+  <!-- Form for adding a new widget -->
+  <form id="add-widget-form" method="post" action="{% url 'manage_display' society.id %}">
+      {% csrf_token %}
+      <div class="container ps-2">
+        <div class="form-group mb-3">
+          <label for="widget_type" class="form-label">Add New Widget:</label>
+          <div class="input-group">
+            <select name="widget_type" id="widget_type" class="form-select">
+              <option value="announcements">Announcements</option>
+              <option value="gallery">Gallery</option>
+              <option value="contacts">Contacts</option>
+              <option value="featured">Featured</option>
+              <option value="leaderboard">Leaderboard</option>
+              <option value="polls">Polls</option>
+              <option value="comment">Comment</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <button type="submit" class="btn btn-success">Add Widget</button>
+        </div>
+      </div>
+      
+  <hr>
+  <div class="container ps-2">
+    <p>Edit or remove the widgets below. When you're done, click "Save Widget Order".</p>
+
+    <div id="widgets-container">
+      <ul id="sortable-widgets" class="list-group mb-4">
+        {% for widget in widgets %}
+          {% if widget.widget_type == "polls" %}
+            <li class="list-group-item widget d-flex justify-content-between align-items-center" data-widget-id="{{ widget.id }}">
+              <strong>{{ widget.get_widget_type_display }}</strong>
+              <div>
+                <a href="{% url 'panels:create_poll' society_id=society.id %}" class="btn btn-sm btn-info me-2">Create New Poll</a>
+                <a href="{% url 'remove_widget' society.id widget.id %}" 
+                  class="btn btn-sm btn-danger" 
+                  onclick="return confirm('Remove this widget?');">
+                  Remove
+                </a>
+              </div>
+            </li>
+          {% elif widget.widget_type == "gallery" %}
+            <li class="list-group-item widget d-flex justify-content-between align-items-center" data-widget-id="{{ widget.id }}">
+              <strong>{{ widget.get_widget_type_display }}</strong>
+              <div>
+                <a href="{% url 'panels:create_gallery' society_id=society.id %}" class="btn btn-sm btn-info me-2">Create New Gallery</a>
+                <a href="{% url 'remove_widget' society.id widget.id %}" 
+                  class="btn btn-sm btn-danger" 
+                  onclick="return confirm('Remove this widget?');">
+                  Remove
+                </a>
+              </div>
+            </li>
+          {% elif widget.widget_type == "comment" %}
+            <li class="list-group-item widget d-flex justify-content-between align-items-center" data-widget-id="{{ widget.id }}">
+              <strong>{{ widget.get_widget_type_display }}</strong>
+              <div>
+                <a href="{% url 'remove_widget' society.id widget.id %}" 
+                  class="btn btn-sm btn-danger" 
+                  onclick="return confirm('Remove this widget?');">
+                  Remove
+                </a>
+              </div>
+            </li>
+          {% else %}
+            <li class="list-group-item widget d-flex justify-content-between align-items-center" data-widget-id="{{ widget.id }}">
+              <strong>{{ widget.get_widget_type_display }}</strong>
+              <div>
+                <a href="{% url 'edit_widget' society.id widget.id %}" class="btn btn-sm btn-info me-2">Edit</a>
+                <a href="{% url 'remove_widget' society.id widget.id %}" 
+                  class="btn btn-sm btn-danger" 
+                  onclick="return confirm('Remove this widget?');">
+                  Remove
+                </a>
+              </div>
+            </li>
+          {% endif %}
+        {% empty %}
+          <li class="list-group-item">No widgets have been added yet.</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="d-flex gap-3 mb-5">
+
+      <button id="save-widget-order" class="btn btn-primary">Save Widget Order</button>
+      <a href="{% url 'society_page' society.id %}" class="btn btn-secondary">Back</a>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- Pass global variables for JS to use -->
+<script>
+    var manageDisplayUrl = "{% url 'manage_display' society.id %}";
+    var csrfToken = "{{ csrf_token }}";
+</script>
+{% if user.is_authenticated %}
+    <script src="{% static 'js/floatingSidebar.js' %}" defer></script>
+{% endif %}
+{% endblock %}

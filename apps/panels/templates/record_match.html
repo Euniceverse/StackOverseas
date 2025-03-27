@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Record a Match - {{ society.name }}</h2>
+
+<form method="post">
+  {% csrf_token %}
+  <label>Player 1:</label>
+  <select name="player1">
+    {% for m in members %}
+      <option value="{{ m.id }}">{{ m.preferred_name }}</option>
+    {% endfor %}
+  </select><br><br>
+
+  <label>Player 2:</label>
+  <select name="player2">
+    {% for m in members %}
+      <option value="{{ m.id }}">{{ m.preferred_name }}</option>
+    {% endfor %}
+  </select><br><br>
+
+  <label>Winner:</label>
+  <select name="winner">
+    <option value="">Draw</option>
+    {% for m in members %}
+      <option value="{{ m.id }}">{{ m.preferred_name }}</option>
+    {% endfor %}
+  </select><br><br>
+
+  <label>Player 1 Delta:</label>
+  <input type="number" name="player1_delta"><br><br>
+
+  <label>Player 2 Delta:</label>
+  <input type="number" name="player2_delta"><br><br>
+
+  <label>Notes:</label><br>
+  <textarea name="notes" rows="3" cols="50"></textarea><br><br>
+
+  <button type="submit">Save Match</button>
+</form>
+{% endblock %}

@@ -5,14 +5,16 @@
 {% endblock %}
 
 {% block content %}
-  <h2>Confirm {{ action|title }}</h2>
+<div class="container mt-4">
+  <h2 class="mb-3">Confirm {{ action|title }}</h2>
 
   <p>You are about to <strong>{{ action }}</strong> the society: <strong>{{ society.name }}</strong>.</p>
   <p>Are you sure you want to proceed?</p>
 
-  <form method="POST">
+  <form method="POST" class="mb-2">
     {% csrf_token %}
     <button type="submit" name="confirm" class="btn btn-primary">Confirm</button>
     <button type="submit" name="cancel" class="btn btn-secondary">Cancel</button>
   </form>
+</div>
 {% endblock %}

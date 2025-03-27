@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from django.contrib.messages import constants as messages
 import os
+import logging
+import logging
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-@h)j0-+ym+l*&l)r_qyca^#z3vr-@jawo!sna2^+(u9uy!jfwy'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
 
 ALLOWED_HOSTS = []
 
@@ -38,6 +40,20 @@ EMAIL_HOST_PASSWORD = 'btlmfvczvkrffiiy'
 EMAIL_USE_TLS = True
 PASSWORD_RESET_TIMEOUT = 14400 # 4 hours
 
+# Stripe Payment
+# STRIPE_PUBLIC_KEY = "pk_test_51QviGaE1rp8ABg2BZkClndNES4HcFS2yJVKbc10uIfMf9jF6QuuS1TKZ7SgVKU8DK43TXWzQlS1fGcswox4WFuve00bNqjsbvD"
+# STRIPE_SECRET_KEY = "sk_test_51QviGaE1rp8ABg2B5FjMH41ur4Ud9tVa7ehaWILwhobjmC4SBjWPTYm9a7DDmBPZVMRus3AzzARkpymzj4h2zsWw00Hg0K7rJI"
+
+STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY", "pk_test_51QviGaE1rp8ABg2BZkClndNES4HcFS2yJVKbc10uIfMf9jF6QuuS1TKZ7SgVKU8DK43TXWzQlS1fGcswox4WFuve00bNqjsbvD")
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "sk_test_51QviGaE1rp8ABg2B5FjMH41ur4Ud9tVa7ehaWILwhobjmC4SBjWPTYm9a7DDmBPZVMRus3AzzARkpymzj4h2zsWw00Hg0K7rJI")
+
+DEBUG = True
+PROTOCOL = "https"
+DOMAIN_NAME = "stackoverseas.onrender.com"
+
+# For local version
+# PROTOCOL = "http"
+# DOMAIN_NAME = "127.0.0.1:8000"
 
 
 # Application definition
@@ -54,15 +70,18 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
 
-
     'apps.events',
     'apps.news',
     'apps.societies',
     'apps.users',
+    'apps.widgets',
+    'apps.panels',
+    'apps.payments'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -103,7 +122,7 @@ MEDIA_ROOT = BASE_DIR / 'config' / 'media'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.environ.get('SQLITE_DB_PATH',  '/mnt/data/db.sqlite3'), # for home computer: BASE_DIR / 'db.sqlite3', for render: '/mnt/data/db.sqlite3'
     }
 }
 
@@ -180,21 +199,32 @@ MESSAGE_TAGS = {
 SITE_ID = 1
 
 # Cache configuration
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+#     }
+# }
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'activation_cache_table',
     }
 }
 
 
 
-
 ALLOWED_HOSTS = [
-    '127.0.0.1', 
+    '127.0.0.1',
     'localhost',
     "stackoverseas.onrender.com",
     os.getenv("RENDER_EXTERNAL_HOSTNAME", ""),
 ]
 
-DOMAIN_NAME = "127.0.0.1:8000"  # Change this if running on another port
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:8000",
+    "https://checkout.stripe.com",
+    "https://stackoverseas.onrender.com",
+]
 
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

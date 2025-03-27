@@ -42,7 +42,14 @@
         </div>
 
         <div class="d-flex">
-            <button type="submit" name="save_draft" class="btn btn-secondary me-2">Save as Draft</button>
+            <button 
+            type="submit" 
+            name="cancel" 
+            value="1"            
+            class="btn btn-secondary me-2"
+            formnovalidate>        <!-- changed: skip HTML5 validation -->
+            Cancel
+            </button>
             <button type="submit" name="post" class="btn btn-primary">Post</button>
         </div>    
     </form>

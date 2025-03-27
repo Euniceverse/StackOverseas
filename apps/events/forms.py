@@ -1,6 +1,6 @@
 from config.constants import (
-    MAX_NAME, MAX_DESCRIPTION, MAX_LOCATION, 
-    EVENT_TYPE_CHOICES
+    MAX_NAME, MAX_DESCRIPTION, MAX_LOCATION,
+    EVENT_TYPE_CHOICES, UNI_CHOICES
 )
 from apps.societies.models import Society
 from django.core.validators import MinValueValidator
@@ -37,13 +37,13 @@ class NewEventForm(forms.Form):
 
     keyword = forms.CharField(
         max_length=50,
-        required=False, 
+        required=False,
     )
 
     location = forms.CharField(
         max_length=MAX_LOCATION,
         required=True,
-        help_text="Enter location such as 'London' or 'Online'."
+        help_text="Start typing your UK address..."
     )
 
     capacity = forms.IntegerField(
@@ -52,7 +52,7 @@ class NewEventForm(forms.Form):
     )
 
     member_only = forms.BooleanField(
-        initial=False, 
+        initial=False,
         required=False,
     )
 
@@ -66,14 +66,13 @@ class NewEventForm(forms.Form):
     is_free = forms.BooleanField(
         initial=True,
         required=False,
+        widget=forms.CheckboxInput() 
     )
 
-    # society = forms.ModelMultipleChoiceField(
-    #    queryset=Society.objects.all(),
-    #    required=True,
-    #    widget=forms.CheckboxSelectMultiple,
-    #    help_text="Select one or more societies hosting the event."
-    #)
+  
+
+    latitude = forms.FloatField(required=True, widget=forms.HiddenInput())
+    longitude = forms.FloatField(required=True, widget=forms.HiddenInput())
 
     def clean_fee(self):
         fee = self.cleaned_data.get("fee", Decimal("0.00"))
@@ -86,10 +85,25 @@ class NewEventForm(forms.Form):
         cleaned_data = super().clean()
         fee = cleaned_data.get("fee", Decimal("0.00"))
         is_free = cleaned_data.get("is_free", True)
+        latitude = cleaned_data.get("latitude")
+        longitude = cleaned_data.get("longitude")
+        capacity = cleaned_data.get("capacity")
 
         if fee > Decimal("0.00"):
             cleaned_data["is_free"] = False
 
-        return cleaned_data
-    
+        if not latitude or not longitude:
+            raise forms.ValidationError("Please select a valid address from the suggestions to set the location coordinates.")
 
+        if capacity is not None and capacity < 1:
+            raise forms.ValidationError("Capacity must be at least 1.")
+
+        return cleaned_data
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            if isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs['class'] = 'form-check-input'
+            else:
+                field.widget.attrs['class'] = 'form-control'

@@ -59,13 +59,6 @@ class NewsFormTests(TestCase):
 
     def test_news_form_filters_societies(self):
         """Test that NewsForm only allows societies managed by the user."""
-        other_society = Society.objects.create(
-            name="Other Society",
-            description="Not managed by this user.",
-            society_type="General",
-            manager=self.other_user
-        )
 
         form = NewsForm(user=self.user)
-        self.assertIn(self.society, form.fields["society"].queryset)
-        self.assertNotIn(other_society, form.fields["society"].queryset)
+        self.assertNotIn("society", form.fields)

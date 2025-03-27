@@ -40,6 +40,8 @@ class EventSerializerTests(TestCase):
             "event_type": "sports",
             "keyword": "keyword",
             "location": "New Loc",
+            "latitude": 0.0,
+            "longitude": 0.0,
             "fee": "0.00",
             "is_free": True,
             "society": []

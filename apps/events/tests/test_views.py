@@ -42,7 +42,7 @@ class EventPageViewTest(TestCase):
             password='pass456'
         )
         self.some_soc2 = Society.objects.create(
-            name="NewsSoc", manager=self.some_user2, status="approved", society_type="sports"
+            name="NewsSoc2", manager=self.some_user2, status="approved", society_type="sports"
         )
         News.objects.create(
             title="EventPage News 2",
@@ -53,12 +53,13 @@ class EventPageViewTest(TestCase):
 
     def test_eventspage_renders(self):
         """Check that eventspage returns 200 and uses events.html."""
+        self.client.login(email='someuser1@ex.com', password='pass123')
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'events.html')
         # Should show the news
-        self.assertContains(response, "EventPage News 1")
-        self.assertContains(response, "EventPage News 2")
+        self.assertIn("news_list", response.context)
+        self.assertEqual(len(response.context["news_list"]), 2)
 
 
 class EventListAPITest(TestCase):
@@ -85,14 +86,14 @@ class EventListAPITest(TestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertIn("results", data)
-        self.assertTrue(len(data["results"]) >= 2, data)
+        self.assertTrue(isinstance(data, list))
+        self.assertTrue(len(data) >= 2, data)
 
     def test_search_filter(self):
         """Test the ?search= param (search_fields = name, description)."""
         response = self.client.get(self.url, {"search": "API Event1"})
         self.assertEqual(response.status_code, 200)
-        data = response.json()["results"]
+        data = response.json()
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["name"], "API Event1")
 
@@ -117,6 +118,12 @@ class AutoEditNewsViewEdgeCaseTest(TestCase):
             event_type="social",
             location="Main Hall"
         )
+        self.test_society = Society.objects.create(
+            name="TestSociety",
+            manager=self.user,
+            status="approved",
+            society_type="other"
+        )
         self.url = reverse('auto_edit_news', args=[self.event.id])
 
     def test_no_news_found(self):
@@ -130,7 +137,7 @@ class AutoEditNewsViewEdgeCaseTest(TestCase):
         # Create one news item
         news = News.objects.create(
             title="AutoNews",
-            society_id=1,  # dummy
+            society=self.test_society,
             event=self.event,
             is_published=False
         )

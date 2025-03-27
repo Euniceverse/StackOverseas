@@ -5,7 +5,7 @@ import random
 from faker import Faker
 from django.conf import settings
 import constants
-from ai_seed import generate_society_description, generate_society_name 
+from ai_seed import generate_society_description, generate_society_name
 from ai_seed import generate_event_location
 from django.utils import timezone
 
@@ -103,7 +103,7 @@ def create_dummy_societies(users, n=50):
 
     for _ in range(n):
         society_type = random.choice([key for key, _ in constants.SOCIETY_TYPE_CHOICES])
-        
+
 
         generated_name = generate_society_name(society_type, existing_names)
         existing_names.add(generated_name)
@@ -111,12 +111,19 @@ def create_dummy_societies(users, n=50):
 
         generated_description = generate_society_description(generated_name, society_type,)
 
+        if random.random() < 0.7:
+            fee = 0
+        else:
+            fee = random.randint(1, 20)
+
         society = Society.objects.create(
             name=generated_name,
             description=generated_description,
             society_type=society_type,
             status=random.choice([key for key, _ in constants.SOCIETY_STATUS_CHOICES]),
-            manager=random.choice(users)
+            manager=random.choice(users),
+            joining_fee = fee
+
         )
 
         society.location = get_location_from_email(society.manager.email)  # Get location from email
@@ -125,7 +132,7 @@ def create_dummy_societies(users, n=50):
             society.members.set(random.sample(users, random.randint(1, len(users))))
         if society.status == "approved":
             society.visibility = "Public"
-        society.save() 
+        society.save()
         societies.append(society)
 
     return societies
@@ -152,13 +159,17 @@ def create_dummy_events(societies, n=70):
         if timezone.is_naive(future_date):
             future_date = timezone.make_aware(future_date)
 
+        is_free = random.choice([True, False])  # Determine if the event is free
+        fee = 0.00 if is_free else round(random.randint(5, 100), 2)
+
         event = Event.objects.create(
             event_type=random.choice([key for key in constants.EVENT_TYPE_CHOICES]),
             name=fake.sentence(nb_words=5),
             location=location,
             date=future_date,  # Use timezone-aware datetime
             keyword=fake.word(),
-            is_free=random.choice([True, False]),
+            is_free=is_free,  # ✅ Store if event is free
+            fee=fee,
             member_only=random.choice([True, False]),
             capacity=random.randint(10, 500),
             start_time=fake.time_object(),
@@ -176,13 +187,19 @@ def create_dummy_events(societies, n=70):
     return events
 
 def create_dummy_event_registrations(users, events, n=20):
-    """Creates dummy event registrations."""
-    for _ in range(n):
-        EventRegistration.objects.create(
-            event=random.choice(events),
-            user=random.choice(users),
-            status=random.choice(["accepted", "waitlisted", "rejected"]),
-        )
+    """Creates dummy event registrations with a specific number of users per event."""
+    for event in events:
+        # Choose a random number of users for this event
+        num_users = random.randint(3, 10)  # Adjust the range as needed
+        registered_users = random.sample(users, num_users)
+
+        for user in registered_users:
+            EventRegistration.objects.create(
+                event=event,
+                user=user,
+                status=random.choice(["accepted", "waitlisted", "rejected"]),
+            )
+
 
 def create_dummy_memberships(users, societies):
     """Creates Membership records for users in societies."""

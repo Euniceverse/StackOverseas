@@ -127,6 +127,8 @@ def edit_widget(request, society_id, widget_id):
         return edit_announcements_widget(request, society_id, widget.id)
     elif widget.widget_type == "leaderboard":
         return edit_leaderboard_widget(request, society_id, widget.id)
+    elif widget.widget_type == "poll":
+        return redirect("panels:create_poll", society_id=society.id)
     else:
         messages.error(request, "This widget type cannot be edited.")
         return redirect("manage_display", society_id=society_id)

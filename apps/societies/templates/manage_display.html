@@ -15,12 +15,12 @@
       <label for="widget_type">Add New Widget:</label>
       <select name="widget_type" id="widget_type" class="form-control">
         <option value="announcements">Announcements</option>
-        <option value="events">Events</option>
         <option value="gallery">Gallery</option>
         <option value="contacts">Contacts</option>
         <option value="featured">Featured</option>
         <option value="leaderboard">Leaderboard</option>
-        <option value="news">News</option>
+        <option value="polls">Polls</option>
+        <option value="comment">Comment</option>
       </select>
     </div>
     <button type="submit" class="btn btn-success">Add Widget</button>
@@ -28,7 +28,6 @@
   
 <hr>
 
-<p>Drag and drop the widgets below to reorder them. When finished, click "Save Widget Order".</p>
 <div id="widgets-container">
   <ul id="sortable-widgets" class="list-group">
     {% for widget in widgets %}

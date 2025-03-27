@@ -1,5 +1,11 @@
-<h2>Polls in {{ society.name }}</h2>
+{% extends "base.html" %}
+{% load static %}
 
+{% block title %}
+<h2>Polls in {{ society.name }}</h2>
+{% endblock %}
+
+{% block content %}
 <ul>
   {% for poll in polls %}
     <li>
@@ -25,3 +31,4 @@
 </ul>
 
 <a href="{% url 'panels:create_poll' society.id %}">+ Create New Poll</a>
+{% endblock %}

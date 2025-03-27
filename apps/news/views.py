@@ -166,8 +166,6 @@ def delete_news(request, news_id):
     news_item = get_object_or_404(News, id=news_id)
     # Example permission check: only allow if the user is a manager, co_manager, editor for the society or is superuser.
     if not (request.user.is_superuser or (hasattr(request, 'user_membership') and request.user_membership.role in ['manager', 'co_manager', 'editor'])):
-        messages.error(request, "You do not have permission to delete this news.")
         return redirect('news_detail', news_id=news_id)
     news_item.delete()
-    messages.success(request, "News deleted successfully!")
-    return redirect('news_list')
+    return redirect('home')

@@ -4,11 +4,12 @@ from django.db import models
 from django.utils import timezone
 from datetime import timedelta
 
-from config.constants import MAX_DESCRIPTION
+from config.constants import MAX_DESCRIPTION, WIDGET_TYPES
 import os
 
 #comment
 class Comment(models.Model):
+    widget_type="comment"
     society = models.ForeignKey(Society, on_delete=models.CASCADE, related_name='comments')
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     content = models.TextField()
@@ -26,6 +27,7 @@ def gallery_image_path(instance, filename):
     return os.path.join('gallery', f"user_{instance.gallery.society.id}", filename)
 
 class Gallery(models.Model):
+    widget_type="gallery"
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     society = models.ForeignKey(Society, on_delete=models.CASCADE, null=True, blank=True, related_name="gallery_society")
@@ -46,6 +48,7 @@ class Image(models.Model):
     
 #poll
 class Poll(models.Model):
+    widget_type="polls"
     society = models.ForeignKey(Society, on_delete=models.CASCADE, related_name='poll')
     title = models.CharField(max_length=255, default='Untitled Poll')
     description = models.TextField(blank=True)

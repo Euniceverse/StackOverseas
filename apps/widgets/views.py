@@ -116,3 +116,96 @@ def edit_featured_members_widget(request, society_id, widget_id):
         "widget": widget,
         "society_id": society_id,
     })
+    
+def edit_announcements_widget(request, society_id, widget_id):
+    """Allows managers to make announcements."""
+    widget = get_object_or_404(Widget, id=widget_id, society__id=society_id, widget_type='announcements')
+    AnnouncementFormSet = formset_factory(AnnouncementForm, extra=1)
+    initial_data = widget.data.get('announcements', []) if widget.data else []
+    
+    if request.method == "POST":
+        formset = AnnouncementFormSet(request.POST)
+        if formset.is_valid():
+            announcements = []
+            for form in formset:
+                if form.cleaned_data and form.cleaned_data.get('title'):
+                    announcements.append({
+                        'title': form.cleaned_data.get('title'),
+                        'message': form.cleaned_data.get('message'),
+                        'date': str(form.cleaned_data.get('date')) if form.cleaned_data.get('date') else "",
+                    })
+            if widget.data is None:
+                widget.data = {}
+            widget.data['announcements'] = announcements
+            widget.save()
+            messages.success(request, "Announcements updated successfully!")
+            return redirect("manage_display", society_id=society_id)
+        else:
+            messages.error(request, "There was an error updating the announcements.")
+    else:
+        formset = AnnouncementFormSet(initial=initial_data)
+    
+    return render(request, "edit_announcements_widget.html", {
+        "formset": formset,
+        "widget": widget,
+        "society_id": society_id,
+    })
+    
+def edit_leaderboard_widget(request, society_id, widget_id):
+    """Allows managers to update leaderboard points for each member and toggle whether to display points."""
+    widget = get_object_or_404(Widget, id=widget_id, society__id=society_id, widget_type='leaderboard')
+    society = widget.society
+
+    # get all approved memberships for the society
+    memberships = Membership.objects.filter(society=society, status=MembershipStatus.APPROVED)
+
+    initial_points = {}
+    display_points = True
+    display_count = '3'
+    if widget.data:
+        initial_points = widget.data.get('points', {})
+        display_points = widget.data.get('display_points', True)
+        display_count = str(widget.data.get('display_count', '3'))
+
+    LeaderboardFormSet = formset_factory(LeaderboardMembershipForm, extra=0)
+    initial_data = []
+    for membership in memberships:
+        full_name = membership.user.get_full_name() if hasattr(membership.user, "get_full_name") else str(membership.user)
+        initial_data.append({
+            'membership_id': membership.id,
+            'member_name': full_name,
+            'points': initial_points.get(str(membership.id), 0),
+        })
+
+    if request.method == "POST":
+        formset = LeaderboardFormSet(request.POST, prefix='members')
+        settings_form = LeaderboardSettingsForm(request.POST, prefix='settings')
+        if formset.is_valid() and settings_form.is_valid():
+            new_points = {}
+            for form in formset:
+                mid = form.cleaned_data.get('membership_id')
+                pts = form.cleaned_data.get('points', 0)
+                new_points[str(mid)] = pts
+            widget.data = {
+                'points': new_points,
+                'display_points': settings_form.cleaned_data.get('display_points', False),
+                'display_count': int(settings_form.cleaned_data.get('display_count'))
+            }
+            widget.save()
+            messages.success(request, "Leaderboard updated successfully!")
+            return redirect("manage_display", society_id=society_id)
+        else:
+            messages.error(request, "There was an error updating the leaderboard.")
+    else:
+        formset = LeaderboardFormSet(initial=initial_data, prefix='members')
+        settings_form = LeaderboardSettingsForm(
+            initial={'display_points': display_points, 'display_count': display_count},
+            prefix='settings'
+        )
+    
+    return render(request, "edit_leaderboard_widget.html", {
+        "formset": formset,
+        "settings_form": settings_form,
+        "widget": widget,
+        "society": society,
+    })

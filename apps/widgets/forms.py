@@ -71,3 +71,41 @@ class FeaturedMemberForm(forms.Form):
         required=False,
         label="Picture"
     )
+    
+
+class AnnouncementForm(forms.Form):
+    title = forms.CharField(
+        max_length=200,
+        required=True,
+        label="Announcement Title",
+        widget=forms.TextInput(attrs={"placeholder": "Enter announcement title"})
+    )
+    message = forms.CharField(
+        required=True,
+        label="Message",
+        widget=forms.Textarea(attrs={"placeholder": "Enter announcement message", "rows": 3})
+    )
+    date = forms.DateField(
+        required=False,
+        label="Date",
+        widget=forms.DateInput(attrs={"type": "date"})
+    )
+    
+
+class LeaderboardMembershipForm(forms.Form):
+    membership_id = forms.IntegerField(widget=forms.HiddenInput)
+    member_name = forms.CharField(label="Member", required=False, disabled=True)
+    points = forms.IntegerField(label="Points", required=False)
+    
+    
+class LeaderboardSettingsForm(forms.Form):
+    display_count = forms.ChoiceField(
+        choices=[('3', 'Top 3'), ('5', 'Top 5'), ('10', 'Top 10')],
+        required=True,
+        label="Number of Top Entries to Display",
+        initial='3'
+    )
+    display_points = forms.BooleanField(
+        label="Display Points", 
+        required=False
+    )

@@ -471,7 +471,6 @@ def decide_application(request, society_id, application_id, decision):
     #     Membership.objects.filter(society=society, user=application.user).delete()
     #     messages.warning(request, f"Application for {application.user.email} rejected.")
 
-
     return redirect('view_applications', society_id=society.id)
 
 
@@ -589,6 +588,34 @@ def society_page(request, society_id):
         if society.manager == request.user:
             is_manager = True
 
+    can_manage = (
+        request.user.is_superuser or 
+        society.manager == request.user or 
+        (membership and membership.role in ["manager", "co_manager", "editor"])
+    )
+    
+    # process leaderboard widget data if available
+    for widget in widgets:
+        if widget.widget_type == "leaderboard" and widget.data:
+            points = widget.data.get("points", {})
+            display_points = widget.data.get("display_points", True)
+            display_count = widget.data.get("display_count", 3)
+            if display_points and points:
+                entries = []
+                for membership_id, pts in points.items():
+                    try:
+                        membership_obj = Membership.objects.get(society=society, id=int(membership_id))
+                        member_name = (membership_obj.user.get_full_name() 
+                                    if hasattr(membership_obj.user, "get_full_name") 
+                                    else str(membership_obj.user))
+                    except Membership.DoesNotExist:
+                        member_name = "Unknown"
+                    entries.append((member_name, pts))
+                sorted_entries = sorted(entries, key=lambda x: (-x[1], x[0]))
+                widget.top_entries = sorted_entries[:int(display_count)]
+            else:
+                widget.top_entries = []
+                
     context = {
         "society": society,
         "widgets": widgets,
@@ -597,9 +624,10 @@ def society_page(request, society_id):
         "is_member": is_member,
         "is_manager": is_manager,
         "members_count": members_count,
+        "can_manage": can_manage,
     }
     return render(request, "society_page.html", context)
-    
+
    
 @login_required
 def leave_society(request, society_id):
@@ -626,13 +654,13 @@ def leave_society(request, society_id):
 def manage_display(request, society_id):
     society = get_object_or_404(Society, id=society_id)
     
-    if request.user != society.manager:
+    if not (request.user.is_superuser or request.user == society.manager):
         membership = Membership.objects.filter(
             society=society,
             user=request.user,
             status=MembershipStatus.APPROVED
         ).first()
-        if not membership or (membership.role not in [MembershipRole.CO_MANAGER, MembershipRole.EDITOR] and not user.is_superuser):
+        if not membership or membership.role not in [MembershipRole.CO_MANAGER, MembershipRole.EDITOR]:
             messages.error(request, "You do not have permission to manage widget display for this society.")
             return redirect("society_page", society_id=society.id)
     

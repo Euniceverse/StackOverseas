@@ -71,38 +71,35 @@
         </p>
     {% endif %}
 
-<!-- Widget Display: visible to everyone -->
 <div id="widgets-container">
-    <ul id="sortable-widgets">
-        {% for widget in widgets %}
-            <li class="widget">
-                <h3>{{ widget.get_widget_type_display }}</h3>
-                    {% if widget.widget_type == "announcements" %}
-                        {% include 'announcements.html' with widget=widget %}
-                    {% elif widget.widget_type == "events" %}
-                        {% include 'events.html' with widget=widget %}
-                    {% elif widget.widget_type == "gallery" %}
-                        {% include 'gallery.html' with widget=widget %}
-                    {% elif widget.widget_type == "contacts" %}
-                        {% include 'contacts.html' with widget=widget %}
-                    {% elif widget.widget_type == "featured" %}
-                        {% include 'featured.html' with widget=widget %}
-                    {% elif widget.widget_type == "leaderboard" %}
-                        {% include 'leaderboard.html' with widget=widget %}
-                    {% elif widget.widget_type == "news" %}
-                        {% include 'news.html' with widget=widget %}
-                    {% else %}
-                        <div class="default-widget">
-                            {{ widget.custom_html|safe }}
-                        </div>
-                    {% endif %}
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
+  <ul id="sortable-widgets">
+    {% for widget in widgets %}
+      <li class="widget">
+          <h3>{{ widget.get_widget_type_display }}</h3>
+          {% if widget.widget_type == "announcements" %}
+              {% include 'announcements.html' with widget=widget %}
+          {% elif widget.widget_type == "events" %}
+              {% include 'events.html' with widget=widget %}
+          {% elif widget.widget_type == "gallery" %}
+              {% include 'gallery.html' with widget=widget %}
+          {% elif widget.widget_type == "contacts" %}
+              {% include 'contacts.html' with widget=widget %}
+          {% elif widget.widget_type == "featured" %}
+              {% include 'featured.html' with widget=widget %}
+          {% elif widget.widget_type == "leaderboard" %}
+              {% include 'leaderboard.html' with widget=widget %}
+          {% elif widget.widget_type == "news" %}
+              {% include 'news.html' with widget=widget %}
+          {% else %}
+              <div class="default-widget">
+                  {{ widget.custom_html|safe }}
+              </div>
+          {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</div>
 {% endblock %}
-
-
 
 {% block extra_scripts %}
 <script src="{% static 'js/society_page.js' %}" defer></script>

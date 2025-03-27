@@ -7,8 +7,11 @@ class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ['content']
+        # widgets = {
+        #     'content': forms.Textarea(attrs={ 'class': 'form-control', 'rows': 3, 'placeholder': 'Make a comment...'}),
+        # }
         widgets = {
-            'content': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Make a comment...'}),
+            'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
 
 #gallery

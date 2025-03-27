@@ -1,16 +1,22 @@
 {% extends "base.html" %}
 {% load static %}
+{% load widget_tweaks %}
+
 
 {% block title %}
-<h2>Edit Comment</h2>
+<h2 class="my-4 text-center">Edit Comment</h2>
 {% endblock %}
 
 {% block content %}
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Save Changes</button>
-</form>
-
-<a href="{% url 'panels:society_comment_feed' society.id %}">← Back to Comments</a>
+<div class="container" style="max-width: 600px;">
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      {{ form.content.label_tag }}
+      {{ form.content|add_class:"form-control" }}
+    </div>
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <a href="{% url 'panels:society_comment_feed' society.id %}" class="btn btn-secondary ms-2">Cancel</a>
+  </form>
+</div>
 {% endblock %}

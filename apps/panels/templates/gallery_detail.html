@@ -1,6 +1,12 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
 <h2>Gallery: {{ gallery.title }}</h2>
 <p>{{ gallery.description }}</p>
+{% endblock %}
 
+{% block content %}
 <a href="{% url 'panels:upload_image' society.id gallery.id %}">+ Upload Image</a>
 
 <hr>
@@ -24,3 +30,4 @@
 {% endif %}
 
 <a href="{% url 'panels:society_gallery_list' society.id %}">← Back to Gallery List</a>
+{% endblock %}

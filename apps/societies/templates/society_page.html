@@ -41,7 +41,15 @@
             {% if widget.widget_type == "announcements" %}
                 {% include 'announcements.html' with widget=widget %}
             {% elif widget.widget_type == "gallery" %}
-                {% include 'gallery.html' with widget=widget %}
+                <div class="gallery-widget">
+                    {% if gallery %}
+                        {% include 'partial_gallery.html' with gallery=gallery society=society %}
+                    {% else %}
+                        <p>No gallery available.</p>
+                    {% endif %}
+                    <a href="{% url 'panels:society_gallery_list' society_id=society.id %}" class="btn btn-info">View Gallery</a>
+                    <a href="{% url 'panels:create_gallery' society_id=society.id %}" class="btn btn-primary">+ Create Gallery</a>
+                </div>
             {% elif widget.widget_type == "contacts" %}
                 {% include 'contacts.html' with widget=widget %}
             {% elif widget.widget_type == "featured" %}
@@ -50,7 +58,6 @@
                 {% include 'leaderboard.html' with widget=widget %}
             {% elif widget.widget_type == "comment" %}
                 <div class="comment-widget">
-                  <h3>Recent Comments in {{ society.name }}</h3>
                   {% if recent_comments %}
                     {% include 'partial_comment_list.html' with recent_comments=recent_comments society=society %}
                   {% else %}

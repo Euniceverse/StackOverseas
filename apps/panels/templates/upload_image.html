@@ -1,5 +1,11 @@
-<h2>Upload an Image to "{{ gallery.title }}"</h2>
+{% extends "base.html" %}
+{% load static %}
 
+{% block title %}
+<h2>Upload an Image to "{{ gallery.title }}"</h2>
+{% endblock %}
+
+{% block content %}
 <form method="post" enctype="multipart/form-data">
   {% csrf_token %}
   {{ form.as_p }}
@@ -7,3 +13,4 @@
 </form>
 
 <a href="{% url 'panels:gallery_detail' society.id gallery.id %}">← Back to Gallery</a>
+{% endblock %}

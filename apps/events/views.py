@@ -165,7 +165,7 @@ def create_event(request, society_id):
                 location=form.cleaned_data['location'],
                 capacity=form.cleaned_data['capacity'],
                 fee=form.cleaned_data['fee'],
-                member_only=form.cleaned_data['member_only'],
+                member_only=form.cleaned_data.get('member_only', False),
                 is_free=form.cleaned_data['is_free'],
                 latitude=form.cleaned_data['latitude'],
                 longitude=form.cleaned_data['longitude'],

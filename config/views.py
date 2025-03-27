@@ -29,6 +29,7 @@ def ai_search(request):
         request.session['search_ids'] = [e.id for e in results]
 
         recent_news = get_recent_news()
+        top_context = top_societies(request.user)
 
         return render(request, 'events_search.html', {
             'events': results,

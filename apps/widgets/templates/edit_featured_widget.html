@@ -14,7 +14,7 @@
     <table class="table">
       <thead>
         <tr>
-          <th>Name</th>
+          <th>Member</th>
           <th>Role</th>
           <th>Picture</th>
         </tr>
@@ -22,9 +22,16 @@
       <tbody>
         {% for form in formset %}
           <tr>
-            <td>{{ form.name }}</td>
-            <td>{{ form.points }}</td>
-            <td>{{ form.picture }}</td>
+            <td>{{ form.member }}</td>
+            <td>{{ form.role }}</td>
+            <td>
+              {% if form.initial.picture %}
+                <img src="{{ form.initial.picture }}" alt="Current Picture" style="max-width:100px;">
+                <br>
+                <small>Current image</small>
+              {% endif %}
+              {{ form.picture }}
+          </td>          
           </tr>
         {% endfor %}
       </tbody>

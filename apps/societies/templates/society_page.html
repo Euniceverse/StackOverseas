@@ -76,25 +76,44 @@
     {% for widget in widgets %}
       <li class="widget">
           <h3>{{ widget.get_widget_type_display }}</h3>
-          {% if widget.widget_type == "announcements" %}
-              {% include 'announcements.html' with widget=widget %}
-          {% elif widget.widget_type == "events" %}
-              {% include 'events.html' with widget=widget %}
-          {% elif widget.widget_type == "gallery" %}
-              {% include 'gallery.html' with widget=widget %}
-          {% elif widget.widget_type == "contacts" %}
-              {% include 'contacts.html' with widget=widget %}
-          {% elif widget.widget_type == "featured" %}
-              {% include 'featured.html' with widget=widget %}
-          {% elif widget.widget_type == "leaderboard" %}
-              {% include 'leaderboard.html' with widget=widget %}
-          {% elif widget.widget_type == "news" %}
-              {% include 'news.html' with widget=widget %}
-          {% else %}
-              <div class="default-widget">
-                  {{ widget.custom_html|safe }}
-              </div>
-          {% endif %}
+            {% if widget.widget_type == "announcements" %}
+                {% include 'announcements.html' with widget=widget %}
+            {% elif widget.widget_type == "gallery" %}
+                <div class="gallery-widget">
+                    {% if gallery %}
+                        {% include 'partial_gallery.html' with gallery=gallery society=society %}
+                    {% else %}
+                        <p>No gallery available.</p>
+                    {% endif %}
+                    <a href="{% url 'panels:society_gallery_list' society_id=society.id %}" class="btn btn-info">View Gallery</a>
+                    <a href="{% url 'panels:create_gallery' society_id=society.id %}" class="btn btn-primary">+ Create Gallery</a>
+                </div>
+            {% elif widget.widget_type == "contacts" %}
+                {% include 'contacts.html' with widget=widget %}
+            {% elif widget.widget_type == "featured" %}
+                {% include 'featured.html' with widget=widget %}
+            {% elif widget.widget_type == "leaderboard" %}
+                {% include 'leaderboard.html' with widget=widget %}
+            {% elif widget.widget_type == "comment" %}
+                <div class="comment-widget">
+                  {% if recent_comments %}
+                    {% include 'partial_comment_list.html' with recent_comments=recent_comments society=society %}
+                  {% else %}
+                    <p>No comments available.</p>
+                  {% endif %}
+                  <a href="{% url 'panels:society_comment_feed' society_id=society.id %}" class="btn btn-info">View All Comments</a>
+                </div>              
+            {% elif widget.widget_type == "polls" %}
+                <div class="poll-widget">
+                    {% include 'partial_poll_list.html' with recent_polls=recent_polls society=society %}
+                  <a href="{% url 'panels:poll_list' society_id=society.id %}" class="btn btn-info">View More</a>
+                  <a href="{% url 'panels:create_poll' society_id=society.id %}" class="btn btn-primary">Create New Poll</a>
+                </div>
+            {% else %}
+                <div class="default-widget">
+                    {{ widget.custom_html|safe }}
+                </div>
+            {% endif %}
       </li>
     {% endfor %}
   </ul>

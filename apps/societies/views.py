@@ -15,6 +15,7 @@ from django.utils.timezone import now, timezone
 from .models import Society, SocietyRegistration
 from .forms import NewSocietyForm
 from apps.news.models import News
+from apps.panels.models import Poll
 from config.functions import get_recent_news
 from apps.widgets.models import Widget 
 from config.filters import SocietyFilter
@@ -615,7 +616,11 @@ def society_page(request, society_id):
                 widget.top_entries = sorted_entries[:int(display_count)]
             else:
                 widget.top_entries = []
-                
+    
+    recent_polls = Poll.objects.filter(society=society).order_by("-id")[:3]
+    recent_comments = society.comments.all().order_by('-created_at')[:3]
+    gallery = society.gallery_society.first()
+    
     context = {
         "society": society,
         "widgets": widgets,
@@ -625,6 +630,9 @@ def society_page(request, society_id):
         "is_manager": is_manager,
         "members_count": members_count,
         "can_manage": can_manage,
+        "recent_polls": recent_polls,
+        "recent_comments": recent_comments,
+        "gallery": gallery,
     }
     return render(request, "society_page.html", context)
 

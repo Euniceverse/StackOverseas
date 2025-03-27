@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+<h2>{{ question.question_text }}</h2>
+{% endblock %}
+
+{% block content %}
+{% if user_selected_option %}
+  <p>You have already voted for: <strong>{{ user_selected_option.option_text }}</strong></p>
+  <a href="{% url 'panels:cancel_vote' society.id poll.id question.id %}">❌ Cancel Vote</a>
+{% else %}
+  <form method="post">
+    {% csrf_token %}
+    {% for option in options %}
+      <label>
+        <input type="radio" name="option" value="{{ option.id }}">
+        {{ option.option_text }}
+      </label><br>
+    {% endfor %}
+    <button type="submit">Submit Vote</button>
+  </form>
+{% endif %}
+
+<a href="{% url 'panels:poll_result' society.id poll.id question.id %}">📊 View Results</a><br>
+<a href="{% url 'panels:poll_list' society.id %}">← Back to Poll List</a>
+{% endblock %}

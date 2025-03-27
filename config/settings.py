@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'apps.societies',
     'apps.users',
     'apps.widgets',
+    'apps.panels',
     'apps.payments'
 ]
 

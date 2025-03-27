@@ -143,13 +143,20 @@ event_choices_dict = [{"value": key, "label": label} for key, label in EVENT_TYP
 with open("event_choices.json", "w") as f:
     json.dump(event_choices_dict, f)
 
-    
+WIDGET_TYPE_ANNOUNCEMENTS = "announcements"
+WIDGET_TYPE_GALLERY = "gallery"
+WIDGET_TYPE_CONTACTS = "contacts"
+WIDGET_TYPE_FEATURED = "featured"
+WIDGET_TYPE_LEADERBOARD = "leaderboard"
+WIDGET_TYPE_POLLS = "polls"
+WIDGET_TYPE_COMMENT = "comment"
+
 WIDGET_TYPES = [
-        ("announcements", "Announcements"),
-        ("events", "Events"),
-        ("gallery", "Gallery"),
-        ("contacts", "Contact Information"),
-        ("featured", "Featured Members"),
-        ("leaderboard", "Leaderboard"),
-        ("news", "News"),
-    ]
+    (WIDGET_TYPE_ANNOUNCEMENTS, "Announcements"),
+    (WIDGET_TYPE_GALLERY, "Gallery"),
+    (WIDGET_TYPE_CONTACTS, "Contact Information"),
+    (WIDGET_TYPE_FEATURED, "Featured Members"),
+    (WIDGET_TYPE_LEADERBOARD, "Leaderboard"),
+    (WIDGET_TYPE_POLLS, "Polls"),
+    (WIDGET_TYPE_COMMENT, "Comment"),
+]

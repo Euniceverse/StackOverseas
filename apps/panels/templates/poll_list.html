@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+<h2>Polls in {{ society.name }}</h2>
+{% endblock %}
+
+{% block content %}
+<ul>
+  {% for poll in polls %}
+    <li>
+      <strong>{{ poll.title }}</strong><br>
+      {{ poll.description }}<br>
+      Deadline: {{ poll.deadline|date:"Y-m-d H:i" }}
+      <ul>
+        {% for question in poll.questions.all %}
+          <li>
+            {{ question.question_text }}
+            |
+            <a href="{% url 'panels:vote' society.id poll.id question.id %}">Vote</a>
+            |
+            <a href="{% url 'panels:poll_result' society.id poll.id question.id %}">View Results</a>
+          </li>
+        {% endfor %}
+      </ul>
+      <a href="{% url 'panels:add_question' society.id poll.id %}">+ Add Question</a>
+    </li>
+  {% empty %}
+    <li>No polls have been created yet.</li>
+  {% endfor %}
+</ul>
+
+<a href="{% url 'panels:create_poll' society.id %}">+ Create New Poll</a>
+{% endblock %}

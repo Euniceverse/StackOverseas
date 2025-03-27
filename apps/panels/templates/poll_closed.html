@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+<h2>This poll is closed.</h2>
+{% endblock %}
+
+{% block content %}
+<p><strong>{{ poll.title }}</strong></p>
+<p>Closed on: {{ poll.deadline|date:"Y-m-d H:i" }}</p>
+
+<a href="{% url 'panels:poll_list' poll.society.id %}">← Back to Poll List</a>
+{% endblock %}

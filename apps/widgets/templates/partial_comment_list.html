@@ -1,0 +1,12 @@
+<ul class="list-group">
+    {% for comment in recent_comments %}
+      <li class="list-group-item">
+        <strong>{{ comment.author.username }}</strong>:
+        {{ comment.content|truncatechars:100 }}<br>
+        <small>{{ comment.created_at|date:"Y-m-d H:i" }}</small>
+      </li>
+    {% empty %}
+      <li class="list-group-item">No comments available.</li>
+    {% endfor %}
+  </ul>
+  

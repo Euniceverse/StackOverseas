@@ -130,6 +130,24 @@
                             {% endif %}
                             <p><i class="fas fa-building"></i> Hosted by: {{ event.society.all|join:", " }}</p>
                         </div>
+                        <!-- In your events_search.html -->
+<div class="event-action">
+  <!-- Payment Form (Hidden) -->
+  <form id="paymentForm-{{ event.id }}" action="{% url 'payments:create_checkout_session' %}" method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="type" value="event">
+      <input type="hidden" name="id" value="{{ event.id }}">
+      <input type="hidden" name="name" value="{{ event.name }}">
+      <input type="hidden" name="price" value="{{ event.fee }}">
+      <input type="hidden" name="description" value="{{ event.description }}">
+  </form>  <!-- This closing tag was missing -->
+
+  <!-- Register Now Button -->
+  <button type="button" class="register-button btn btn-primary"
+      onclick="handleRegistration('{{ event.id }}', '{{ event.name }}', '{{ event.fee }}', '{{ event.description|escapejs }}')">
+      Register Now
+  </button>
+</div>
                         <div class="event-description mt-3">
                             <h6><i class="fas fa-info-circle"></i> Description</h6>
                             <p>{{ event.description }}</p>
@@ -157,24 +175,58 @@
     </div>
 </div>
 
+<!-- Stripe JS -->
 <script>
-function toggleEventFilters() {
-    let filterForm = document.getElementById("event-filter-form");
-    filterForm.style.display = filterForm.style.display === "none" ? "block" : "none";
-}
+  const stripe = Stripe("pk_test_51QviGaE1rp8ABg2BZkClndNES4HcFS2yJVKbc10uIfMf9jF6QuuS1TKZ7SgVKU8DK43TXWzQlS1fGcswox4WFuve00bNqjsbvD");
 
-function updatePriceRangeEvent() {
-    let minPrice = document.getElementById("price_min");
-    let maxPrice = document.getElementById("price_max");
-    let minPriceDisplay = document.getElementById("min_price_event_display");
-    let maxPriceDisplay = document.getElementById("max_price_event_display");
+  function handleRegistration(eventId, name, price, description) {
+    console.log("handleRegistration called with:", { eventId, name, price, description });
 
-    if (parseInt(minPrice.value) > parseInt(maxPrice.value)) {
-        minPrice.value = maxPrice.value;
+    if (!eventId || !name || !price) {
+        console.error("❌ ERROR: Missing event data!");
+        return;
     }
 
-    minPriceDisplay.innerText = "£" + minPrice.value;
-    maxPriceDisplay.innerText = "£" + maxPrice.value;
+    // Provide a default description if it's empty
+    if (!description.trim()) {
+        description = "Event Description Not Provided";
+    }
+
+    console.log(`📢 Sending data -> ID: ${eventId}, Name: ${name}, Price: ${price}`);
+
+    const requestData = new URLSearchParams({
+        type: "event",
+        id: eventId,
+        name: name,
+        price: price,
+        description: description
+    });
+    console.log("Request body:", requestData.toString());
+
+    fetch("{% url 'payments:create_checkout_session' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            // Optionally add CSRF token if required:
+            // "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: requestData
+    })
+    .then(response => {
+        console.log("Response status:", response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log("Checkout session response:", data);
+        if (data.url) {
+            console.log("✅ Redirecting using URL...");
+            window.location.href = data.url;
+        } else {
+            console.error("❌ ERROR: No checkout session URL returned:", data);
+        }
+    })
+    .catch(error => console.error("❌ ERROR:", error));
 }
 </script>
+
 {% endblock %}

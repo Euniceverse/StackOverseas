@@ -43,7 +43,7 @@ def get_societies(user):
     return member_societies
 
 
-def manage_societies(user): 
+def manage_societies(user):
     if not CustomUser.objects.filter(pk=user.pk).exists():
         return {"registrations": SocietyRegistration.objects.none(),
                 "societies": Society.objects.none()}
@@ -107,7 +107,7 @@ def approve_society(request, registration_id):
         society_type=registration.society_type,
         manager=registration.applicant,
         status='approved',
-        visibility=registration.visibility
+        visibility='Public'
     )
 
     messages.success(request, f"Society '{new_society.name}' has been approved and created!")
@@ -131,7 +131,7 @@ def edit_widget(request, society_id, widget_id):
     if request.method == "POST":
         form = form_class(request.POST, request.FILES)
         if form.is_valid():
-            widget.data = form.cleaned_data 
+            widget.data = form.cleaned_data
             widget.save()
             messages.success(request, "Widget updated successfully!")
             return redirect("manage_display", society_id=society_id)

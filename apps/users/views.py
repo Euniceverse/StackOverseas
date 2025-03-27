@@ -99,8 +99,18 @@ class LogInView(View):
                 # Check if verification is needed
                 needs_verification = user.check_annual_verification()
                 if needs_verification:
-                    user.send_annual_verification_email()
-                    messages.warning(request, "Please check your email to verify your account. Your account has been temporarily deactivated for security purposes.")
+                    # Generate token and encode email
+                    token = get_random_string(50)
+                    uidb64 = urlsafe_base64_encode(force_bytes(user.email))
+
+                    # Store email in cache with token
+                    cache_key = f"annual_verify_{token}"
+                    cache.set(cache_key, user.email, 3600)  # Store for 1 hour
+
+                    # Send verification email with correct URL
+                    verification_link = f"{settings.PROTOCOL}://{settings.DOMAIN_NAME}/users/annual-verify/{uidb64}/{token}/"
+                    user.send_annual_verification_email(verification_link)
+                    messages.warning(request, "Please check your email to verify your account.")
                     return render(request, self.template_name, {"form": form})
 
                 login(request, user)

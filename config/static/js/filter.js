@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
-  // 필터 드롭다운 데이터
   const dropdownData = [
     {
       label: "Category",
@@ -20,7 +19,6 @@ document.addEventListener("DOMContentLoaded", function () {
     { label: "Availability", options: ["Available", "Full", "Waiting List"] },
   ];
 
-  // 필터 값 매핑 (쿼리스트링 변환)
   const filterValueMapping = {
     Sports: "event_type=sports",
     Academic: "event_type=academic",
@@ -43,12 +41,10 @@ document.addEventListener("DOMContentLoaded", function () {
     "Waiting List": "availability=waiting",
   };
 
-  // ✅ 최소/최대 Fee 슬라이더 추가
   function createFeeSlider() {
     const container = document.createElement("div");
     container.classList.add("custom-slider-container");
 
-    // ✅ 최소값 슬라이더
     const minLabel = document.createElement("label");
     minLabel.textContent = "Min (£)";
     minLabel.classList.add("slider-label");
@@ -64,7 +60,6 @@ document.addEventListener("DOMContentLoaded", function () {
     minValueDisplay.textContent = "£0";
     minValueDisplay.classList.add("slider-value");
 
-    // ✅ 최대값 슬라이더
     const maxLabel = document.createElement("label");
     maxLabel.textContent = "Max (£)";
     maxLabel.classList.add("slider-label");
@@ -80,7 +75,6 @@ document.addEventListener("DOMContentLoaded", function () {
     maxValueDisplay.textContent = "£100+";
     maxValueDisplay.classList.add("slider-value");
 
-    // ✅ 슬라이더 동작 설정
     function updateSliderValues() {
       let minVal = parseInt(minSlider.value, 10);
       let maxVal = parseInt(maxSlider.value, 10);
@@ -96,11 +90,9 @@ document.addEventListener("DOMContentLoaded", function () {
       applyFilters();
     }
 
-    // ✅ 슬라이더 값 변경 시 필터 적용
     minSlider.addEventListener("input", updateSliderValues);
     maxSlider.addEventListener("input", updateSliderValues);
 
-    // ✅ 슬라이더 UI 추가
     container.appendChild(minLabel);
     container.appendChild(minSlider);
     container.appendChild(minValueDisplay);
@@ -111,7 +103,6 @@ document.addEventListener("DOMContentLoaded", function () {
     dropdownContainer.appendChild(container);
   }
 
-  // ✅ 드롭다운 생성 함수
   function createDropdown(label, options) {
     const container = document.createElement("div");
     container.classList.add("custom-dropdown");
@@ -192,7 +183,6 @@ document.addEventListener("DOMContentLoaded", function () {
     dropdownContainer.appendChild(container);
   }
 
-  // ✅ 필터 선택
   function applySelection(
     optionText,
     selectedText,
@@ -211,7 +201,6 @@ document.addEventListener("DOMContentLoaded", function () {
     applyFilters();
   }
 
-  // ✅ 필터 초기화
   function resetSelection(
     selectedText,
     selectedDiv,
@@ -228,7 +217,6 @@ document.addEventListener("DOMContentLoaded", function () {
     applyFilters();
   }
 
-  // ✅ 필터 쿼리 생성
   function getFilterQueryString() {
     let queryParams = [];
 
@@ -259,10 +247,9 @@ document.addEventListener("DOMContentLoaded", function () {
     return queryParams.length > 0 ? "?" + queryParams.join("&") : "";
   }
 
-  // ✅ 필터 적용 (캘린더, 리스트, 지도 업데이트)
   function applyFilters() {
     let queryString = getFilterQueryString();
-    console.log("🎯 Applying filters:", queryString);
+    console.log("Applying filters:", queryString);
 
     document.dispatchEvent(
       new CustomEvent("filtersUpdated", { detail: queryString })

@@ -21,24 +21,21 @@
   <div id="comments"></div>
 
   <script>
-    const societyId = 1;  // 👈 Set dynamically if needed
+    const societyId = 1; 
 
     $(document).ready(function () {
-      // Load polls
       $('#poll').load(`/panels/society/${societyId}/polls/`, function(response, status, xhr) {
         if (status === "error") {
           $('#poll').html("<p>Error loading polls.</p>");
         }
       });
 
-      // Load gallery list
       $('#gallery').load(`/panels/society/${societyId}/galleries/`, function(response, status, xhr) {
         if (status === "error") {
           $('#gallery').html("<p>Error loading galleries.</p>");
         }
       });
 
-      // Load comments
       $('#comments').load(`/panels/society/${societyId}/comments/`, function(response, status, xhr) {
         if (status === "error") {
           $('#comments').html("<p>Error loading comments.</p>");

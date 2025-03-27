@@ -49,6 +49,6 @@ class QuestionForm(forms.ModelForm):
 OptionFormSet = modelformset_factory(
     Option,
     fields=('option_text',),
-    extra=0,  # we’ll set it dynamically in the view
+    extra=0, 
     can_delete=False
 )

@@ -69,6 +69,10 @@ class FeaturedMemberForm(forms.Form):
         required=False,
         label="Picture"
     )
+    delete = forms.BooleanField(
+        required=False,
+        label="Delete this entry"
+    )
 
     def __init__(self, *args, **kwargs):
         members_choices = kwargs.pop('members_choices', [])
@@ -92,7 +96,10 @@ class AnnouncementForm(forms.Form):
         label="Date",
         widget=forms.DateInput(attrs={"type": "date"})
     )
-    
+    delete = forms.BooleanField(
+        required=False,
+        label="Delete this announcement"
+    )
 
 class LeaderboardMembershipForm(forms.Form):
     membership_id = forms.IntegerField(widget=forms.HiddenInput)

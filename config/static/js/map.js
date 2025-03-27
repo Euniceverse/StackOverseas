@@ -157,5 +157,6 @@ document.addEventListener("DOMContentLoaded", initializeMap);
 document.addEventListener("filtersUpdated", function (e) {
   updateMapWithFilters(e.detail);
 });
+
 window.addEventListener("updateMap", updateMap);
 window.list.refetchEvents();

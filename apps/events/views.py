@@ -54,14 +54,12 @@ def delete_event(request, event_id):
     event = get_object_or_404(Event, id=event_id)
 
     # Check permission
-    if not user_can_delete_event(request.user, event):
-        messages.error(request, "You do not have permission to delete this event.")
+    if not (request.user.is_superuser or (hasattr(request, 'user_membership') and request.user_membership.role in ['manager', 'co_manager', 'editor'])):
         return redirect('eventspage')
 
     # If authorized, delete the event
     event.delete()
-    messages.success(request, "Event deleted successfully.")
-    return redirect('eventspage')
+    return redirect('home')
 
 @login_required
 def eventspage(request):

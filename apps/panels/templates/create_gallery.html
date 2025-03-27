@@ -9,6 +9,8 @@
 {% endblock %}
 
 {% block content %}
+<h2 class="mb-1">Create a New Gallery</h2>
+<p class="text-muted">for {{ society.name }}</p>
 <div class="card p-4 mb-4">
   <form method="post">
     {% csrf_token %}
@@ -19,5 +21,5 @@
   </form>
 </div>
 
-<a href="{% url 'panels:society_gallery_list' society.id %}" class="btn btn-link">← Back to Gallery List</a>
+<a href="{% url 'panels:society_gallery_list' society.id %}" class="btn btn-outline-secondary mt-2">← Back to Gallery List</a>
 {% endblock %}

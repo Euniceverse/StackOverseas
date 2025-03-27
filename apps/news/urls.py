@@ -12,6 +12,7 @@ urlpatterns = [
     path('', newspage, name='newspage'),
     path('list/', news_list, name='news_list'),
     path('panel/', news_list, name='news_panel'),
+    path('details/', news_detail, name = 'news_detail'),
     path('create/', create_news, name='create_news'),
     path('edit/<int:news_id>/', edit_news, name='edit_news'),
     path('view/<int:news_id>/', news_detail, name='news_detail'),

@@ -102,7 +102,7 @@ def news_detail(request, news_id):
     user_membership = None
     if request.user.is_authenticated:
         user_membership = Membership.objects.filter(
-            society=news.society,
+            society__in=news.society.all(),  # Check if the user's society is in the news's societies
             user=request.user,
             status=MembershipStatus.APPROVED
         ).first()

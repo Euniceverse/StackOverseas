@@ -1,0 +1,20 @@
+<div class="widget-content">
+    <div class="announcements-widget">
+        {% if widget.data.announcements %}
+          <ul class="list-group">
+            {% for announcement in widget.data.announcements %}
+              <li class="list-group-item">
+                <h4>{{ announcement.title }}</h4>
+                <p>{{ announcement.message }}</p>
+                {% if announcement.date %}
+                  <small class="text-muted">Posted on: {{ announcement.date }}</small>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>No announcements at this time.</p>
+        {% endif %}
+      </div>      
+</div>
+  

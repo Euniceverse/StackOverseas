@@ -1,0 +1,13 @@
+<div class="leaderboard-widget">
+  {% if widget.top_entries %}
+    <ul class="list-group">
+      {% for entry in widget.top_entries %}
+        <li class="list-group-item">
+          {{ forloop.counter }}. {{ entry.0 }} – {{ entry.1 }} points
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No leaderboard data available.</p>
+  {% endif %}
+</div>

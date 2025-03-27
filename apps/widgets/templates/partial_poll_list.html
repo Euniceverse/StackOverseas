@@ -1,0 +1,19 @@
+<ul>
+    {% for poll in recent_polls %}
+      <li>
+        <strong>{{ poll.title }}</strong><br>
+        {{ poll.description }}<br>
+        Deadline: {{ poll.deadline|date:"Y-m-d H:i" }}<br>
+        {% if poll.questions.first %}
+          <a href="{% url 'panels:poll_result' society_id=society.id poll_id=poll.id question_id=poll.questions.first.id %}">
+            View Results
+          </a>
+        {% else %}
+          <span class="text-muted">No question added</span>
+        {% endif %}
+      </li>
+    {% empty %}
+      <li>No polls have been created yet.</li>
+    {% endfor %}
+  </ul>
+  

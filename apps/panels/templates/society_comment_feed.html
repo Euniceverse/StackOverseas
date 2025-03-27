@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}
+<h2 class="my-4 text-center">Comments for {{ society.name }}</h2>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+  <form method="post" class="mb-4">
+    {% csrf_token %}
+    <div class="mb-3">
+      {{ form.content.label_tag }}
+      {{ form.content|add_class:"form-control" }}
+    </div>
+    <button type="submit" class="btn btn-primary">Post Comment</button>
+  </form>
+
+  <hr>
+
+  {% if comments %}
+    <div class="list-group">
+      {% for comment in comments %}
+        <div class="list-group-item mb-3">
+          <p class="mb-1"><strong>{{ comment.author }}</strong> <span class="text-muted small">on {{ comment.created_at|date:"Y-m-d H:i" }}</span></p>
+          <p>{{ comment.content }}</p>
+
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <a href="{% url 'panels:like_comment' society.id comment.id %}" class="btn btn-sm btn-outline-danger">
+                {% if user in comment.likes.all %} ❤️ Unlike {% else %} 🤍 Like {% endif %} ({{ comment.likes.count }})
+              </a>
+            </div>
+            {% if comment.author == user %}
+              <div>
+                <a href="{% url 'panels:edit_comment' society.id comment.id %}" class="btn btn-sm btn-secondary">✏️ Edit</a>
+                <a href="{% url 'panels:delete_comment' society.id comment.id %}" class="btn btn-sm btn-danger">🗑 Delete</a>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted">No comments yet. Be the first!</p>
+  {% endif %}
+  <a class="btn btn-primary" href="{% url 'society_page' society.id %}">Back</a>
+</div>
+{% endblock %}

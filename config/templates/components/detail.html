@@ -2,6 +2,7 @@
 <link rel="stylesheet" href="{% static 'detail.css' %}">
 <script src="{% static 'js/calendar.js' %}" defer></script>
 
+
 <div id="event-detail-modal" class="event-modal hidden">
     <div class="event-modal-content">
 
@@ -88,10 +89,10 @@
                                     console.log("✅ Redirecting to Stripe Checkout...");
                                     window.location.href = data.url;
                                 } else {
-                                    console.error("❌ ERROR: No checkout session URL returned:", data);
+                                    console.error("ERROR: No checkout session URL returned:", data);
                                 }
                             })
-                            .catch(error => console.error("❌ ERROR: Checkout request failed!", error));
+                            .catch(error => console.error("ERROR: Checkout request failed!", error));
                         });
                     }
                 });

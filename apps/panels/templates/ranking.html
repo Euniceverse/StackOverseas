@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{{ society.name }} - Rankings 📊</h2>
+
+<a href="{% url 'panels:record_match' society.id %}" class="btn btn-primary">➕ Record Match</a>
+<a href="{% url 'panels:hall_of_fame' society.id %}" class="btn btn-outline-secondary">🏆 Hall of Fame</a>
+
+<ol>
+  {% for r in rankings %}
+    <li>{{ r.member.preferred_name }} — {{ r.rating }} pts</li>
+  {% endfor %}
+</ol>
+{% endblock %}

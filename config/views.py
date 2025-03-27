@@ -1,15 +1,18 @@
 from django.shortcuts import render
 from .functions import search_societies, get_recent_news
 from apps.societies.functions import top_societies
+from apps.news.models import News
 
 def home(request):
     """Display the main page.
     Shows login/signup buttons for anonymous users,
     and user-specific content for authenticated users."""
-    recent_news = get_recent_news()
+    # recent_news = get_recent_news()
+    news_list = News.objects.all().order_by('-date_posted')[:5]
     disct_soc = top_societies(request.user)
     return render(request, "home.html", {
-        "news_list": recent_news,
+        # "news_list": recent_news,
+        "news_list": news_list,
         "top_societies_per_type": disct_soc['top_societies_per_type'],
         "top_overall_societies": disct_soc['top_overall_societies'],
         "user": request.user,

@@ -41,7 +41,6 @@
     
 }
 
-/* Base style for the buttons */
 #list-button,
 #calendar-button,
 #map-button {
@@ -55,10 +54,9 @@
   transition: all 0.2s ease-in-out;
 }
 
-/* Active style */
 #list-button.active,
 #calendar-button.active,
 #map-button.active {
-  color: #c992b1; /* highlight for list calendar adn map and clicked */
+  color: #c992b1; 
   
 }

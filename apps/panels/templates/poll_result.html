@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+  <h2 class="my-4 text-center">{{ question.question_text }}</h2>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+  <div class="card mb-4 shadow-sm">
+    <h3 class="my-4 text-center">{{ question.question_text }}</h3>
+    <div class="card-body">
+      <h5 class="card-title">Poll Results</h5>
+      <ul class="list-group list-group-flush mt-3">
+        {% for option in options %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ option.option_text }}
+            <span class="badge bg-primary rounded-pill">
+              {{ option.option_count }}
+            </span>
+          </li>
+        {% empty %}
+          <li class="list-group-item text-muted">No options available.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between">
+    <a href="{% url 'panels:vote' society.id poll.id question.id %}" class="btn btn-outline-secondary">
+      ← Back to Vote
+    </a>
+    <a href="{% url 'panels:poll_list' society.id %}" class="btn btn-outline-secondary">
+      ← Back to Poll List
+    </a>
+  </div>
+</div>
+{% endblock %}

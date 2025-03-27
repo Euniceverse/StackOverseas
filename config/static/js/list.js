@@ -9,7 +9,7 @@ function initializeList() {
     let closeButton = document.getElementById("event-detail-close");
 
     if (!listEl) {
-        console.error("❌ ERROR: List container is missing!");
+        console.error("ERROR: List container is missing!");
         return;
     }
 
@@ -36,7 +36,7 @@ function initializeList() {
                 let eventsArray = Array.isArray(data) ? data : data.results;
 
                 if (!eventsArray || !Array.isArray(eventsArray)) {
-                    console.error("❌ API 응답 오류: `results` 필드가 없음", data);
+                    console.error("API Not Responding: No field name `results`", data);
                     return;
                 }
 
@@ -46,21 +46,22 @@ function initializeList() {
                     start: event.start_datetime,
                     end: event.end_datetime,
                     extendedProps: {
-                    event_type: event.event_type.split(",")[0].trim().replace("(", "").replace("'", ""),
-                    location: event.location || "Not specified",
-                    fee: event.fee || "Free",
-                    description: event.description || "No description available.",
-                    capacity: event.capacity || "Unlimited",
-                    member_only: event.member_only,
-                    hosts: event.society.join(", ")
+                        event_type: event.event_type.split(",")[0].trim().replace("(", "").replace("'", ""),
+                        location: event.location || "Not specified",
+                        fee: event.fee || "Free",
+                        description: event.description || "No description available.",
+                        capacity: event.capacity || "Unlimited",
+                        member_only: event.member_only,
+                        hosts: event.society.join(", "),
+                        society_names: event.society_names
                     }
                 }));
 
-                console.log("🎯 필터링된 이벤트 (FullCalendar에 전달될 데이터):", events);
+                console.log("Filtered Event (FullCalendar):", events);
 
                 successCallback(events);
             })
-            .catch(error => console.error("❌ Error fetching events:", error));
+            .catch(error => console.error("Error fetching events:", error));
     }
 
     window.list = new FullCalendar.Calendar(listEl, {
@@ -74,30 +75,26 @@ function initializeList() {
         eventClick: function (info) {
           console.log("🖱️ Event clicked:", info.event);
 
-          // Set the visible fields
-          document.getElementById("event-name").textContent = info.event.title;
-          document.getElementById("event-type").textContent = info.event.extendedProps.event_type;
-          document.getElementById("event-date").textContent = info.event.start.toISOString().split("T")[0];
-          document.getElementById("event-time").textContent = info.event.start
-              ? info.event.start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-              : "Time not specified";
-          document.getElementById("event-location").textContent = info.event.extendedProps.location;
-          document.getElementById("event-fee").textContent =
-              info.event.extendedProps.fee !== "Free" ? info.event.extendedProps.fee + " USD" : "Free";
-          document.getElementById("event-description").textContent = info.event.extendedProps.description;
+            document.getElementById("event-name").textContent = info.event.title;
+            document.getElementById("event-type").textContent = info.event.type;
+            document.getElementById("event-date").textContent = info.event.start.toISOString().split("T")[0];
+            document.getElementById("event-time").textContent =
+                info.event.start
+                    ? info.event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    : "Time not specified";
+            document.getElementById("event-location").textContent = info.event.extendedProps.location;
+            document.getElementById("event-fee").textContent =
+                info.event.extendedProps.fee !== "Free" ? info.event.extendedProps.fee + " USD" : "Free";
+            document.getElementById("event-description").textContent = info.event.extendedProps.description;
+            document.getElementById("event-hosts").textContent =
+            info.event.extendedProps.society_names?.join(", ") || "TBA";
+            document.getElementById("event-capacity").textContent =
+            "👥 Capacity: " + (info.event.extendedProps.capacity || "Unlimited");
 
-          // **NEW**: Set the hidden form fields used by the "Register Now" button
-          document.getElementById("event-id-input").value = info.event.id;
-          document.getElementById("event-name-input").value = info.event.title;
-          document.getElementById("event-price-input").value =
-              info.event.extendedProps.fee !== "Free" && info.event.extendedProps.fee !== ""
-                  ? parseFloat(info.event.extendedProps.fee)
-                  : 0.0;
-          document.getElementById("event-description-input").value = info.event.extendedProps.description;
+            document.getElementById("event-detail-modal").classList.remove("hidden");
+        }
 
-          // Show the modal
-          document.getElementById("event-detail-modal").classList.remove("hidden");
-      }
+
     });
 
     window.list.render();
@@ -119,10 +116,10 @@ function initializeList() {
     }
 
     document.getElementById("event-detail-modal").addEventListener("click", function (event) {
-        if (event.target === this) { // 모달 바깥 영역 클릭 시 닫기
+        if (event.target === this) { 
             this.classList.add("hidden");
         }
-        event.stopPropagation(); // 🌟 이벤트 전파 차단하여 다른 버튼 클릭 방해 방지
+        event.stopPropagation(); 
     });
 
     document.addEventListener("filtersUpdated", function (event) {
@@ -130,20 +127,19 @@ function initializeList() {
         localStorage.setItem("filterQueryString", event.detail);
 
         if (window.list) {
-            console.log("📌 FullCalendar 기존 이벤트 삭제 및 새 데이터 로드!");
-            window.list.removeAllEvents(); // ✅ 기존 데이터 삭제
-            window.list.refetchEvents();   // ✅ 새로운 데이터 요청
-            window.list.updateSize();      // ✅ 캘린더 강제 리렌더링
+            console.log("FullCalendar Reload!");
+            window.list.removeAllEvents(); 
+            window.list.refetchEvents();  
+            window.list.updateSize();  
         }
     });
 
     window.resizeList = function () {
         setTimeout(() => {
-            console.log("✅ FullCalendar resizing...");
+            console.log("FullCalendar resizing...");
             window.list.updateSize();
         }, 100);
     };
 }
 
-// 🚀 `window` 객체에 함수 등록하여 `viewSwitcher.js`에서 호출 가능하도록 설정
 window.initializeList = initializeList;

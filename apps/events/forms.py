@@ -74,13 +74,6 @@ class NewEventForm(forms.Form):
     latitude = forms.FloatField(required=True, widget=forms.HiddenInput())
     longitude = forms.FloatField(required=True, widget=forms.HiddenInput())
 
-    # society = forms.ModelMultipleChoiceField(
-    #    queryset=Society.objects.all(),
-    #    required=True,
-    #    widget=forms.CheckboxSelectMultiple,
-    #    help_text="Select one or more societies hosting the event."
-    #)
-
     def clean_fee(self):
         fee = self.cleaned_data.get("fee", Decimal("0.00"))
 

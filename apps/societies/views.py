@@ -618,7 +618,8 @@ def society_page(request, society_id):
                 widget.top_entries = []
     
     recent_polls = Poll.objects.filter(society=society).order_by("-id")[:3]
-
+    recent_comments = society.comments.all().order_by('-created_at')[:3]
+    
     context = {
         "society": society,
         "widgets": widgets,
@@ -629,6 +630,7 @@ def society_page(request, society_id):
         "members_count": members_count,
         "can_manage": can_manage,
         "recent_polls": recent_polls,
+        "recent_comments": recent_comments,
     }
     return render(request, "society_page.html", context)
 

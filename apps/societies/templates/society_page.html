@@ -49,7 +49,15 @@
             {% elif widget.widget_type == "leaderboard" %}
                 {% include 'leaderboard.html' with widget=widget %}
             {% elif widget.widget_type == "comment" %}
-                {% include 'news.html' with widget=widget %}
+                <div class="comment-widget">
+                  <h3>Recent Comments in {{ society.name }}</h3>
+                  {% if recent_comments %}
+                    {% include 'partial_comment_list.html' with recent_comments=recent_comments society=society %}
+                  {% else %}
+                    <p>No comments available.</p>
+                  {% endif %}
+                  <a href="{% url 'panels:society_comment_feed' society_id=society.id %}" class="btn btn-info">View All Comments</a>
+                </div>              
             {% elif widget.widget_type == "polls" %}
                 <div class="poll-widget">
                     {% include 'partial_poll_list.html' with recent_polls=recent_polls society=society %}

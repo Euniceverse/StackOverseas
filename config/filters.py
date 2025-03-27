@@ -94,7 +94,7 @@ class EventFilter(GlobalFilterSet):
 
     class Meta:
         model = Event
-        fields = ['event_type', 'location', 'capacity', 'member_only', 'fee', 'fee_general', 'fee_member']
+        fields = ['event_type', 'location', 'capacity', 'member_only', 'fee']
 
 
 class SocietyFilter(GlobalFilterSet):

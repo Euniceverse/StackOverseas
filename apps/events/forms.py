@@ -51,10 +51,10 @@ class NewEventForm(forms.Form):
         validators=[MinValueValidator(1)]
     )
 
-    member_only = forms.BooleanField(
-        initial=False,
-        required=False,
-    )
+    # member_only = forms.BooleanField(
+    #     initial=False,
+    #     required=False,
+    # )
 
     fee = forms.DecimalField(
         max_digits=10,

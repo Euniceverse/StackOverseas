@@ -124,9 +124,6 @@
                                 <p><i class="fas fa-ticket-alt"></i> Free Event</p>
                             {% else %}
                                 <p><i class="fas fa-pound-sign"></i> Entry Fee: {{ event.fee }}</p>
-                                {% if event.fee_general %}
-                                    <p><i class="fas fa-pound-sign"></i> General Entry Fee: {{ event.fee_general }}</p>
-                                {% endif %}
                             {% endif %}
                             <p><i class="fas fa-building"></i> Hosted by: {{ event.society.all|join:", " }}</p>
                         </div>

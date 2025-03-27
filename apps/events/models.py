@@ -76,19 +76,19 @@ class Event(models.Model):
         validators=[MinValueValidator(Decimal("0.00"))]
     )
 
-    fee_general = models.DecimalField(
-        max_digits=MAX_DIGIT,
-        decimal_places=2,
-        default=Decimal("0.00"),
-        validators=[MinValueValidator(Decimal("0.00"))]
-    )
+    # fee_general = models.DecimalField(
+    #     max_digits=MAX_DIGIT,
+    #     decimal_places=2,
+    #     default=Decimal("0.00"),
+    #     validators=[MinValueValidator(Decimal("0.00"))]
+    # )
 
-    fee_member = models.DecimalField(
-        max_digits=MAX_DIGIT,
-        decimal_places=2,
-        default=Decimal("0.00"),
-        validators=[MinValueValidator(Decimal("0.00"))]
-    )
+    # fee_member = models.DecimalField(
+    #     max_digits=MAX_DIGIT,
+    #     decimal_places=2,
+    #     default=Decimal("0.00"),
+    #     validators=[MinValueValidator(Decimal("0.00"))]
+    # )
 
 
     is_free = models.BooleanField(default=True)

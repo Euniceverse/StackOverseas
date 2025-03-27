@@ -73,6 +73,12 @@ def eventspage(request):
     else:
         events = Event.objects.all()
 
+    search_type = request.session.get('search_type', None)
+    search_ids = request.session.get('search_ids', [])  
+
+    if search_type == 'events' and search_ids:
+        events = events.filter(id__in=search_ids)
+
     events = EventFilter(request.GET, queryset=events, request=request).qs
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
 

@@ -24,17 +24,32 @@ def create_checkout_session(request):
             name = request.POST.get("name")
             price = float(request.POST.get("price", 0)) * 100
             description = request.POST.get("description")
+            success_url = f"{settings.PROTOCOL}://{settings.DOMAIN_NAME}/payments/success/?type=event&id={event_id}"
 
-            success_url = f"https://{settings.DOMAIN_NAME}/payments/success/?event_id={event_id}"
-        
+
+            if price == 0:
+                return JsonResponse({
+                    "url": f"{settings.PROTOCOL}://{settings.DOMAIN_NAME}/payments/success/?type=event&id={event_id}"
+                })
+
+            success_url = f"{settings.PROTOCOL}://{settings.DOMAIN_NAME}/payments/success/?type=event&id={event_id}"
+
+
+
         elif payment_type == "society":
             society_id = request.POST.get("id")
             name = request.POST.get("name")
             price = float(request.POST.get("price", 0)) * 100
             description = request.POST.get("description")
 
-           
-            success_url = f"https://{settings.DOMAIN_NAME}/payments/success/?type=society&id={society_id}"
+
+            if price == 0:
+                return JsonResponse({
+                    "url": f"{settings.PROTOCOL}://{settings.DOMAIN_NAME}/payments/success/?type=society&id={society_id}"
+                })
+
+            success_url = f"{settings.PROTOCOL}://{settings.DOMAIN_NAME}/payments/success/?type=society&id={society_id}"
+
 
         else:
             return JsonResponse({"error": "Invalid payment type"}, status=400)
@@ -55,7 +70,7 @@ def create_checkout_session(request):
                 }],
                 mode="payment",
                 success_url=success_url,
-                cancel_url=f"https://{settings.DOMAIN_NAME}/payments/cancel/?type={payment_type}&id={request.POST.get('id')}",
+                cancel_url=f"{settings.PROTOCOL}://{settings.DOMAIN_NAME}/payments/cancel/?type={payment_type}&id={request.POST.get('id')}",
             )
 
             if payment_type == "society":
@@ -73,8 +88,26 @@ def create_checkout_session(request):
 def payment_success(request):
     object_type = request.GET.get("type")
     object_id = request.GET.get("id")
-    return render(request, "payment_success.html", {"type": object_type, "id": object_id})
 
+    if object_type == "event":
+        event = get_object_or_404(Event, id=object_id)
+        try:
+            status = 'accepted' if not event.is_full() else 'waitlisted'
+            registration = event.register_user(request.user, status=status)
+            success_message = f"You have successfully registered for the event: {event.name}."
+        except ValueError as e:
+            success_message = str(e)
+    elif object_type == "society":
+        society = get_object_or_404(Society, id=object_id)
+        success_message = f"You have successfully joined the society: {society.name}."
+    else:
+        success_message = "Your payment was successful!"
+
+    return render(request, "payment_success.html", {
+        "type": object_type,
+        "id": object_id,
+        "success_message": success_message
+    })
 
 def payment_cancel(request):
     object_type = request.GET.get("type")  # 'event' or 'society'

@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.forms import formset_factory
@@ -9,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import Widget
 from .forms import *
 from apps.societies.models import Society, Membership, MembershipRole, MembershipStatus
+from apps.panels import views as panels_views
 import json
 
 @csrf_exempt
@@ -16,8 +18,22 @@ def update_widget_order(request, society_id):
     """AJAX endpoint to update the order of widgets."""
     if request.method == "POST":
         society = get_object_or_404(Society, id=society_id)
-        # Ensure only the manager can update the order.
-        if request.user != society.manager:
+        
+        membership = Membership.objects.filter(
+            society=society,
+            user=request.user,
+            status=MembershipStatus.APPROVED
+        ).first()
+        
+        is_authorized = False
+    
+        if request.user.is_superuser or request.user == society.manager:
+            is_authorized = True
+        else:
+            if membership and membership.role in [MembershipRole.CO_MANAGER, MembershipRole.EDITOR]:
+                is_authorized = True
+        
+        if not is_authorized:
             return JsonResponse({"error": "Permission denied"}, status=403)
         try:
             data = json.loads(request.body)
@@ -44,7 +60,7 @@ def remove_widget(request, society_id, widget_id):
     
     is_authorized = False
     
-    if request.user == society.manager:
+    if request.user.is_superuser or request.user == society.manager:
         is_authorized = True
     else:
         if membership and membership.role in [MembershipRole.CO_MANAGER, MembershipRole.EDITOR]:

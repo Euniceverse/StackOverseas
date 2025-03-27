@@ -17,6 +17,8 @@
     <li>No galleries yet.</li>
   {% endfor %}
 </ul>
-
-<a href="{% url 'panels:create_gallery' society.id %}">+ Create New Gallery</a>
+  {% if user_membership and user_membership.role == "manager" or user_membership and user_membership.role == "co_manager" or user_membership and user_membership.role == "editor" or user.is_superuser %}
+    <a href="{% url 'panels:create_gallery' society.id %}">+ Create New Gallery</a>
+  {% endif %}
+  <a class="btn btn-primary" href="{% url 'society_page' society.id %}">Back</a>
 {% endblock %}

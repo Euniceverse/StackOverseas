@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from .models import Widget
 from .forms import *
+from apps.panels.models import Gallery, Image, Poll, Comment
 from apps.societies.models import Society, Membership, MembershipRole, MembershipStatus
 from apps.panels import views as panels_views
 import json
@@ -58,19 +59,20 @@ def remove_widget(request, society_id, widget_id):
         status=MembershipStatus.APPROVED
     ).first()
     
-    is_authorized = False
-    
-    if request.user.is_superuser or request.user == society.manager:
-        is_authorized = True
-    else:
-        if membership and membership.role in [MembershipRole.CO_MANAGER, MembershipRole.EDITOR]:
-            is_authorized = True
-    
-    if not is_authorized:
-        return JsonResponse({"error": "Permission denied"}, status=403)
-    
+    if not (request.user.is_superuser or request.user == society.manager or (membership and membership.role in [MembershipRole.CO_MANAGER, MembershipRole.EDITOR])):
+        messages.error(request, "Permission denied.")
+        return redirect("manage_display", society_id=society_id)
+
+    if widget.widget_type == "gallery":
+        Gallery.objects.filter(society=society).delete()
+    elif widget.widget_type == "polls":
+        Poll.objects.filter(society=society).delete()
+    elif widget.widget_type == "comment":
+        Comment.objects.filter(society=society).delete()
+
     widget.delete()
-    return JsonResponse({"success": True})
+    messages.success(request, "Widget removed successfully!")
+    return redirect("manage_display", society_id=society_id)
 
 def edit_contact_widget(request, society_id, widget_id):
     """Allows manager to add/remove contact information for the society."""

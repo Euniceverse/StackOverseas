@@ -44,5 +44,6 @@
   {% else %}
     <p class="text-muted">No comments yet. Be the first!</p>
   {% endif %}
+  <a class="btn btn-primary" href="{% url 'society_page' society.id %}">Back</a>
 </div>
 {% endblock %}

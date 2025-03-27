@@ -47,17 +47,54 @@
     <div id="widgets-container">
       <ul id="sortable-widgets" class="list-group mb-4">
         {% for widget in widgets %}
-        <li class="list-group-item widget d-flex justify-content-between align-items-center" data-widget-id="{{ widget.id }}">
-            <strong>{{ widget.get_widget_type_display }}</strong>
-            <div>
-              <a href="{% url 'edit_widget' society.id widget.id %}" class="btn btn-sm btn-info me-2">Edit</a>
-              <a href="{% url 'remove_widget' society.id widget.id %}" 
-                class="btn btn-sm btn-danger" 
-                onclick="return confirm('Remove this widget?');">
-                Remove
-              </a>
-            </div>
-          </li>
+          {% if widget.widget_type == "polls" %}
+            <li class="list-group-item widget d-flex justify-content-between align-items-center" data-widget-id="{{ widget.id }}">
+              <strong>{{ widget.get_widget_type_display }}</strong>
+              <div>
+                <a href="{% url 'panels:create_poll' society_id=society.id %}" class="btn btn-sm btn-info me-2">Create New Poll</a>
+                <a href="{% url 'remove_widget' society.id widget.id %}" 
+                  class="btn btn-sm btn-danger" 
+                  onclick="return confirm('Remove this widget?');">
+                  Remove
+                </a>
+              </div>
+            </li>
+          {% elif widget.widget_type == "gallery" %}
+            <li class="list-group-item widget d-flex justify-content-between align-items-center" data-widget-id="{{ widget.id }}">
+              <strong>{{ widget.get_widget_type_display }}</strong>
+              <div>
+                <a href="{% url 'panels:create_gallery' society_id=society.id %}" class="btn btn-sm btn-info me-2">Create New Gallery</a>
+                <a href="{% url 'remove_widget' society.id widget.id %}" 
+                  class="btn btn-sm btn-danger" 
+                  onclick="return confirm('Remove this widget?');">
+                  Remove
+                </a>
+              </div>
+            </li>
+          {% elif widget.widget_type == "comment" %}
+            <li class="list-group-item widget d-flex justify-content-between align-items-center" data-widget-id="{{ widget.id }}">
+              <strong>{{ widget.get_widget_type_display }}</strong>
+              <div>
+                <a href="{% url 'remove_widget' society.id widget.id %}" 
+                  class="btn btn-sm btn-danger" 
+                  onclick="return confirm('Remove this widget?');">
+                  Remove
+                </a>
+              </div>
+            </li>
+          {% else %}
+            <li class="list-group-item widget d-flex justify-content-between align-items-center" data-widget-id="{{ widget.id }}">
+              <strong>{{ widget.get_widget_type_display }}</strong>
+              <div>
+                <a href="{% url 'edit_widget' society.id widget.id %}" class="btn btn-sm btn-info me-2">Edit</a>
+                <a href="{% url 'remove_widget' society.id widget.id %}" 
+                  class="btn btn-sm btn-danger" 
+                  onclick="return confirm('Remove this widget?');">
+                  Remove
+                </a>
+              </div>
+            </li>
+          {% endif %}
         {% empty %}
           <li class="list-group-item">No widgets have been added yet.</li>
         {% endfor %}

@@ -22,7 +22,9 @@
               </li>
             {% endfor %}
           </ul>
-          <a class="btn btn-sm btn-outline-primary" href="{% url 'panels:add_question' society.id poll.id %}">+ Add Question</a>
+            {% if user_membership and user_membership.role == "manager" or user_membership and user_membership.role == "co_manager" or user_membership and user_membership.role == "editor" or user.is_superuser %}
+              <a class="btn btn-sm btn-outline-primary" href="{% url 'panels:add_question' society.id poll.id %}">+ Add Question</a>
+            {% endif %}
         </li>
       {% endfor %}
     </ul>
@@ -30,6 +32,10 @@
     <p>No polls have been created yet.</p>
   {% endif %}
 
-  <a class="btn btn-primary" href="{% url 'panels:create_poll' society.id %}">+ Create New Poll</a>
+  {% if user_membership and user_membership.role == "manager" or user_membership and user_membership.role == "co_manager" or user_membership and user_membership.role == "editor" or user.is_superuser %}
+    <a class="btn btn-primary" href="{% url 'panels:create_poll' society.id %}">+ Create New Poll</a>
+  {% endif %}
+  <a class="btn btn-primary" href="{% url 'society_page' society.id %}">Back</a>
+
 </div>
 {% endblock %}

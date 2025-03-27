@@ -145,11 +145,11 @@ with open("event_choices.json", "w") as f:
 
     
 WIDGET_TYPES = [
-        ("announcements", "Announcements"),
-        ("events", "Events"),
-        ("gallery", "Gallery"),
-        ("contacts", "Contact Information"),
-        ("featured", "Featured Members"),
-        ("leaderboard", "Leaderboard"),
-        ("news", "News"),
-    ]
+    ("announcements", "Announcements"),
+    ("gallery", "Gallery"),
+    ("contacts", "Contact Information"),
+    ("featured", "Featured Members"),
+    ("leaderboard", "Leaderboard"),
+    ("poll", "Poll"),
+    ("comment", "Comment"),
+]

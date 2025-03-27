@@ -2,15 +2,23 @@
 {% load static %}
 
 {% block title %}
-<h2>Upload an Image to "{{ gallery.title }}"</h2>
+<div class="bg-light p-4 rounded shadow-sm mb-4">
+  <h2 class="mb-1">Upload an Image to "{{ gallery.title }}"</h2>
+</div>
 {% endblock %}
 
 {% block content %}
-<form method="post" enctype="multipart/form-data">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Upload</button>
-</form>
+<h3 class="mb-1">Upload an Image to "{{ gallery.title }}"</h3>
+<div class="card shadow-sm p-4">
+  
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="mb-3">
+      {{ form.as_p }}
+    </div>
+    <button type="submit" class="btn btn-primary">Upload</button>
+  </form>
+</div>
 
-<a href="{% url 'panels:gallery_detail' society.id gallery.id %}">← Back to Gallery</a>
+<a href="{% url 'panels:gallery_detail' society.id gallery.id %}" class="btn btn-outline-secondary mt-2">← Back to Gallery</a>
 {% endblock %}

@@ -65,12 +65,12 @@ main {
  *****************************************************/
 h1, h2, h3, h4, h5, h6 {
   color: var(--primary-dark);
-  /* If you want them a different color, change here */
+  
 }
 
 p, span, a {
   color: var(--accent-mid);
-  /* If you want normal text to use a different color, change here */
+  
   text-decoration: none;
 }
 
@@ -176,7 +176,7 @@ nav {
   color: #252E6B;
 }
 
-/* Bootstrap form overrides if needed */
+
 .form-control, .form-select {
   background-color: var(--background-light);
   color: var(--primary-dark);
@@ -202,7 +202,7 @@ nav {
 /*****************************************************
  * 8) CARDS & SOCIETY BOXES
  *****************************************************/
-/* Default card styling */
+
 .card {
   background-color: var(--accent-mid);
   color: #8e4242;
@@ -241,7 +241,7 @@ nav {
   border-radius: 10px;
   padding: 10px;
   margin-bottom: 10px;
-  color: #000; /* inside news box, black text? or keep #fff if you prefer */
+  color: #000; 
 }
 .news-box h3 {
   font-size: 20px;

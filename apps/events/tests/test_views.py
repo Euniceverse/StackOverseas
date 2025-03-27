@@ -53,6 +53,7 @@ class EventPageViewTest(TestCase):
 
     def test_eventspage_renders(self):
         """Check that eventspage returns 200 and uses events.html."""
+        self.client.login(email='someuser1@ex.com', password='pass123')
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'events.html')

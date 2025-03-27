@@ -84,9 +84,18 @@ function initializeMap() {
     attribution: "&copy; OpenStreetMap contributors"
   }).addTo(map);
 
-  // Load the initial set of event markers
-  loadEvents("/api/events/");
+  // const myEventsFilter = new URLSearchParams(window.location.search).get("my_events");
+  // let initialURL = "/api/events/";
+  // if (myEventsFilter === "true") {
+  //   initialURL = "/events/api/?my_events=true";
+  // }
+  
+  // loadEvents(initialURL);
+
   mapInitialized = true;
+
+  updateMapWithFilters("");
+  updateMap();
 }
 
 // Update the map using filters (e.g. from a filter component)
@@ -96,13 +105,20 @@ function updateMapWithFilters(filters) {
   }
   // Update markers based on the filtered events from your API
   let queryString = localStorage.getItem("filterQueryString") || "";
+
+  const myEventsFilterUrl = new URLSearchParams(window.location.search).get('my_events'); 
+  const myEventsFilterStorage = localStorage.getItem("my_events"); 
+  if (myEventsFilterUrl === "true" || myEventsFilterStorage === "true") { 
+      queryString += (queryString ? '&' : '?') + 'my_events=true';
+  }
+
   console.log("🗺️ Map - Query String:", queryString);
 
   fetch(`/events/api/${queryString}`)
     .then(response => response.json())
     .then(data => {
       console.log("🗺️ Map - Raw Events Data:", data);
-      loadEvents(`/events/api/${filters}`);
+      loadEvents(`/events/api/${queryString}`);
     })
     .catch(error => console.error("Error loading events:", error));
 }
@@ -124,8 +140,15 @@ function updateMap() {
     }
     marker.bindPopup(`<b>${name}</b>`).openPopup();
   }
-  // Optionally reload the events after updating the map view
-  loadEvents("/api/events/");
+
+  let queryString = localStorage.getItem("filterQueryString") || "";
+  const myEventsFilterUrl = new URLSearchParams(window.location.search).get('my_events');
+  const myEventsFilterStorage = localStorage.getItem("my_events");
+  if (myEventsFilterUrl === "true" || myEventsFilterStorage === "true") {
+    queryString += (queryString ? '&' : '?') + 'my_events=true';
+  }
+  
+  loadEvents(`/events/api/${queryString}`);
   setTimeout(() => map.invalidateSize(), 300);
 }
 

@@ -76,7 +76,13 @@ def eventspage(request):
     events = EventFilter(request.GET, queryset=events, request=request).qs
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
 
-    return render(request, "events.html", {"news_list": news_list, "events": events})
+    page_title = "My Events" if my_events_filter else "All Events"
+
+    return render(request, "events.html", {
+        "news_list": news_list, 
+        "events": events,
+        "page_title": page_title,
+    })
 
 class EventListAPIView(generics.ListAPIView):
     """API to list all future events with timezone-aware filtering"""

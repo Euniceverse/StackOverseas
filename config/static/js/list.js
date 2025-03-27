@@ -17,8 +17,15 @@ function initializeList() {
 
     localStorage.removeItem("filterQueryString");
 
+
     function fetchFilteredEvents(fetchInfo, successCallback, failureCallback) {
         let queryString = localStorage.getItem("filterQueryString") || "";
+        
+        const myEventsFilter = new URLSearchParams(window.location.search).get('my_events');
+        if (myEventsFilter === "true") {
+            queryString += (queryString ? '&' : '?') + 'my_events=true';
+        }
+        
         console.log("📋 List - Query String:", queryString);
 
         fetch(`/events/api/${queryString}`)
@@ -26,7 +33,6 @@ function initializeList() {
             .then(data => {
                 console.log("📋 List - Raw Events Data:", data);
 
-                // ✅ API 응답이 배열인지 확인
                 let eventsArray = Array.isArray(data) ? data : data.results;
 
                 if (!eventsArray || !Array.isArray(eventsArray)) {
@@ -52,7 +58,6 @@ function initializeList() {
 
                 console.log("🎯 필터링된 이벤트 (FullCalendar에 전달될 데이터):", events);
 
-                // ✅ FullCalendar가 데이터를 정상적으로 수신하는지 확인
                 successCallback(events);
             })
             .catch(error => console.error("❌ Error fetching events:", error));
@@ -91,6 +96,8 @@ function initializeList() {
 
 
     window.list.render();
+
+    window.list.refetchEvents();
 
     if (closeButton) {
         closeButton.addEventListener("click", function () {

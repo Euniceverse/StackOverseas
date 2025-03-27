@@ -25,6 +25,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-@h)j0-+ym+l*&l)r_qyca^#z3vr-@jawo!sna2^+(u9uy!jfwy'
 
+# SECURITY WARNING: don't run with debug turned on in production!
+# DEBUG = True
 
 ALLOWED_HOSTS = []
 
@@ -48,9 +50,9 @@ DEBUG = True
 PROTOCOL = "https"
 DOMAIN_NAME = "stackoverseas.onrender.com"
 
-if DEBUG:
-    PROTOCOL = "http"
-    DOMAIN_NAME = "127.0.0.1:8000"
+# For local version
+#PROTOCOL = "http"
+#DOMAIN_NAME = "127.0.0.1:8000"
 
 
 # Application definition
@@ -77,6 +79,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -117,7 +120,7 @@ MEDIA_ROOT = BASE_DIR / 'config' / 'media'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.environ.get('SQLITE_DB_PATH',  BASE_DIR / 'db.sqlite3'), # for home computer: BASE_DIR / 'db.sqlite3', for render: '/mnt/data/db.sqlite3'
+        'NAME': os.environ.get('SQLITE_DB_PATH',  '/mnt/data/db.sqlite3'), # for home computer: BASE_DIR / 'db.sqlite3', for render: '/mnt/data/db.sqlite3'
     }
 }
 
@@ -202,6 +205,7 @@ CACHES = {
 
 
 
+
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
@@ -214,3 +218,6 @@ CORS_ALLOWED_ORIGINS = [
     "https://checkout.stripe.com",
     "https://stackoverseas.onrender.com",
 ]
+
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

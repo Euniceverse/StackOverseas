@@ -60,24 +60,32 @@ class EventFilter(GlobalFilterSet):
     available_slots = django_filters.BooleanFilter(method='filter_available_slots')
 
     def filter_by_price(self, queryset, name, value):
+        # if value.start and value.stop:
+        #     return queryset.filter(
+        #         Q(fee__gte=value.start, fee__lte=value.stop) |
+        #         Q(fee_member__gte=value.start, fee_member__lte=value.stop) |
+        #         Q(fee_general__gte=value.start, fee_general__lte=value.stop)
+        #     )
+        # elif value.start:
+        #     queryset = queryset.filter(
+        #         Q(fee__gte=value.start) |
+        #         Q(fee_member__gte=value.start) |
+        #         Q(fee_general__gte=value.start)
+        #     )
+        # elif value.stop:
+        #     queryset = queryset.filter(
+        #         Q(fee__lte=value.stop) |
+        #         Q(fee_member__lte=value.stop) |
+        #         Q(fee_general__lte=value.stop)
+        #     )
+        # return queryset
+
         if value.start and value.stop:
-            return queryset.filter(
-                Q(fee__gte=value.start, fee__lte=value.stop) |
-                Q(fee_member__gte=value.start, fee_member__lte=value.stop) |
-                Q(fee_general__gte=value.start, fee_general__lte=value.stop)
-            )
+            return queryset.filter(fee__gte=value.start, fee__lte=value.stop)
         elif value.start:
-            queryset = queryset.filter(
-                Q(fee__gte=value.start) |
-                Q(fee_member__gte=value.start) |
-                Q(fee_general__gte=value.start)
-            )
+            return queryset.filter(fee__gte=value.start)
         elif value.stop:
-            queryset = queryset.filter(
-                Q(fee__lte=value.stop) |
-                Q(fee_member__lte=value.stop) |
-                Q(fee_general__lte=value.stop)
-            )
+            return queryset.filter(fee__lte=value.stop)
         return queryset
 
     def filter_available_slots(self, queryset, name, value):

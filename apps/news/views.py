@@ -65,6 +65,9 @@ def create_news(request):
     if request.method == "POST":
         form = NewsForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
+            if "cancel" in request.POST:
+                return redirect("home")
+
             news = form.save(commit=False)
 
             try:
@@ -77,15 +80,10 @@ def create_news(request):
                 messages.error(request, "You are not authorized to post news for this society.")
                 return redirect("create_news")
 
-            if "save_draft" in request.POST:
-                news.is_published = False
-                messages.success(request, "News saved as draft!")
-            elif "post" in request.POST:
+            if "post" in request.POST:
                 news.is_published = True
-                messages.success(request, "News successfully posted!")
 
             news.save()
-            messages.success(request, "News successfully created!")
             return redirect("news_list")
     else:
         form = NewsForm(user=request.user)
@@ -110,17 +108,16 @@ def create_news_for_society(request, society_id):
 
     if request.method == "POST":
         form = NewsForm(request.POST, request.FILES, user=request.user)
-        if form.is_valid():
+        
+        if "cancel" in request.POST:
+            return redirect("society_page", society_id=society.id)
+            
+        if form.is_valid():  
             news = form.save(commit=False)
             news.society = society
-            if "save_draft" in request.POST:
-                news.is_published = False
-                messages.success(request, "News saved as draft!")
-            elif "post" in request.POST:
+            if "post" in request.POST:
                 news.is_published = True
-                messages.success(request, "News successfully posted!")
             news.save()
-            messages.success(request, "News successfully created!")
             return redirect('society_page', society_id=society.id)
     else:
         form = NewsForm(user=request.user)

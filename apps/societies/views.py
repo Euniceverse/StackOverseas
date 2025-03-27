@@ -25,7 +25,7 @@ def societiespage(request):
     societies = approved_societies(request.user)
 
     # Apply filters
-    filtered_societies = SocietyFilter(request.GET, queryset=societies).qs
+    filtered_societies = SocietyFilter(request.GET, queryset=societies, request=request).qs
 
     # Sorting
     sort_option = request.GET.get("sort", "name_asc")
@@ -313,14 +313,25 @@ def join_society(request, society_id):
     if req_type == RequirementType.NONE:
         if society.joining_fee > 0:
              return render(request, "confirm_join_payment.html", {"society": society})
+        
         if request.method == 'POST':
-
             form = JoinSocietyForm(society=society, user=request.user, data=request.POST, files=request.FILES)
             if form.is_valid():
                 application = form.create_membership_and_application()
-                if application.is_approved:
-                    pass
-                    # messages.success(request, "You have joined the society successfully!")
+                
+                application.is_approved = True
+                application.save()
+
+                membership = Membership.objects.get(society=society, user=request.user)
+                membership.status = MembershipStatus.APPROVED
+                membership.save()
+
+                society.members_count = Membership.objects.filter(
+                    society=society,
+                    status=MembershipStatus.APPROVED
+                ).count()
+                society.save()
+
                 return redirect('society_page', society_id=society.id)
             else:
                 return render(request, 'join_society.html', {'society': society, 'form': form})
@@ -615,9 +626,13 @@ def leave_society(request, society_id):
         return redirect('society_page', society_id=society.id)
 
     if request.method == "POST":
-        # user confirmed
         membership.delete()
-        # messages.success(request, f"You have left '{society.name}'.")
+        society.members_count = Membership.objects.filter(
+            society=society,
+            status=MembershipStatus.APPROVED
+        ).count()
+        society.save()
+
         return redirect('society_page', society_id=society.id)
 
     return render(request, "confirm_leave.html", {"society": society})

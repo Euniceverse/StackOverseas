@@ -73,7 +73,7 @@ def eventspage(request):
     else:
         events = Event.objects.all()
 
-    events = EventFilter(request.GET, queryset=events).qs
+    events = EventFilter(request.GET, queryset=events, request=request).qs
     news_list = News.objects.filter(is_published=True).order_by('-date_posted')[:10]
 
     return render(request, "events.html", {"news_list": news_list, "events": events})

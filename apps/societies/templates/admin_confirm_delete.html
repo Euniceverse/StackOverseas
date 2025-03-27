@@ -1,19 +1,20 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Confirm Deletion</h2>
-<p>Are you sure you want to delete <strong>{{ society.name }}</strong>? This action cannot be undone.</p>
+<div class="container my-5">
+    <h2 class="mb-4">Confirm Deletion</h2>
+    <p>Are you sure you want to delete <strong>{{ society.name }}</strong>? This action cannot be undone.</p>
 
-<form method="POST">
-    {% csrf_token %}
-    <input type="hidden" name="action" value="approve">
-    <button type="submit" class="btn btn-danger">Confirm Delete</button>
-</form>
+    <form method="POST" class="mb-3">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="approve">
+        <button type="submit" class="btn btn-danger">Confirm Delete</button>
+    </form>
 
-<form method="POST">
-    {% csrf_token %}
-    <input type="hidden" name="action" value="reject">
-    <button type="submit" class="btn btn-secondary">Reject Request</button>
-</form>
-
+    <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="reject">
+        <button type="submit" class="btn btn-secondary">Reject Request</button>
+    </form>
+</div>
 {% endblock %}

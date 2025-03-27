@@ -98,7 +98,7 @@ def edit_contact_widget(request, society_id, widget_id):
     })
     
 def edit_featured_members_widget(request, society_id, widget_id):
-    """Allows managers to edit the 'featured' widget by adding multiple featured members."""
+    """Allows managers to edit the 'featured' widget by adding or deleting featured members."""
     widget = get_object_or_404(Widget, id=widget_id, society__id=society_id, widget_type='featured')
     FeaturedMemberFormSet = formset_factory(FeaturedMemberForm, extra=1)
     society = widget.society
@@ -116,7 +116,7 @@ def edit_featured_members_widget(request, society_id, widget_id):
         else:
             member_name = member_value
         initial_data.append({
-            'member': member_name, 
+            'member': member_name,
             'role': item.get('role'),
             'picture': item.get('picture'),
         })
@@ -127,20 +127,21 @@ def edit_featured_members_widget(request, society_id, widget_id):
         for m in memberships
     ]
 
-    formset = None
-
     if request.method == "POST":
         formset = FeaturedMemberFormSet(request.POST, request.FILES, form_kwargs={'members_choices': members_choices})
         if formset.is_valid():
             featured_members = []
             for i, form in enumerate(formset):
                 cd = form.cleaned_data
-                if cd and cd.get('member', "").strip() != "" and cd.get('role', "").strip() != "":
+                if cd.get('delete'):
+                    continue
+                if cd and cd.get('member', "").strip() and cd.get('role', "").strip():
                     picture_field = cd.get('picture')
                     if picture_field:
-                        from django.core.files.storage import default_storage
-                        from django.core.files.base import ContentFile
-                        filename = default_storage.save(f"featured_members/{picture_field.name}", ContentFile(picture_field.read()))
+                        filename = default_storage.save(
+                            f"featured_members/{picture_field.name}",
+                            ContentFile(picture_field.read())
+                        )
                         picture_url = default_storage.url(filename)
                     else:
                         if initial_data and len(initial_data) > i and initial_data[i].get('picture'):
@@ -152,9 +153,16 @@ def edit_featured_members_widget(request, society_id, widget_id):
                         'role': cd.get('role'),
                         'picture': picture_url,
                     })
+            unique_featured = []
+            seen = set()
+            for entry in featured_members:
+                key = (entry['member'].strip().lower(), entry['role'].strip().lower())
+                if key not in seen:
+                    unique_featured.append(entry)
+                    seen.add(key)
             if widget.data is None:
                 widget.data = {}
-            widget.data['featured_members'] = featured_members
+            widget.data['featured_members'] = unique_featured
             widget.save()
             messages.success(request, "Featured members updated successfully!")
             return redirect("manage_display", society_id=society_id)
@@ -180,12 +188,15 @@ def edit_announcements_widget(request, society_id, widget_id):
         if formset.is_valid():
             announcements = []
             for form in formset:
-                if form.cleaned_data and form.cleaned_data.get('title'):
-                    announcements.append({
-                        'title': form.cleaned_data.get('title'),
-                        'message': form.cleaned_data.get('message'),
-                        'date': str(form.cleaned_data.get('date')) if form.cleaned_data.get('date') else "",
-                    })
+                if form.cleaned_data:
+                    if form.cleaned_data.get('delete'):
+                        continue
+                    if form.cleaned_data.get('title'):
+                        announcements.append({
+                            'title': form.cleaned_data.get('title'),
+                            'message': form.cleaned_data.get('message'),
+                            'date': str(form.cleaned_data.get('date')) if form.cleaned_data.get('date') else "",
+                        })
             if widget.data is None:
                 widget.data = {}
             widget.data['announcements'] = announcements

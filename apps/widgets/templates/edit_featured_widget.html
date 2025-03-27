@@ -17,6 +17,7 @@
           <th>Member</th>
           <th>Role</th>
           <th>Picture</th>
+          <th>Delete?</th>
         </tr>
       </thead>
       <tbody>
@@ -31,7 +32,8 @@
                 <small>Current image</small>
               {% endif %}
               {{ form.picture }}
-          </td>          
+            </td>
+            <td>{{ form.delete }}</td>
           </tr>
         {% endfor %}
       </tbody>

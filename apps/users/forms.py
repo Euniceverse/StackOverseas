@@ -9,7 +9,7 @@ class UserForm(forms.ModelForm):
     class Meta:
         """Form options."""
         model = CustomUser
-        fields = ['first_name', 'last_name', 'preferred_name']
+        fields = ['email', 'first_name', 'last_name', 'preferred_name']
 
 class LogInForm(forms.Form):
     email = forms.EmailField(label="Email")  # Use EmailField for validation

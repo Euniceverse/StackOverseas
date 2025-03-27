@@ -46,13 +46,13 @@ function initializeList() {
                     start: event.start_datetime,
                     end: event.end_datetime,
                     extendedProps: {
-                        event_type: event.event_type.split(",")[0].trim().replace("(", "").replace("'", ""),
-                        location: event.location || "Not specified",
-                        fee: event.fee || "Free",
-                        description: event.description || "No description available.",
-                        capacity: event.capacity || "Unlimited",
-                        member_only: event.member_only,
-                        hosts: event.society.join(", ")
+                    event_type: event.event_type.split(",")[0].trim().replace("(", "").replace("'", ""),
+                    location: event.location || "Not specified",
+                    fee: event.fee || "Free",
+                    description: event.description || "No description available.",
+                    capacity: event.capacity || "Unlimited",
+                    member_only: event.member_only,
+                    hosts: event.society.join(", ")
                     }
                 }));
 
@@ -63,37 +63,42 @@ function initializeList() {
             .catch(error => console.error("❌ Error fetching events:", error));
     }
 
-
     window.list = new FullCalendar.Calendar(listEl, {
         initialView: "listWeek",
         headerToolbar: {
             left: "prev,next today",
             center: "title",
-            right: "listWeek",
+            right: "listWeek"
         },
-        events: fetchFilteredEvents, // Use function to dynamically fetch events
+        events: fetchFilteredEvents,
         eventClick: function (info) {
-            console.log("🖱️ Event clicked:", info.event);
+          console.log("🖱️ Event clicked:", info.event);
 
-            document.getElementById("event-name").textContent = info.event.title;
-            document.getElementById("event-type").textContent = info.event.type;
-            document.getElementById("event-date").textContent = info.event.start.toISOString().split("T")[0];
-            document.getElementById("event-time").textContent =
-                info.event.start
-                    ? info.event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                    : "Time not specified";
-            document.getElementById("event-location").textContent = info.event.extendedProps.location;
-            document.getElementById("event-fee").textContent =
-                info.event.extendedProps.fee !== "Free" ? info.event.extendedProps.fee + " USD" : "Free";
-            document.getElementById("event-description").textContent = info.event.extendedProps.description;
+          // Set the visible fields
+          document.getElementById("event-name").textContent = info.event.title;
+          document.getElementById("event-type").textContent = info.event.extendedProps.event_type;
+          document.getElementById("event-date").textContent = info.event.start.toISOString().split("T")[0];
+          document.getElementById("event-time").textContent = info.event.start
+              ? info.event.start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+              : "Time not specified";
+          document.getElementById("event-location").textContent = info.event.extendedProps.location;
+          document.getElementById("event-fee").textContent =
+              info.event.extendedProps.fee !== "Free" ? info.event.extendedProps.fee + " USD" : "Free";
+          document.getElementById("event-description").textContent = info.event.extendedProps.description;
 
-            // ✅ 모달 보이기
-            document.getElementById("event-detail-modal").classList.remove("hidden");
-        }
+          // **NEW**: Set the hidden form fields used by the "Register Now" button
+          document.getElementById("event-id-input").value = info.event.id;
+          document.getElementById("event-name-input").value = info.event.title;
+          document.getElementById("event-price-input").value =
+              info.event.extendedProps.fee !== "Free" && info.event.extendedProps.fee !== ""
+                  ? parseFloat(info.event.extendedProps.fee)
+                  : 0.0;
+          document.getElementById("event-description-input").value = info.event.extendedProps.description;
 
-
+          // Show the modal
+          document.getElementById("event-detail-modal").classList.remove("hidden");
+      }
     });
-
 
     window.list.render();
 
@@ -138,8 +143,6 @@ function initializeList() {
             window.list.updateSize();
         }, 100);
     };
-
-
 }
 
 // 🚀 `window` 객체에 함수 등록하여 `viewSwitcher.js`에서 호출 가능하도록 설정

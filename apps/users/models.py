@@ -97,8 +97,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         if not self.annual_verification_date:
             return False
 
-        one_year_ago = timezone.now() - timedelta(days=365)
-        five_years_ago = timezone.now() - timedelta(days=1825)  # 5 years
+        #one_year_ago = timezone.now() - timedelta(days=365)
+        #five_years_ago = timezone.now() - timedelta(days=1825)  # 5 years
+        one_year_ago = timezone.now() - timedelta(minutes=2)  # 2 minutes
+        five_years_ago = timezone.now() - timedelta(minutes=8)  # 8 minutes
 
         if self.annual_verification_date <= five_years_ago:
             # Delete account if inactive for 5 years
@@ -122,8 +124,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         cache.set(cache_key, self.email, 3600)  # 1 hour expiry
 
         # Generate verification link
-        verification_link = f"http://{settings.DOMAIN_NAME}{reverse('annual_verify', kwargs={'uidb64': urlsafe_base64_encode(force_bytes(self.email)), 'token': activation_token})}"
-
+        verification_link = (
+            f"{settings.PROTOCOL}://{settings.DOMAIN_NAME}"
+            f"{reverse('annual_verify')}?uid={urlsafe_base64_encode(force_bytes(self.email))}&token={activation_token}"
+        )
         mail_subject = "Annual Account Verification Required"
         message = render_to_string("annual_verification_email.html", {
             "user": self,

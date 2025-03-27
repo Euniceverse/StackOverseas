@@ -16,7 +16,7 @@ from .models import Society, SocietyRegistration
 from .forms import NewSocietyForm
 from apps.news.models import News
 from config.functions import get_recent_news
-from apps.widgets.models import Widget 
+from apps.widgets.models import Widget
 from config.filters import SocietyFilter
 from config.constants import SOCIETY_TYPE_CHOICES
 import json
@@ -613,8 +613,8 @@ def society_page(request, society_id):
         "members_count": members_count,
     }
     return render(request, "society_page.html", context)
-    
-   
+
+
 @login_required
 def leave_society(request, society_id):
     society = get_object_or_404(Society, id=society_id)
@@ -643,7 +643,7 @@ def leave_society(request, society_id):
 @login_required
 def manage_display(request, society_id):
     society = get_object_or_404(Society, id=society_id)
-    
+
     if request.user != society.manager:
         membership = Membership.objects.filter(
             society=society,
@@ -653,7 +653,7 @@ def manage_display(request, society_id):
         if not membership or (membership.role not in [MembershipRole.CO_MANAGER, MembershipRole.EDITOR] and not user.is_superuser):
             messages.error(request, "You do not have permission to manage widget display for this society.")
             return redirect("society_page", society_id=society.id)
-    
+
     if request.method == "POST":
         if request.content_type == "application/json":
             try:
@@ -676,6 +676,6 @@ def manage_display(request, society_id):
                 Widget.objects.create(society=society, widget_type=widget_type, position=new_position)
                 messages.success(request, f"Added new widget of type '{widget_type}'.")
                 return redirect("manage_display", society_id=society.id)
-    
+
     widgets = Widget.objects.filter(society=society).order_by("position")
     return render(request, "manage_display.html", {"society": society, "widgets": widgets})
